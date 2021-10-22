@@ -29,7 +29,7 @@ function sendAllocations(eventType, emit, sentEventAllocations) {
         emit(eventType, findAllocation(cid))
         sentAllocations[cid] = true;
       }
-    } catch(e){console.info('analytics not sent for evolv');}
+    } catch(e){console.info('Evolv: Analytics not sent');}
   }
 }
 
@@ -72,13 +72,13 @@ function waitFor(check, invoke, poll){
         clearInterval(polling);
         polling = null;
       }
-    } catch(e){console.info('listener not processed')}
+    } catch(e){console.info('Evolv: Listener not processed')}
   }, poll.interval)
   setTimeout(function(){ 
       if (!polling) return
       
       clearInterval(polling)     
-      console.info('listener timeout')
+      console.info('Evolv: Listener timeout')
   }, poll.duration)
 }
 
@@ -107,14 +107,18 @@ function invokeExpression(exp, args, init){
   var fncKey = tokens.pop();
   var obj = getExpression(tokens);
   if (typeof obj[fncKey] !== 'function'){
-      console.warn('not proper emit function', obj, fncKey)
+      console.warn('Evolv: Is not proper emit function', obj, fncKey)
       return;
   }
 
-  if (init){
-    return new (Function.prototype.bind.apply(obj[fncKey], [null].concat(args)))
-  } else {
-    return obj[fncKey].apply(obj, args)
+  try {
+    if (init){
+      return new (Function.prototype.bind.apply(obj[fncKey], [null].concat(args)))
+    } else {
+      return obj[fncKey].apply(obj, args)
+    }
+  } catch(e){
+    console.warn('Evolv: Could not guarantee success for analytics invocation.')
   }
 }
 
@@ -246,7 +250,7 @@ function runStatement(statement, eventContext){
     return invokeExpression(statement.init, values, true);
   }
 
-  console.info('nothing to run for', this.statement)
+  console.info('Evolv: Nothing to run for', this.statement)
 }
 
 
@@ -297,7 +301,7 @@ function processAnalytics(config){
         emit: processStatements.bind(null, pageConfig), 
         poll: pageConfig.poll
       });
-    } catch(e){console.info('analytics not setup for evolv', key)}
+    } catch(e){console.info('Evolv: Analytics not setup for', key)}
   })
 }
 

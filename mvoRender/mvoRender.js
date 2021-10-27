@@ -115,9 +115,15 @@ function initializeRender(){
     return this;
   }
   ENode.prototype.html = function(str){
-    if (!str) this.el.map(function(e){return e.innerHTML});
+    if (!str) return this.el.map(function(e){return e.innerHTML}).join();
  
     this.el.forEach(function(e){e.innerHTML = str;});
+    return this;
+  }
+  ENode.prototype.text = function(str){
+    if (!str) return this.el.map(function(e){return e.textContent}).join(' ');
+ 
+    this.el.forEach(function(e){e.textContent = str;});
     return this;
   }
   ENode.prototype.attr = function(attributes){
@@ -162,16 +168,19 @@ function initializeRender(){
     return new ENode(sel);
   }
 
-  var renderRule = {}
+  //var renderRule = {};
+  var renderRule = initializeExperimentRule('general');
+  renderRule.sandboxes = []
   let renderRuleProxy = new Proxy(renderRule, {
     get(target, name, receiver) {
         let rv = Reflect.get(target, name, receiver);
         if (!rv) {
             target[name] = initializeExperimentRule(name); 
             rv = Reflect.get(target, name, receiver)
+            renderRule.sandboxes.push(rv)
         }
         return rv;
-      }
+    }
   });
 
   //enables creating a rule context via window.evolv.renderRule.myRule
@@ -194,7 +203,14 @@ function initializeRender(){
               return obj.dom.length >= (obj.count || 1)
             }))
             .then(function(){
-              obj.node = obj.dom.addClass('evolv-' + obj.asClass)
+              obj.node = obj.dom;
+              if (obj.asClass) {
+                obj.node.addClass('evolv-' + obj.asClass);
+              }
+              if (obj.asAttr) {
+                  var objAttr = {['evolv-' + obj.asAttr]: true };
+                  obj.node.attr(objAttr);
+              };
             })
         }
         for(var key in data){
@@ -204,7 +220,7 @@ function initializeRender(){
     }
 
     var rule = {
-      fns: {},
+      app: {},
       $: $,
       exp: name,
       store: store,
@@ -357,7 +373,5 @@ function processNav(config){
 
 
 //toggle the following comments to enable directly in experiment code
-
 //processNav({pages: ['.*']});
 module.exports = processNav;
-

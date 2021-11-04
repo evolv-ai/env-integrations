@@ -1,0 +1,7 @@
+{
+  "name": "renderIntegration",
+  "main": "renderIntegration.js",
+  "version": "0.1.0",
+  "description": "",
+  "license": "ISC"
+}

@@ -1,8 +1,7 @@
-window.evolv = {};
-
+window.evolv = window.evolv || {} ;
 
 function initializeRender(){
-  if (window.evolv.renderRule) return;
+  if (window.evolv.renderRule) return window.evolv.renderRule;
 
   //debounce code
   function debounce (fn, dur) {
@@ -27,7 +26,7 @@ function initializeRender(){
       } else {
         return context.querySelectorAll(sel);
       }
-    } else if (sel.constructor === HTMLDivElement){
+    } else if (sel instanceof Element){
       return [sel]
     } else if (sel.constructor === ENode){
       return sel.el
@@ -111,7 +110,11 @@ function initializeRender(){
     return new ENode(results)
   }
   ENode.prototype.on = function(tag, fnc){
-    this.el.forEach(function(e){e.addEventListener(tag,fnc)});
+    this.el.forEach(function(e){
+      tag.split(' ').forEach(function(eventTag){
+        e.addEventListener(teventTag,fnc)
+      })
+    });
     return this;
   }
   ENode.prototype.html = function(str){
@@ -127,11 +130,23 @@ function initializeRender(){
     return this;
   }
   ENode.prototype.attr = function(attributes){
+    if (typeof attributes === 'string'){
+      var prop = attributes;
+      return this.el.map(function(e){return e.getAttribute(prop)}).join(' ');
+    } else{
+      this.el.forEach(function(e){
+        var keys = Object.keys(attributes);
+        keys.forEach(function(key){
+            e.setAttribute(key,attributes[key])
+        });
+      })
+      return this;
+    }
+  }
+  ENode.prototype.each = function(fnc){
     this.el.forEach(function(e){
-      var keys = Object.keys(attributes);
-      keys.forEach(function(key){
-          e.setAttribute(key,attributes[key])
-      });
+      var node = new ENode(e);
+      fnc.apply(node, node)
     })
     return this;
   }
@@ -197,15 +212,15 @@ function initializeRender(){
         } else {
           data = store.cache;
         }
-        var check = function(obj){
+        var check = function(obj, key){
           rule
             .when(rule.trigger(function(){ 
               return obj.dom.length >= (obj.count || 1)
             }))
             .then(function(){
               obj.node = obj.dom;
-              if (obj.asClass) {
-                obj.node.addClass('evolv-' + obj.asClass);
+              if (obj.asClass || key) {
+                obj.node.addClass('evolv-' + (obj.asClass || key));
               }
               if (obj.asAttr) {
                   var objAttr = {['evolv-' + obj.asAttr]: true };
@@ -214,7 +229,7 @@ function initializeRender(){
             })
         }
         for(var key in data){
-          check(data[key])     
+          check(data[key], key)     
         }
       }
     }
@@ -226,28 +241,71 @@ function initializeRender(){
       store: store,
       when: function(trig){
         var variant = null;
+        var trackAs = null;
         var hasTriggered = false;
         var gdom = null;
+        var store = this.store;
+        var experimentName = this.exp
+        function runVariant(dom){
+          if (!hasTriggered) return;
+
+          variant(dom);
+          if (trackAs) trackAs();
+        }
         trig(function (dom) {
           gdom = dom;
           hasTriggered = true;
-          if (variant) variant(dom);
+          if (variant) runVariant(dom);
         });
         return {
           then: function (fnc) {
             variant = fnc;
             if (hasTriggered) variant(gdom);
           },
+          forEach: function (fnc) {
+            variant = function(dom){
+              dom.el.forEach(item=> fnc($(item)));
+            }
+            if (hasTriggered) variant(gdom);
+          },
+          track: function (txt) {
+            var trackKey = 'evolv-' + experimentName;
+            trackAs = function(){
+              var node = $('html');
+              var tracking = node.attr(trackKey)
+              tracking = tracking ?(tracking + ' ' + txt) :txt
+              node.attr({[trackKey]: tracking})              
+            }
+            if (hasTriggered) trackAs();
+          },
+          reactivateOnChange(item){
+            this.then(function(obj){
+              obj.watch()
+                 .then(store.reactivate.bind(store));
+            })
+          }
         };
       },
       nextIndex: 0,
       whenDOM: function(sel){
         var index = rule.nextIndex++
         return rule.when(rule.trigger(function() {
+          try{
           var attr = 'evolv-'+ rule.exp + index;
           var results = $(sel).markOnce(attr)
           return results.length > 0 ? results : null;
+          } catch (e){ 
+            console.warn('Selector may be malformed', e)
+          }
         }))
+      },
+      track: function(txt){
+        var trackKey = 'evolv-' + this.exp;
+        var node = $('html');
+        var tracking = node.attr(trackKey)
+        tracking = tracking ?(tracking + ' ' + txt) :txt
+        node.attr({[trackKey]: tracking});
+        return this;             
       },
       trigger: function(selFnc){
         return this.triggerHandler.trigger(selFnc)
@@ -352,9 +410,8 @@ function initializeRender(){
 
     return rule;
   }
+  return window.evolv.renderRule;
 }
-
-//initializeRender();
 
 function pageMatch(page){
   if (!page) return false;
@@ -367,10 +424,9 @@ function processNav(config){
   var matches = pages.some(pageMatch);
 
   if (matches){
-    initializeRender();
+    return initializeRender();
   }
 }
-
 
 //toggle the following comments to enable directly in experiment code
 //processNav({pages: ['.*']});

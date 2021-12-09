@@ -1,7 +1,7 @@
 window.evolv = window.evolv || {} ;
 
 function initializeRender(){
-  if (window.evolv.renderRule) return window.evolv.renderRule;
+ // if (window.evolv.renderRule) return window.evolv.renderRule;
 
   //debounce code
   function debounce (fn, dur) {
@@ -18,7 +18,9 @@ function initializeRender(){
   // dom manipulation package
   function toNodeValue(sel, context){
     context = context || document;
-    if (typeof sel === 'string'){
+    if (!sel){
+      return [];
+    } else if (typeof sel === 'string'){
       if (sel[0] === '<') {
         var div = context.createElement('div');
         div.innerHTML = sel.trim();
@@ -214,10 +216,14 @@ function initializeRender(){
         }
         var check = function(obj, key){
           rule
-            .when(rule.trigger(function(){ 
-              return obj.dom.length >= (obj.count || 1)
+            .when(rule.trigger(function(){
+              try{
+                return obj.dom.length >= (obj.count || 1)
+              } catch (e){
+                console.warn('Selector may be malformed', e)
+              }
             }))
-            .then(function(){
+            .thenInBulk(function(){
               obj.node = obj.dom;
               if (obj.asClass || key) {
                 obj.node.addClass('evolv-' + (obj.asClass || key));
@@ -237,9 +243,18 @@ function initializeRender(){
     var rule = {
       app: {},
       $: $,
+      $$: function(name){
+        var storeRef = store.cache[name];
+        if (!storeRef){
+          console.warn('evolv invalid item', name)
+          return new ENode();
+        }
+        return new ENode('.evolv-'+(storeRef.asClass || name));
+      },
       exp: name,
       store: store,
       when: function(trig){
+        try{
         var variant = null;
         var trackAs = null;
         var hasTriggered = false;
@@ -247,10 +262,13 @@ function initializeRender(){
         var store = this.store;
         var experimentName = this.exp
         function runVariant(dom){
+          try{
           if (!hasTriggered) return;
 
           variant(dom);
-          if (trackAs) trackAs();
+          } catch(e) {
+            console.info('evolv "then" clause failed')
+          }
         }
         trig(function (dom) {
           gdom = dom;
@@ -258,15 +276,15 @@ function initializeRender(){
           if (variant) runVariant(dom);
         });
         return {
-          then: function (fnc) {
+          thenInBulk: function (fnc) {
             variant = fnc;
-            if (hasTriggered) variant(gdom);
+            if (hasTriggered) runVariant(gdom);
           },
-          forEach: function (fnc) {
+          then: function (fnc) {
             variant = function(dom){
-              dom.el.forEach(item=> fnc($(item)));
+              gdom.el.forEach(item=> fnc($(item)));
             }
-            if (hasTriggered) variant(gdom);
+            if (hasTriggered) runVariant(gdom);
           },
           track: function (txt) {
             var trackKey = 'evolv-' + experimentName;
@@ -279,23 +297,43 @@ function initializeRender(){
             if (hasTriggered) trackAs();
           },
           reactivateOnChange(item){
-            this.then(function(obj){
+            this.thenInBulk(function(obj){
               obj.watch()
                  .then(store.reactivate.bind(store));
             })
           }
         };
+      } catch(e){
+        console.warn('evolv "when" failed')
+      }
       },
       nextIndex: 0,
       whenDOM: function(sel){
         var index = rule.nextIndex++
         return rule.when(rule.trigger(function() {
           try{
-          var attr = 'evolv-'+ rule.exp + index;
-          var results = $(sel).markOnce(attr)
-          return results.length > 0 ? results : null;
+            var attr = 'evolv-'+ rule.exp + index;
+            var results = $(sel).markOnce(attr)
+            return results.length > 0 ? results : null;
           } catch (e){ 
-            console.warn('Selector may be malformed', e)
+            console.warn('Evolv selector may be malformed for', rule.exp, sel)
+          }
+        }))
+      },
+      whenItem: function(name){
+        var index = rule.nextIndex++
+        return rule.when(rule.trigger(function() {
+          try{
+            var attr = 'evolv-'+ rule.exp + index;
+            var storeRef = store.cache[name];
+            if (!storeRef){
+              console.warn('evolv invalid item', name)
+              return null;
+            }
+            var results = $('.evolv-'+(storeRef.asClass || name)).markOnce(attr)
+            return results.length > 0 ? results : null;
+          } catch (e){ 
+            console.warn('Evolv selector may be malformed for', rule.exp, sel)
           }
         }))
       },
@@ -385,10 +423,9 @@ function initializeRender(){
             }.bind(this), 30);
           }
         }
-
-          this.intervalTimer = setInterval(process.bind(this), int);
-          $(function(){setTimeout(process.bind(this),1)})
-          setTimeout(this.clearIntervalTimer.bind(this), dur);
+        this.intervalTimer = setInterval(process.bind(this), int);
+        $(function(){setTimeout(process.bind(this),1)})
+        setTimeout(this.clearIntervalTimer.bind(this), dur);
       }
     }
 
@@ -413,6 +450,8 @@ function initializeRender(){
   return window.evolv.renderRule;
 }
 
+//initializeRender();
+
 function pageMatch(page){
   if (!page) return false;
 
@@ -429,5 +468,5 @@ function processNav(config){
 }
 
 //toggle the following comments to enable directly in experiment code
-//processNav({pages: ['.*']});
-module.exports = processNav;
+processNav({pages: ['.*']});
+//module.exports = processNav;

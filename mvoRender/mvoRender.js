@@ -1,7 +1,8 @@
+
 window.evolv = window.evolv || {} ;
 
 function initializeRender(){
- // if (window.evolv.renderRule) return window.evolv.renderRule;
+  if (window.evolv.renderRule) return window.evolv.renderRule;
 
   //debounce code
   function debounce (fn, dur) {
@@ -44,6 +45,13 @@ function initializeRender(){
     this.el = Array.prototype.slice.call(el)
     this.length = this.el.length;
   }
+  ENode.prototype.filter = function(sel){
+    var el = this.el
+    if (!sel) return this;
+    return new ENode(el.filter(function(e){
+      return e.matches(sel)
+    }))
+  }
   ENode.prototype.find = function(sel){
     var el = this.el
     return new ENode(el.map(function(e){
@@ -63,6 +71,13 @@ function initializeRender(){
         return parents.indexOf(item) == pos; 
       });
     return new ENode(parents)
+  }
+
+  ENode.prototype.children = function(sel){
+    var el = this.el
+    return new ENode(el.reduce(function(a,e){
+      return a.concat(Array.prototype.slice.call(e.children))
+    })).filter(sel)
   }
   ENode.prototype.contains = function (text) {
     var el = this.el
@@ -114,7 +129,7 @@ function initializeRender(){
   ENode.prototype.on = function(tag, fnc){
     this.el.forEach(function(e){
       tag.split(' ').forEach(function(eventTag){
-        e.addEventListener(teventTag,fnc)
+        e.addEventListener(eventTag,fnc)
       })
     });
     return this;
@@ -200,6 +215,20 @@ function initializeRender(){
     }
   });
 
+  function clearOnNav(){
+    try{
+      renderRule.sandboxes.forEach(function(sb){
+        if(sb.triggerHandler && sb.triggerHandler.clearIntervalTimer){
+          sb.triggerHandler.clearIntervalTimer();
+        }
+        renderRuleProxy[sb.exp] = null;
+      })
+    } catch(e){console.info('evolv: warning terminating for spa', e)}
+    renderRule.sandboxes = []
+  }
+  window.addEventListener('popstate', clearOnNav);
+  window.addEventListener('stateupdate_evolv', clearOnNav);
+  
   //enables creating a rule context via window.evolv.renderRule.myRule
   window.evolv.renderRule = renderRuleProxy;
 
@@ -267,7 +296,7 @@ function initializeRender(){
 
           variant(dom);
           } catch(e) {
-            console.info('evolv "then" clause failed')
+            console.info('evolv "then" clause failed',e)
           }
         }
         trig(function (dom) {
@@ -296,9 +325,9 @@ function initializeRender(){
             }
             if (hasTriggered) trackAs();
           },
-          reactivateOnChange(item){
+          reactivateOnChange: function(config){
             this.thenInBulk(function(obj){
-              obj.watch()
+              obj.watch(config)
                  .then(store.reactivate.bind(store));
             })
           }
@@ -394,7 +423,8 @@ function initializeRender(){
         this.clearIntervalTimer();
     
         function process() {
-          var items = this.triggerQueue.slice()
+          var baseItems = this.triggerQueue.slice();
+          var items = baseItems;
 
           var results;
           do {
@@ -413,8 +443,9 @@ function initializeRender(){
             })
           } while(items.length > results.length)
 
-          
-          this.triggerQueue = results;
+          this.triggerQueue = this.triggerQueue.filter(function(item){
+            return results.includes(item) || !baseItems.includes(item)
+          })
           if (results.length === 0){
             setTimeout(function(){ //give other calls a chance to join before we end this.
               if (this.triggerQueue.length !== 0) return;
@@ -468,5 +499,5 @@ function processNav(config){
 }
 
 //toggle the following comments to enable directly in experiment code
-processNav({pages: ['.*']});
-//module.exports = processNav;
+// processNav({pages: ['.*']});
+module.exports = processNav;

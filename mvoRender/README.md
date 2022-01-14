@@ -75,6 +75,71 @@ rule.app.createMainButton = function(){
 };
 ```
 
+## rule object
+
+### rule.store
+
+#### store.instrumentDOM
+
+```
+store.instrumentDOM({
+    deviceSection:{
+        get dom(){ return $('#devicesSection')}
+        // asClass is optional, the default class will match the key
+        // asClass: 'devicesSection'
+    },
+    podParent:{
+        get dom(){ return $('.evolv-devicesSection [id*=mvo_ovr_devices]').first().parent();}
+        //following line is equivilant
+        //get dom(){ return $$('devicesSection').find('[id*=mvo_ovr_devices]').first().parent();}
+    },
+});
+```
+
+### rule.whenDOM
+
+### rule.whenItem
+
+
+### rule.$
+
+
+#### filter()
+
+#### find()
+
+#### closest()
+
+#### parent()
+
+#### children()
+
+#### contains()
+
+#### addClass()
+
+#### removeClass()
+
+#### append()
+#### insertBefore()
+#### on()
+#### markOnce()
+#### text()
+#### attr()
+#### closest()
+#### each()
+#### watch()
+#### first()
+#### last()
+#### firstDom()
+#### lastDom()
+
+### rule.$$('<instrument key>')
+The $$ function for rule allows 
+    
+
+## future
+
 ## Best Practices
 This section provide a set of practices that improves the success of an Evolv experiment using this framework. Some of these practices are good things to follow regardless of which framework is being used.
 

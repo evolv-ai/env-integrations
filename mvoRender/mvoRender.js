@@ -1,8 +1,8 @@
-window.evolv = {};
 
+window.evolv = window.evolv || {} ;
 
 function initializeRender(){
-  if (window.evolv.renderRule) return;
+  if (window.evolv.renderRule) return window.evolv.renderRule;
 
   //debounce code
   function debounce (fn, dur) {
@@ -19,7 +19,9 @@ function initializeRender(){
   // dom manipulation package
   function toNodeValue(sel, context){
     context = context || document;
-    if (typeof sel === 'string'){
+    if (!sel){
+      return [];
+    } else if (typeof sel === 'string'){
       if (sel[0] === '<') {
         var div = context.createElement('div');
         div.innerHTML = sel.trim();
@@ -27,7 +29,7 @@ function initializeRender(){
       } else {
         return context.querySelectorAll(sel);
       }
-    } else if (sel.constructor === HTMLDivElement){
+    } else if (sel instanceof Element){
       return [sel]
     } else if (sel.constructor === ENode){
       return sel.el
@@ -42,6 +44,13 @@ function initializeRender(){
     var el = toNodeValue(sel, context);
     this.el = Array.prototype.slice.call(el)
     this.length = this.el.length;
+  }
+  ENode.prototype.filter = function(sel){
+    var el = this.el
+    if (!sel) return this;
+    return new ENode(el.filter(function(e){
+      return e.matches(sel)
+    }))
   }
   ENode.prototype.find = function(sel){
     var el = this.el
@@ -62,6 +71,13 @@ function initializeRender(){
         return parents.indexOf(item) == pos; 
       });
     return new ENode(parents)
+  }
+
+  ENode.prototype.children = function(sel){
+    var el = this.el
+    return new ENode(el.reduce(function(a,e){
+      return a.concat(Array.prototype.slice.call(e.children))
+    })).filter(sel)
   }
   ENode.prototype.contains = function (text) {
     var el = this.el
@@ -111,7 +127,11 @@ function initializeRender(){
     return new ENode(results)
   }
   ENode.prototype.on = function(tag, fnc){
-    this.el.forEach(function(e){e.addEventListener(tag,fnc)});
+    this.el.forEach(function(e){
+      tag.split(' ').forEach(function(eventTag){
+        e.addEventListener(eventTag,fnc)
+      })
+    });
     return this;
   }
   ENode.prototype.html = function(str){
@@ -127,11 +147,23 @@ function initializeRender(){
     return this;
   }
   ENode.prototype.attr = function(attributes){
+    if (typeof attributes === 'string'){
+      var prop = attributes;
+      return this.el.map(function(e){return e.getAttribute(prop)}).join(' ');
+    } else{
+      this.el.forEach(function(e){
+        var keys = Object.keys(attributes);
+        keys.forEach(function(key){
+            e.setAttribute(key,attributes[key])
+        });
+      })
+      return this;
+    }
+  }
+  ENode.prototype.each = function(fnc){
     this.el.forEach(function(e){
-      var keys = Object.keys(attributes);
-      keys.forEach(function(key){
-          e.setAttribute(key,attributes[key])
-      });
+      var node = new ENode(e);
+      fnc.apply(node, node)
     })
     return this;
   }
@@ -183,6 +215,20 @@ function initializeRender(){
     }
   });
 
+  function clearOnNav(){
+    try{
+      renderRule.sandboxes.forEach(function(sb){
+        if(sb.triggerHandler && sb.triggerHandler.clearIntervalTimer){
+          sb.triggerHandler.clearIntervalTimer();
+        }
+        renderRuleProxy[sb.exp] = null;
+      })
+    } catch(e){console.info('evolv: warning terminating for spa', e)}
+    renderRule.sandboxes = []
+  }
+  window.addEventListener('popstate', clearOnNav);
+  window.addEventListener('stateupdate_evolv', clearOnNav);
+  
   //enables creating a rule context via window.evolv.renderRule.myRule
   window.evolv.renderRule = renderRuleProxy;
 
@@ -197,15 +243,19 @@ function initializeRender(){
         } else {
           data = store.cache;
         }
-        var check = function(obj){
+        var check = function(obj, key){
           rule
-            .when(rule.trigger(function(){ 
-              return obj.dom.length >= (obj.count || 1)
+            .when(rule.trigger(function(){
+              try{
+                return obj.dom.length >= (obj.count || 1)
+              } catch (e){
+                console.warn('Selector may be malformed', e)
+              }
             }))
-            .then(function(){
+            .thenInBulk(function(){
               obj.node = obj.dom;
-              if (obj.asClass) {
-                obj.node.addClass('evolv-' + obj.asClass);
+              if (obj.asClass || key) {
+                obj.node.addClass('evolv-' + (obj.asClass || key));
               }
               if (obj.asAttr) {
                   var objAttr = {['evolv-' + obj.asAttr]: true };
@@ -214,7 +264,7 @@ function initializeRender(){
             })
         }
         for(var key in data){
-          check(data[key])     
+          check(data[key], key)     
         }
       }
     }
@@ -222,32 +272,107 @@ function initializeRender(){
     var rule = {
       app: {},
       $: $,
+      $$: function(name){
+        var storeRef = store.cache[name];
+        if (!storeRef){
+          console.warn('evolv invalid item', name)
+          return new ENode();
+        }
+        return new ENode('.evolv-'+(storeRef.asClass || name));
+      },
       exp: name,
       store: store,
       when: function(trig){
+        try{
         var variant = null;
+        var trackAs = null;
         var hasTriggered = false;
         var gdom = null;
+        var store = this.store;
+        var experimentName = this.exp
+        function runVariant(dom){
+          try{
+          if (!hasTriggered) return;
+
+          variant(dom);
+          } catch(e) {
+            console.info('evolv "then" clause failed',e)
+          }
+        }
         trig(function (dom) {
           gdom = dom;
           hasTriggered = true;
-          if (variant) variant(dom);
+          if (variant) runVariant(dom);
         });
         return {
-          then: function (fnc) {
+          thenInBulk: function (fnc) {
             variant = fnc;
-            if (hasTriggered) variant(gdom);
+            if (hasTriggered) runVariant(gdom);
           },
+          then: function (fnc) {
+            variant = function(dom){
+              gdom.el.forEach(item=> fnc($(item)));
+            }
+            if (hasTriggered) runVariant(gdom);
+          },
+          track: function (txt) {
+            var trackKey = 'evolv-' + experimentName;
+            trackAs = function(){
+              var node = $('html');
+              var tracking = node.attr(trackKey)
+              tracking = tracking ?(tracking + ' ' + txt) :txt
+              node.attr({[trackKey]: tracking})              
+            }
+            if (hasTriggered) trackAs();
+          },
+          reactivateOnChange: function(config){
+            this.thenInBulk(function(obj){
+              obj.watch(config)
+                 .then(store.reactivate.bind(store));
+            })
+          }
         };
+      } catch(e){
+        console.warn('evolv "when" failed')
+      }
       },
       nextIndex: 0,
       whenDOM: function(sel){
         var index = rule.nextIndex++
         return rule.when(rule.trigger(function() {
-          var attr = 'evolv-'+ rule.exp + index;
-          var results = $(sel).markOnce(attr)
-          return results.length > 0 ? results : null;
+          try{
+            var attr = 'evolv-'+ rule.exp + index;
+            var results = $(sel).markOnce(attr)
+            return results.length > 0 ? results : null;
+          } catch (e){ 
+            console.warn('Evolv selector may be malformed for', rule.exp, sel)
+          }
         }))
+      },
+      whenItem: function(name){
+        var index = rule.nextIndex++
+        return rule.when(rule.trigger(function() {
+          try{
+            var attr = 'evolv-'+ rule.exp + index;
+            var storeRef = store.cache[name];
+            if (!storeRef){
+              console.warn('evolv invalid item', name)
+              return null;
+            }
+            var results = $('.evolv-'+(storeRef.asClass || name)).markOnce(attr)
+            return results.length > 0 ? results : null;
+          } catch (e){ 
+            console.warn('Evolv selector may be malformed for', rule.exp, sel)
+          }
+        }))
+      },
+      track: function(txt){
+        var trackKey = 'evolv-' + this.exp;
+        var node = $('html');
+        var tracking = node.attr(trackKey)
+        tracking = tracking ?(tracking + ' ' + txt) :txt
+        node.attr({[trackKey]: tracking});
+        return this;             
       },
       trigger: function(selFnc){
         return this.triggerHandler.trigger(selFnc)
@@ -298,7 +423,8 @@ function initializeRender(){
         this.clearIntervalTimer();
     
         function process() {
-          var items = this.triggerQueue.slice()
+          var baseItems = this.triggerQueue.slice();
+          var items = baseItems;
 
           var results;
           do {
@@ -317,8 +443,9 @@ function initializeRender(){
             })
           } while(items.length > results.length)
 
-          
-          this.triggerQueue = results;
+          this.triggerQueue = this.triggerQueue.filter(function(item){
+            return results.includes(item) || !baseItems.includes(item)
+          })
           if (results.length === 0){
             setTimeout(function(){ //give other calls a chance to join before we end this.
               if (this.triggerQueue.length !== 0) return;
@@ -327,10 +454,9 @@ function initializeRender(){
             }.bind(this), 30);
           }
         }
-
-          this.intervalTimer = setInterval(process.bind(this), int);
-          $(function(){setTimeout(process.bind(this),1)})
-          setTimeout(this.clearIntervalTimer.bind(this), dur);
+        this.intervalTimer = setInterval(process.bind(this), int);
+        $(function(){setTimeout(process.bind(this),1)})
+        setTimeout(this.clearIntervalTimer.bind(this), dur);
       }
     }
 
@@ -352,6 +478,7 @@ function initializeRender(){
 
     return rule;
   }
+  return window.evolv.renderRule;
 }
 
 //initializeRender();
@@ -367,11 +494,10 @@ function processNav(config){
   var matches = pages.some(pageMatch);
 
   if (matches){
-    initializeRender();
+    return initializeRender();
   }
 }
 
-
 //toggle the following comments to enable directly in experiment code
-//processNav({pages: ['.*']});
+// processNav({pages: ['.*']});
 module.exports = processNav;

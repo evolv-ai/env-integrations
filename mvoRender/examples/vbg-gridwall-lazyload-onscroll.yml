@@ -1,0 +1,572 @@
+_version: "3"
+_name: VZ Gridwall
+_metadata:
+  base_url: https://www.verizon.com
+  controlsEditable: false
+  treeShakeDependencies: false
+  enableSass: false
+  dependencies: []
+  deviceSettings:
+    device:
+      show-by-default: true
+      title: Laptop with HiDPI screen
+      screen:
+        horizontal:
+          width: 1440
+          height: 900
+        device-pixel-ratio: 2
+        vertical:
+          width: 900
+          height: 1440
+      capabilities: []
+      user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36
+      type: notebook
+      modes:
+        - title: default
+          orientation: horizontal
+          insets:
+            left: 0
+            top: 0
+            right: 0
+            bottom: 0
+    orientation: horizontal
+    zoomFactor: 1
+web:
+  _metadata: {}
+  _config:
+    dependencies: ""
+  l1w5sso1m:
+    _id: l1w5sso1m
+    _display_name: Gridwall
+    _metadata:
+      page_def:
+        domain_match_type: full
+        path_match_type: simple
+        reference_urls:
+          - https://www.verizon.com/business/shop/products/devices/smartphones
+        _pattern: business/shop/products/devices/smartphones
+      script: "
+
+        /*****
+
+        \ * Context code
+
+        ****/
+
+        var rule = window.evolv.renderRule.expBP
+
+        var $ = rule.$;
+
+        var store = rule.store;
+
+
+        store.instrumentDOM({
+
+        \    gridwallWrapper: {
+
+        \        get dom() {
+
+        \            return $('#gridwallWrapper')
+
+        \        }   \ 
+
+        \    },
+
+        \    compareButton: {
+
+        \        get dom() {
+
+        \            return $('app-device-card [data-loc=\"Content:Link:addToCart\"]');
+
+        \        }   \ 
+
+        \    },
+
+        \    deviceTitle: {
+
+        \        get dom() {
+
+        \            return $(\"app-device-card .u-paddingTopSmall a > span:last-child\");
+
+        \        }
+
+        \    },
+
+        \    compare: {
+
+        \        get dom() {
+
+        \            return $('.compare-sticky');
+
+        \        }
+
+        \    },
+
+        \    footerLink: {
+
+        \        get dom() {
+
+        \            return $('.gnav20-footer-list li a');
+
+        \        }   \ 
+
+        \    },
+
+        \    preOwned: {
+
+        \        get dom() {
+
+        \            return $('.evolv-deviceTitle').contains('Pre-Owned').closest('app-device-card').parent()
+
+        \        }
+
+        \    },
+
+        \    retailPrice: {
+
+        \      get dom(){
+
+        \        return $('.device-payment-options li[analyticstrack=\"Retail Price\"]')
+
+        \      }
+
+        \    }
+
+        })
+
+
+        \   \ 
+
+        rule
+
+        \  .whenDOM('#gridwall-container')
+
+        \  .reactivateOnChange()
+
+        \   \ 
+
+        rule
+
+        \  .whenDOM('.device-gridwall-page')
+
+        \  .reactivateOnChange()
+
+
+        rule.app.replaceSpaces = function(l) {
+
+        \  l.text(l.text().replace(/\\s+/g, \"_\"))
+
+        }
+
+        \        "
+      styles: ""
+      timing: immediate
+      timingSelectors: []
+    _disable: false
+    _config:
+      _id: l1w5sso1m
+      _type: url
+      _is_entry_point: true
+      _predicate:
+        combinator: and
+        rules:
+          - field: web.url
+            operator: regex64_match
+            value: L2h0dHBzPzpcL1wvd3d3LnZlcml6b24uY29tXC9idXNpbmVzc1wvc2hvcFwvcHJvZHVjdHNcL2RldmljZXNcL3NtYXJ0cGhvbmVzXC8/KD86JHxcP3wjKS9p
+      _initializers:
+        - type: javascript
+          code: "
+
+            /*****
+
+            \ * Context code
+
+            ****/
+
+            var rule = window.evolv.renderRule.expBP
+
+            var $ = rule.$;
+
+            var store = rule.store;
+
+
+            store.instrumentDOM({
+
+            \    gridwallWrapper: {
+
+            \        get dom() {
+
+            \            return $('#gridwallWrapper')
+
+            \        }   \ 
+
+            \    },
+
+            \    compareButton: {
+
+            \        get dom() {
+
+            \            return $('app-device-card [data-loc=\"Content:Link:addToCart\"]');
+
+            \        }   \ 
+
+            \    },
+
+            \    deviceTitle: {
+
+            \        get dom() {
+
+            \            return $(\"app-device-card .u-paddingTopSmall a > span:last-child\");
+
+            \        }
+
+            \    },
+
+            \    compare: {
+
+            \        get dom() {
+
+            \            return $('.compare-sticky');
+
+            \        }
+
+            \    },
+
+            \    footerLink: {
+
+            \        get dom() {
+
+            \            return $('.gnav20-footer-list li a');
+
+            \        }   \ 
+
+            \    },
+
+            \    preOwned: {
+
+            \        get dom() {
+
+            \            return $('.evolv-deviceTitle').contains('Pre-Owned').closest('app-device-card').parent()
+
+            \        }
+
+            \    },
+
+            \    retailPrice: {
+
+            \      get dom(){
+
+            \        return $('.device-payment-options li[analyticstrack=\"Retail Price\"]')
+
+            \      }
+
+            \    }
+
+            })
+
+
+            \   \ 
+
+            rule
+
+            \  .whenDOM('#gridwall-container')
+
+            \  .reactivateOnChange()
+
+            \   \ 
+
+            rule
+
+            \  .whenDOM('.device-gridwall-page')
+
+            \  .reactivateOnChange()
+
+
+            rule.app.replaceSpaces = function(l) {
+
+            \  l.text(l.text().replace(/\\s+/g, \"_\"))
+
+            }
+
+            \        "
+          timing: immediate
+          timingSelectors: []
+    gbewoxrm2:
+      _id: gbewoxrm2
+      _display_name: "c1: Pre-owned Devices"
+      _metadata: {}
+      _disable: false
+      _values:
+        - _display_name: Noop
+          _metadata:
+            generated_control: true
+          _value:
+            id: 1lcahzbqb
+            type: compound
+            _metadata: {}
+            script: ""
+            styles: ""
+            timing: immediate
+            timingSelectors: []
+          _screenshots: []
+          _disable: false
+        - _display_name: 'v1: Hide all "pre-owned" device cards'
+          _metadata: {}
+          _value:
+            id: irdstly4d
+            type: compound
+            _metadata: {}
+            script: |-
+              window.evolv.renderRule
+                .expBP.track('1_1')
+            styles: |-
+              /*****
+               * c1v1
+              ****/
+              .evolv-preOwned {
+                display: none;
+              }
+            timing: immediate
+            timingSelectors: []
+          _screenshots: []
+          _disable: false
+        - _display_name: 'v2: Move "pre-owned" to end'
+          _metadata: {}
+          _value:
+            id: 77er8cfwe
+            type: compound
+            _metadata: {}
+            script: |-
+              window.evolv.renderRule
+                .expBP.track('1_2')
+            styles: |-
+              /***** 
+                  Move Pre-owned Devices to end of grid
+              *****/
+              .evolv-preOwned {
+                  order: 10;
+              }
+            timing: immediate
+            timingSelectors: []
+          _screenshots: []
+          _disable: false
+    fvinzg4k6:
+      _id: fvinzg4k6
+      _display_name: "c2: Device Quick View"
+      _metadata: {}
+      _disable: false
+      _values:
+        - _display_name: Noop
+          _metadata:
+            preprocessors:
+              css:
+                type: scss
+                source: ""
+                conflict: false
+            generated_control: true
+          _value:
+            id: 9l8dz697p
+            type: compound
+            _metadata: {}
+            script: ""
+            styles: ""
+            timing: immediate
+            timingSelectors: []
+          _screenshots: []
+          _disable: false
+        - _display_name: "v1: Default to Retail Price"
+          _metadata:
+            preprocessors:
+              css:
+                type: scss
+                source: ""
+                conflict: false
+          _value:
+            id: 1gi1bsso9
+            type: compound
+            _metadata: {}
+            script: |+
+              
+              var rule = window.evolv.renderRule.expBP;
+
+              rule.track('2_1')
+                  .whenItem('retailPrice')
+                  .then(priceOption => 
+                    priceOption.firstDom().click()
+                  )
+                  
+              //add an additional observer for modal change
+              rule
+                .whenDOM('.app-overlay-container')
+                .reactivateOnChange()
+                
+            styles: ""
+            timing: immediate
+            timingSelectors: []
+          _screenshots: []
+          _disable: false
+    by9dpzzml:
+      _id: by9dpzzml
+      _display_name: "c3: Device Compare Location"
+      _metadata: {}
+      _disable: false
+      _values:
+        - _display_name: Noop
+          _metadata:
+            preprocessors:
+              css:
+                type: scss
+                source: ""
+                conflict: false
+            generated_control: true
+          _value:
+            id: wdr3tq2en
+            type: compound
+            _metadata: {}
+            script: ""
+            styles: ""
+            timing: immediate
+            timingSelectors: []
+          _screenshots: []
+          _disable: false
+        - _display_name: 'v1: Sticky "Compare Device"'
+          _metadata:
+            preprocessors:
+              css:
+                type: scss
+                source: ""
+                conflict: false
+          _value:
+            id: axyyvmqyo
+            type: compound
+            _metadata: {}
+            script: |+
+              window.evolv.renderRule
+                .expBP.track('3_1')
+
+            styles: |-
+              /*****
+               * c3v1
+              ****/
+              .evolv-compare {
+                  background: white;
+                  position:sticky;
+                  top:0;
+                  z-index:99;
+              }
+              .evolv-gridwallWrapper {
+                  z-index:5;
+              }
+            timing: immediate
+            timingSelectors: []
+          _screenshots: []
+          _disable: false
+    e72v7z9h8:
+      _id: e72v7z9h8
+      _display_name: "c4: Device Compare Button"
+      _metadata: {}
+      _disable: false
+      _values:
+        - _display_name: Noop
+          _metadata:
+            preprocessors:
+              css:
+                type: scss
+                source: ""
+                conflict: false
+            generated_control: true
+          _value:
+            id: wypeldu7s
+            type: compound
+            _metadata: {}
+            script: ""
+            styles: ""
+            timing: immediate
+            timingSelectors: []
+          _screenshots: []
+          _disable: false
+        - _display_name: "v1: Red button white text"
+          _metadata:
+            preprocessors:
+              css:
+                type: scss
+                source: ""
+                conflict: false
+          _value:
+            id: np1lqz08z
+            type: compound
+            _metadata: {}
+            script: |-
+              window.evolv.renderRule
+                .expBP.track('4_1')
+            styles: |-
+              /*****
+               * c4v1
+              ****/
+              .evolv-compareButton {
+                  color: white  !important;
+                  background-color: red !important;
+                  border: 1px solid red !important;
+              }
+            timing: immediate
+            timingSelectors: []
+          _screenshots: []
+          _disable: false
+    dp4mg41v7:
+      _id: dp4mg41v7
+      _display_name: "c5: Footer Links"
+      _metadata: {}
+      _disable: false
+      _values:
+        - _display_name: Noop
+          _metadata:
+            preprocessors:
+              css:
+                type: scss
+                source: ""
+                conflict: false
+            generated_control: true
+          _value:
+            id: 4ludsu4dx
+            type: compound
+            _metadata: {}
+            script: ""
+            styles: ""
+            timing: immediate
+            timingSelectors: []
+          _screenshots: []
+          _disable: false
+        - _display_name: "v1: Replace spaces with underscores"
+          _metadata:
+            preprocessors:
+              css:
+                type: scss
+                source: ""
+                conflict: false
+          _value:
+            id: 0owg1wp22
+            type: compound
+            _metadata: {}
+            script: |+
+              /*****
+               * c5v1
+              ****/
+              var rule = window.evolv.renderRule.expBP
+              var $ = rule.$;
+
+              rule
+                  .track('5_1')
+                  .whenItem('footerLink')
+                  .then(rule.app.replaceSpaces)
+                  
+
+            styles: ""
+            timing: immediate
+            timingSelectors: []
+          _screenshots: []
+          _disable: false
+  _combination_previews:
+    - uri: evolv-web://view/{account_id}/{metamodel_id}/{metamodel_version}?project_name={project_name}&combination={combination}
+      display_name: Preview in Web Editor
+    - uri: https://www.verizon.com/business/shop/products/devices/smartphones#evolvCandidateToken={candidate_token}
+      display_name: Preview in Browser

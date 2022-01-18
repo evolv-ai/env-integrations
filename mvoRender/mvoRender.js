@@ -200,11 +200,14 @@ function initializeRender(){
     return new ENode(sel);
   }
 
+  var lastSandboxTime = new Date().getTime();
+
   //var renderRule = {};
   var renderRule = initializeExperimentRule('general');
   renderRule.sandboxes = []
   let renderRuleProxy = new Proxy(renderRule, {
     get(target, name, receiver) {
+        lastSandboxTime = new Date().getTime();
         let rv = Reflect.get(target, name, receiver);
         if (!rv) {
             target[name] = initializeExperimentRule(name); 
@@ -216,6 +219,7 @@ function initializeRender(){
   });
 
   function clearOnNav(){
+    if (lastSandboxTime < (new Date.getTime() - 200)) return; //make sure exp is not active
     try{
       renderRule.sandboxes.forEach(function(sb){
         if(sb.triggerHandler && sb.triggerHandler.clearIntervalTimer){
@@ -318,7 +322,7 @@ function initializeRender(){
           track: function (txt) {
             var trackKey = 'evolv-' + experimentName;
             trackAs = function(){
-              var node = $('html');
+              var node = $('body');
               var tracking = node.attr(trackKey)
               tracking = tracking ?(tracking + ' ' + txt) :txt
               node.attr({[trackKey]: tracking})              
@@ -368,7 +372,7 @@ function initializeRender(){
       },
       track: function(txt){
         var trackKey = 'evolv-' + this.exp;
-        var node = $('html');
+        var node = $('body');
         var tracking = node.attr(trackKey)
         tracking = tracking ?(tracking + ' ' + txt) :txt
         node.attr({[trackKey]: tracking});
@@ -499,5 +503,5 @@ function processNav(config){
 }
 
 //toggle the following comments to enable directly in experiment code
-// processNav({pages: ['.*']});
+//processNav({pages: ['.*']});
 module.exports = processNav;

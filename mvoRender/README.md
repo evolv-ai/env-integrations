@@ -1,4 +1,5 @@
-# mvoRender
+
+# Catalyst
 
 An Evolv **Env Integration** to support the renderRule framework. This framework makes 
 
@@ -64,6 +65,12 @@ rule.app.createMainButton = function(){
 };
 ```
 
+whenItem('.evolv-buttonParent')
+whenItem(store.buttonParent)
+
+rule.subscribe(store.buttonParent)
+
+
 Or to specific function that span variants
 
 ```
@@ -74,6 +81,9 @@ rule.app.createMainButton = function(){
       buttonParent.append(...)
 };
 ```
+
+## Modes
+
 
 ## rule object
 
@@ -96,9 +106,16 @@ store.instrumentDOM({
 });
 ```
 
-### rule.whenDOM
 
-### rule.whenItem
+### rule.whenDOM(<selector>)
+
+
+### rule.whenItem(<instrumention key>)
+    
+    
+rule.whenDom('.evolv-DeviceSection')
+
+
 
 
 ### rule.$

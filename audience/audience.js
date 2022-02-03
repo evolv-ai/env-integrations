@@ -147,7 +147,7 @@ function initConfig(){
   var qaAudienceEnabled = window.localStorage.getItem('evolv:qa_audience_enabled')
 
   return {
-    distribution: distribution,
+    distribution: parseInt(distribution),
     qaAudienceEnabled: qaAudienceEnabled
   }
 };
@@ -177,14 +177,14 @@ var Spa = {
         refreshAudience();
     }
     
-    console.info('finishing spa update', this.recheckQueue, priorAudience, audience)
+    //console.info('finishing spa update', this.recheckQueue, priorAudience, audience)
 
     if (this.recheckQueue.length === 0){
       this.terminateRecheck();
     }
   },
   terminateRecheck: function(){
-      console.info('recheck is ended', this.recheckQueue)
+    console.info('recheck is ended', this.recheckQueue)
     clearInterval(this.recheckInterval);
     this.recheckInterval = 0;
   },
@@ -235,23 +235,31 @@ function addAudience(topKey, key, obj){
     }
 
     if (!obj.poll){
-      bindAudienceValue('')
+      bindAudienceValue(obj.default || '')
       return;
     }
     var pollingCount = 0;
+    var foundValue = false;
     var poll = setInterval(function(){
       try{
         var val = getValue(obj);
         pollingCount++;
         
         if (val){
-          bindAudienceValue(val, pollingCount);
+          foundValue = true;
+          bindAudienceValue(val);
           refreshAudience();
           clearInterval(poll);
         }
       } catch(e){console.info('audience not processed', obj);}
     }, obj.poll.interval || 50)
-    setTimeout(function(){ clearInterval(poll)}, obj.poll.duration || 250);
+    setTimeout(function(){ 
+      clearInterval(poll)
+      if (!foundValue && obj.default){
+        bindAudienceValue(obj.default || '');
+        refreshAudience();
+      }
+    },obj.poll.duration || 250);
   } catch(e){
     console.warn('Unable to add audience for', topKey, key, obj, e);
   }

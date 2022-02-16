@@ -214,22 +214,33 @@ function initializeRender(){
             rv = Reflect.get(target, name, receiver)
             renderRule.sandboxes.push(rv)
         }
+        rv.lastAccessTime = new Date().getTime();
         return rv;
     }
   });
 
+  const spaCleanupThreshold = 500;
+  function isFreshAccess(sb){
+    return (sb.lastAccessTime + spaCleanupThreshold) > new Date().getTime();
+
+  }
+  
   function clearOnNav(){
-    if (lastSandboxTime < (new Date.getTime() - 200)) return; //make sure exp is not active
-    try{
-      renderRule.sandboxes.forEach(function(sb){
+    var activeSandboxes = [];
+    try{  
+      activeSandboxes = renderRule.sandboxes.filter(function(sb){
+        if (isFreshAccess(sb)) return true;
+
         if(sb.triggerHandler && sb.triggerHandler.clearIntervalTimer){
           sb.triggerHandler.clearIntervalTimer();
         }
         renderRuleProxy[sb.exp] = null;
       })
     } catch(e){console.info('evolv: warning terminating for spa', e)}
-    renderRule.sandboxes = []
+    console.info('evolv active sandboxes after spa', activeSandboxes);
+    renderRule.sandboxes = activeSandboxes;
   }
+  
   window.addEventListener('popstate', clearOnNav);
   window.addEventListener('stateupdate_evolv', clearOnNav);
   

@@ -151,7 +151,32 @@ buttonParent:{
 Variant level coding
 
 ```
-rule.app.createMainButton = function(){
+/**************
+	Web Editor 
+	Context JS Panel code:
+***************/
+var rule = window.evolv.renderRule.visble_homepage_1
+var store = rule.store;
+var $ = rule.$;
+var $$ = rule.$$;
+
+store.instrumentDOM({
+	deviceTile:{
+			get dom() {
+					return $('.device-tile, .byod-device-tile');
+			}
+	},
+	podParent:{
+			get dom() {
+					return $('.evolv-deviceTile [id*=mvo_ovr_devices]').first().parent();
+			}
+	},
+	buttonParent:{
+			get dom(){return $('button.addALine)').parent();},
+			asClass: 'my-unique-button-class' // optional. 
+	}
+});
+
 rule
 		.whenDOM('.evolv-deviceTile')
 		.then(function(el) {
@@ -169,6 +194,13 @@ rule
 				
 		})
 };
+
+/**************
+	Web Editor JS Panel code:
+***************/
+
+
+
 ```
 
 whenItem('.evolv-buttonParent')

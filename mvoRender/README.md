@@ -161,46 +161,72 @@ var $ = rule.$;
 var $$ = rule.$$;
 
 store.instrumentDOM({
-	deviceTile:{
+	formInput: {
 			get dom() {
-					return $('.device-tile, .byod-device-tile');
+					return $('form fieldset input');
 			}
 	},
-	podParent:{
+	formLabel: {
 			get dom() {
-					return $('.evolv-deviceTile [id*=mvo_ovr_devices]').first().parent();
+					return $('form fieldset label');
 			}
-	},
-	buttonParent:{
-			get dom(){return $('button.addALine)').parent();},
-			asClass: 'my-unique-button-class' // optional. 
 	}
 });
 
 rule
-		.whenDOM('.evolv-deviceTile')
+		.whenDOM('.evolv-formInput')
 		.then(function(el) {
-				// Here we're using the framework's `attr` method.
-				el.attr({"style": "width: 100%"});
-				// Hey Richard, can we return just the element rather than an array?
-				var deviceTile = el.firstDom();
-				deviceTile.style.width = "100%";
+			var inputEl = el.firstDom();
+			var labelEl = inputEl.previousElementSibling;
+			el.attr({"placeholder": labelEl.textContent});
 		});
 
+// Alternatively...
+
 rule
-		// Here we can reference the key name directly using `whenItem`
-		.whenItem("deviceTile")
-		.then( function() {
-				
-		})
-};
+	// use whenItem to refernce the property name that was instrumented
+		.whenItem('formInput')
+		.then(function(el) {
+			var inputEl = el.firstDom();
+			var labelEl = inputEl.previousElementSibling;
+			el.attr({"placeholder": labelEl.textContent});
+		});
 
 /**************
-	Web Editor JS Panel code:
+	Web Editor 
+	Context SASS Panel code:
+***************/
+.evolv- {
+	label {
+		display: none
+	}
+}
+
+/**************
+	Target Page (DOM)
 ***************/
 
-
-
+<main>
+	<form>
+		<fieldset>
+			<legend>User Info</legend>
+			<ul>
+				<li>
+					<label for="firstName">First Name</label>
+					<input type="text" id="firstName" name="firstName" />
+				</li>
+				<li>
+					<label for="lastName">Last Name</label>
+					<input type="text" id="lastName" name="lastName" />
+				</li>
+				<li>
+					<label for="telNumber">Tel Number</label>
+					<input type="tel" id="telNumber" name="telNumber" />
+				</li>
+			</ul>
+			</fieldset>
+	</form>
+</main>
 ```
 
 whenItem('.evolv-buttonParent')

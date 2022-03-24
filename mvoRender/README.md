@@ -152,57 +152,6 @@ Variant level coding
 
 ```
 /**************
-	Web Editor 
-	Context JS Panel code:
-***************/
-var rule = window.evolv.renderRule.visble_homepage_1
-var store = rule.store;
-var $ = rule.$;
-var $$ = rule.$$;
-
-store.instrumentDOM({
-	formInput: {
-			get dom() {
-					return $('form fieldset input');
-			}
-	},
-	formLabel: {
-			get dom() {
-					return $('form fieldset label');
-			}
-	}
-});
-
-rule
-		.whenDOM('.evolv-formInput')
-		.then(function(el) {
-			var inputEl = el.firstDom();
-			var labelEl = inputEl.previousElementSibling;
-			el.attr({"placeholder": labelEl.textContent});
-		});
-
-// Alternatively...
-
-rule
-	// use whenItem to refernce the property name that was instrumented
-		.whenItem('formInput')
-		.then(function(el) {
-			var inputEl = el.firstDom();
-			var labelEl = inputEl.previousElementSibling;
-			el.attr({"placeholder": labelEl.textContent});
-		});
-
-/**************
-	Web Editor 
-	Context SASS Panel code:
-***************/
-.evolv- {
-	label {
-		display: none
-	}
-}
-
-/**************
 	Target Page (DOM)
 ***************/
 
@@ -227,6 +176,57 @@ rule
 			</fieldset>
 	</form>
 </main>
+
+/**************
+	Web Editor 
+	Context JS Panel code:
+***************/
+var rule = window.evolv.renderRule.visble_homepage_1
+var store = rule.store;
+var $ = rule.$;
+var $$ = rule.$$;
+
+store.instrumentDOM({
+	formInput: {
+			get dom() {
+					return $('form fieldset input');
+			}
+	},
+	formLabel: {
+			get dom() {
+					return $('form fieldset label');
+			}
+	}
+});
+
+rule
+		.whenDOM('.evolv-formInput')
+		.then(el => {
+			var inputEl = el.firstDom();
+			var labelEl = inputEl.previousElementSibling;
+			el.attr({"placeholder": labelEl.textContent});
+		});
+
+// Alternatively...
+
+rule
+	// use whenItem to reference the property name that was instrumented
+		.whenItem('formInput')
+		.then(el => {
+			var inputEl = el.firstDom();
+			var labelEl = inputEl.previousElementSibling;
+			el.attr({"placeholder": labelEl.textContent});
+		});
+
+/**************
+	Web Editor 
+	Context SASS Panel code:
+***************/
+.evolv- {
+	label {
+		display: none
+	}
+}
 ```
 
 whenItem('.evolv-buttonParent')

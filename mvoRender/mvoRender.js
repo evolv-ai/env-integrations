@@ -105,10 +105,20 @@ function initializeRender(){
 
     return this;
   }
+
+  ENode.prototype.prepend = function(item){
+    var node = this.el[0];
+    if (!node) return;
+
+    var items = toNodeValue(item)
+    items.forEach(function(e){node.prepend(e);});
+
+    return this;
+  }
   ENode.prototype.insertBefore = function(item){
     var node = this.el[0];
     if (!node) {
-      console.info('no content for insert') 
+      console.info('no content for insert');
       return this;
     }
     if (typeof item === 'string'){
@@ -117,6 +127,20 @@ function initializeRender(){
       item = item.el[0]
     }
     item.parentNode.insertBefore(node, item);
+    return this;
+  }
+  ENode.prototype.insertAfter = function(item){
+    var node = this.el[0];
+    if (!node) {
+      console.info('no content for insert');
+      return this;
+    }
+    if (typeof item === 'string'){
+      item = document.querySelectorAll(item);
+    } else if (item.constructor === ENode){
+      item = item.el[0]
+    }
+    item.parentNode.insertBefore(node, item.nextSibling);
     return this;
   }
   ENode.prototype.markOnce = function(attr){
@@ -221,8 +245,8 @@ function initializeRender(){
 
   const spaCleanupThreshold = 500;
   function isFreshAccess(sb){
+    if (sb.isActive) return sb.isActive();
     return (sb.lastAccessTime + spaCleanupThreshold) > new Date().getTime();
-
   }
   
   function clearOnNav(){

@@ -105,10 +105,20 @@ function initializeRender(){
 
     return this;
   }
+
+  ENode.prototype.prepend = function(item){
+    var node = this.el[0];
+    if (!node) return;
+
+    var items = toNodeValue(item)
+    items.forEach(function(e){node.prepend(e);});
+
+    return this;
+  }
   ENode.prototype.insertBefore = function(item){
     var node = this.el[0];
     if (!node) {
-      console.info('no content for insert') 
+      console.info('no content for insert');
       return this;
     }
     if (typeof item === 'string'){
@@ -117,6 +127,20 @@ function initializeRender(){
       item = item.el[0]
     }
     item.parentNode.insertBefore(node, item);
+    return this;
+  }
+  ENode.prototype.insertAfter = function(item){
+    var node = this.el[0];
+    if (!node) {
+      console.info('no content for insert');
+      return this;
+    }
+    if (typeof item === 'string'){
+      item = document.querySelectorAll(item);
+    } else if (item.constructor === ENode){
+      item = item.el[0]
+    }
+    item.parentNode.insertBefore(node, item.nextSibling);
     return this;
   }
   ENode.prototype.markOnce = function(attr){
@@ -214,22 +238,33 @@ function initializeRender(){
             rv = Reflect.get(target, name, receiver)
             renderRule.sandboxes.push(rv)
         }
+        rv.lastAccessTime = new Date().getTime();
         return rv;
     }
   });
 
+  const spaCleanupThreshold = 500;
+  function isFreshAccess(sb){
+    if (sb.isActive) return sb.isActive();
+    return (sb.lastAccessTime + spaCleanupThreshold) > new Date().getTime();
+  }
+  
   function clearOnNav(){
-    if (lastSandboxTime < (new Date.getTime() - 200)) return; //make sure exp is not active
-    try{
-      renderRule.sandboxes.forEach(function(sb){
+    var activeSandboxes = [];
+    try{  
+      activeSandboxes = renderRule.sandboxes.filter(function(sb){
+        if (isFreshAccess(sb)) return true;
+
         if(sb.triggerHandler && sb.triggerHandler.clearIntervalTimer){
           sb.triggerHandler.clearIntervalTimer();
         }
         renderRuleProxy[sb.exp] = null;
       })
     } catch(e){console.info('evolv: warning terminating for spa', e)}
-    renderRule.sandboxes = []
+    console.info('evolv active sandboxes after spa', activeSandboxes);
+    renderRule.sandboxes = activeSandboxes;
   }
+  
   window.addEventListener('popstate', clearOnNav);
   window.addEventListener('stateupdate_evolv', clearOnNav);
   

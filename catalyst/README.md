@@ -14,7 +14,7 @@ The goals for this framework are to provide the following:
 7. Simplify things like Mutation Observer..
 
 ## Installation
-Add the integration connector https://gist.github.com/rcowin/296f5ae45187ffdb74f47e8c4901189e.
+Add the npm integration connector `@evolv-delivery/catalyst`.
 
 ### Setup
 Add the following json config at environment level to enable the framework across a site

@@ -1,0 +1,23 @@
+{
+  "name": "@evolv-delivery/emitter",
+  "version": "0.1.0",
+  "description": "Provides mechanism to generate events outside of an experiment",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "render"
+  ],
+  "author": "richardcowin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evolv-ai/env-integrations.git"
+  },
+  "homepage": "https://github.com/evolv-ai/env-integrations/emitter",
+  "bugs": {
+    "url": "https://github.com/evolv-ai/env-integrations/issues"
+  },
+  "license": "ISC"
+
+}

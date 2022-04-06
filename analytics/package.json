@@ -1,0 +1,24 @@
+{
+  "name": "@evolv-delivery/analytics",
+  "version": "0.1.1",
+  "description": "Captures and processes evolv events with a set of configurable steps",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "analytics",
+    "dsl"
+  ],
+  "author": "richardcowin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evolv-ai/env-integrations.git"
+  },
+  "homepage": "https://github.com/evolv-ai/env-integrations/analytics",
+  "bugs": {
+    "url": "https://github.com/evolv-ai/env-integrations/issues"
+  },
+  "license": "ISC"
+
+}

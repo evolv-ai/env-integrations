@@ -1,24 +1,24 @@
 {
-  "name": "@evolv-delivery/audience",
-  "version": "0.2.1",
-  "description": "Allows audience filters to be populated from datalayer, cookie, fetch and dom ",
+  "name": "@evolv-delivery/emitter",
+  "version": "0.1.1",
+  "description": "Provides mechanism to generate events outside of an experiment",
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "audience",
-    "context",
-    "DSL"
+    "events",
+    "conversions"
   ],
   "author": "richardcowin",
   "repository": {
     "type": "git",
     "url": "https://github.com/evolv-ai/env-integrations.git"
   },
-  "homepage": "https://github.com/evolv-ai/env-integrations/audience",
+  "homepage": "https://github.com/evolv-ai/env-integrations/emitter",
   "bugs": {
     "url": "https://github.com/evolv-ai/env-integrations/issues"
   },
   "license": "ISC"
+
 }

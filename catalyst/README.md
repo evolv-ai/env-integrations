@@ -14,7 +14,7 @@ The goals for this framework are to provide the following:
 7. Simplify things like Mutation Observer..
 
 ## Installation
-Add the integration connector https://gist.github.com/rcowin/296f5ae45187ffdb74f47e8c4901189e.
+Add the npm integration connector `@evolv-delivery/catalyst`.
 
 ### Setup
 Add the following json config at environment level to enable the framework across a site
@@ -29,87 +29,6 @@ Add the following json config at environment level to enable the framework acros
 ## Usage
 Once the integration is configured, you can setup some context js 
 
-### Methods
-The methods below are mostly analagous to their JavaScript or jQuery counterparts.
-
-#### filter()
-The `filter()` method creates a new array with all elements that pass the test implemented by the provided function.
-```
-var words = ['spray', 'limit', 'elite', 'exuberant', 'destruction', 'present'];
-var result = $(words).filter((idx, word) => word.length > 6);
-console.log(result);
-// expected output: Array ["exuberant", "destruction", "present"]
-```
-
-#### find()
-The `find()` method returns the all elements that match the specified child selector.
-```
-<ul id="sidebar">
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-</ul>
-$("#sidebar").find("li");
-// expected output: array of 5 <li> elements.
-```
-
-#### closest()
-The `closest()` method returns the parent element that matches the specified selector.
-```
-<ul id="sidebar">
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-</ul>
-$("li").closest("#sidebar");
-// expected output: array with single <ul> element.
-```
-
-#### parent()
-The `parent()` method returns the parent element of the specified selector.
-```
-<ul id="sidebar">
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-</ul>
-$("li").parent();
-// expected output: array with single <ul> element.
-```
-
-#### children()
-The `children()` method returns the child elements of the specified selector.
-```
-<ul id="sidebar">
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-</ul>
-$("ul").children();
-// expected output: array with all <li> elements.
-```
-
-#### contains()
-The `contains()` method returns a selector of the specified selector.
-```
-<ul id="sidebar">
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-<li>Lorum ipsum</li>
-</ul>
-$("ul").children();
-// expected output: array with all <li> elements.
-```
 
 
 ## Example
@@ -283,24 +202,92 @@ rule.whenDom('.evolv-DeviceSection')
 
 
 ### rule.$
+The methods below are mostly analagous to their JavaScript or jQuery counterparts.
 
 
 #### filter()
+The `filter()` method creates a new array with all elements that pass the test implemented by the provided function.
+```
+var words = ['spray', 'limit', 'elite', 'exuberant', 'destruction', 'present'];
+var result = $(words).filter((idx, word) => word.length > 6);
+console.log(result);
+// expected output: Array ["exuberant", "destruction", "present"]
+```
 
 #### find()
+The `find()` method returns the all elements that match the specified child selector.
+```
+<ul id="sidebar">
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+</ul>
+$("#sidebar").find("li");
+// expected output: array of 5 <li> elements.
+```
 
 #### closest()
+The `closest()` method returns the parent element that matches the specified selector.
+```
+<ul id="sidebar">
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+</ul>
+$("li").closest("#sidebar");
+// expected output: array with single <ul> element.
+```
 
 #### parent()
+The `parent()` method returns the parent element of the specified selector.
+```
+<ul id="sidebar">
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+</ul>
+$("li").parent();
+// expected output: array with single <ul> element.
+```
 
 #### children()
+The `children()` method returns the child elements of the specified selector.
+```
+<ul id="sidebar">
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+</ul>
+$("ul").children();
+// expected output: array with all <li> elements.
+```
 
 #### contains()
+The `contains()` method returns a selector of the specified selector.
+```
+<ul id="sidebar">
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+<li>Lorum ipsum</li>
+</ul>
+$("ul").children();
+// expected output: array with all <li> elements.
+```
 
+
+#### closest()
 #### addClass()
-
 #### removeClass()
-
 #### append()
 #### insertBefore()
 #### on()

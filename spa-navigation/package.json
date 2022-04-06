@@ -1,13 +1,15 @@
 {
   "name": "@evolv-delivery/spa-navigation",
-  "version": "0.1.0",
-  "description": "Provides spa events to reapply filters forevolv experiments",
+  "version": "0.1.1",
+  "description": "Provides spa events to reapply filters for evolv experiments",
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "render"
+    "SPA",
+    "pushState",
+    "popState"
   ],
   "author": "richardcowin",
   "repository": {
@@ -19,5 +21,4 @@
     "url": "https://github.com/evolv-ai/env-integrations/issues"
   },
   "license": "ISC"
-
 }

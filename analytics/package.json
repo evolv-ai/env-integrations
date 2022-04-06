@@ -1,13 +1,14 @@
 {
   "name": "@evolv-delivery/analytics",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Captures and processes evolv events with a set of configurable steps",
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "render"
+    "analytics",
+    "dsl"
   ],
   "author": "richardcowin",
   "repository": {

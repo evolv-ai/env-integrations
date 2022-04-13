@@ -1,7 +1,8 @@
-import {EventContext} from './eventContext.js'
-import {sendAllocations} from './allocations.js'
-import {runStatement, getExpression, tokenizeExp} from './statement.js'
-import {waitFor} from './waitFor.js'
+import {EventContext} from './eventContext.js';
+import {sendAllocations} from './allocations.js';
+import {runStatement, getExpression, tokenizeExp} from './statement.js';
+import {extendEvent, deferredExtendEvent} from './extenders/index.js';
+import {waitFor} from './waitFor.js';
 
 function listenToEvents(config){
   var poll = config.poll || {duration: 2000, interval:50};
@@ -53,9 +54,11 @@ function processStatements(pageConfig, eventType, evolvEvent){
     } catch(e){console.info('statement failed',e)}
   }
         
-  //process(mapPlugin(pageConfig, evolvEvent));
-  // mapPluginDeferred(pageConfig, evolvEvent)
-  //   .then(event => process(event))
+  process(extendEvent(pageConfig, evolvEvent));
+  deferredExtendEvent(pageConfig, evolvEvent)
+    .then(event =>{
+      if (event) process(event)
+    });
 }
 
 function areStatementsReady(config){

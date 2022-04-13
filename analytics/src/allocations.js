@@ -23,6 +23,6 @@ export function sendAllocations(eventType, emit, sentEventAllocations) {
         emit(eventType, findAllocation(cid))
         sentAllocations[cid] = true;
       }
-    } catch(e){console.info('Evolv: Analytics not sent');}
+    } catch(e){console.info('Evolv: Analytics not sent', e);}
   }
 }

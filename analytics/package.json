@@ -1,6 +1,6 @@
 {
   "name": "@evolv-delivery/analytics",
-  "version": "0.2",
+  "version": "0.3.0",
   "description": "Captures and processes evolv events with a set of configurable steps",
   "main": "dist/index.js",
   "scripts": {
@@ -20,6 +20,8 @@
   "bugs": {
     "url": "https://github.com/evolv-ai/env-integrations/issues"
   },
-  "license": "ISC"
-
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-json": "^4.1.0"
+  }
 }

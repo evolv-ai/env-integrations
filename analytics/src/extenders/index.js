@@ -20,7 +20,7 @@ export function deferredExtendEvent(config, event){
   return Promise.all(promises)
    .then(values=> (
      ( values.length > 0 )
-     ? values.filter().reduce((a,e)=> ({...a, ...e}), event)
+     ? values.filter(a=>a).reduce((a,e)=> ({...a, ...e}), event)
      : null
    ))
 }

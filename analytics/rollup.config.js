@@ -1,4 +1,4 @@
-// import copy from 'rollup-plugin-copy'
+import json from '@rollup/plugin-json'
 
 
 function buildFile(src){
@@ -17,6 +17,7 @@ function buildFile(src){
         file: `./dist/testConfig.js`,
       },
       plugins: [
+        json()
       ]
     },
   ]

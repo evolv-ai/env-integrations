@@ -1,9 +1,10 @@
 {
   "name": "@evolv-delivery/analytics",
-  "version": "0.1.1",
+  "version": "0.3.0",
   "description": "Captures and processes evolv events with a set of configurable steps",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
+    "build": "rollup --config rollup.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -19,6 +20,8 @@
   "bugs": {
     "url": "https://github.com/evolv-ai/env-integrations/issues"
   },
-  "license": "ISC"
-
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-json": "^4.1.0"
+  }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@evolv-delivery/emitter",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Provides mechanism to generate events outside of an experiment",
   "main": "src/index.js",
   "scripts": {

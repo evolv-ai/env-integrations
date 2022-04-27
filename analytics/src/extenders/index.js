@@ -1,17 +1,24 @@
-import {activeCombinations, deferredActiveCombinations} from './activeCombinations.js'
+import {deferredActiveCombinations} from './activeCombinations.js'
 
 
 const ExtenderPlugins = {
   activeCombinations: {
-    extend: activeCombinations,
+    // extend: activeCombinations,
     deferredExtend: deferredActiveCombinations
   }
 }
 
-export function extendEvent(config, event){
-  return getExtenders(config)
-    .reduce((a,e)=> ({...a, ...(e.extend?.(event) || {})}), event)
+export function hasExtentions(config, event){
+  var extenders = getExtenders(config);
+  return extenders?.length > 0
 }
+
+// export function extendEvent(config, event){
+//   var extenders = getExtenders(config);
+//   return (extenders.length > 0)
+//          ? null
+//          : event;
+// }
 
 export function deferredExtendEvent(config, event){
   var promises = getExtenders(config)

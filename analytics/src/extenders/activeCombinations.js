@@ -2,40 +2,46 @@
 
 export function activeCombinations(event){  
   var eid = event.eid;
-  var combinations = getStoredCombinations(eid) || [];
+  var combinations = getStoredCombinations(eid);
 
-  return extendEvent(event, combinations);
+  return (combinations.length >0)
+         ? extendEvent(event, combinations)
+         : {};
 }
 
-var hasFetchedResults = false;
+var events = [];
 
 export function deferredActiveCombinations(event){
   var env = window.evolv.client.environment;
   var eid = event.eid;
   var combinations = getStoredCombinations(eid);
-  if (hasFetchedResults || combinations) return null; //no deferred processing
+  if (combinations){
+    return new Promise((resolve, reject) => resolve(extendEvent(event, combinations)));
+  } else {
+    return fetchActiveExperiments(env)
+      .then(experiments=>extendEvent(event, getActiveCombinationIds(eid, experiments)))
+  }
+}
 
-  return fetchActiveExperiments(env)
-    .then(experiments=>{
-      try{
-        var activeEids = experiments.map(e=>e.id);
-        var currentExperiment = experiments.find(e=>e.id === eid);
-        var activeCombinationIds = currentExperiment?._candidates.map(c=>c?.ordinal);
-        hasFetchedResults = true;
+function getActiveCombinationIds(eid, experiments){
+  try{
+    var activeEids = experiments.map(e=>e.id);
+    var currentExperiment = experiments.find(e=>e.id === eid);
+    var activeCombinationIds = currentExperiment?._candidates.map(c=>c?.ordinal);
 
-        cleanupStoredCombinations(activeEids);
-        setStoredCombinations(eid, activeCombinationIds);
-        return activeCombinations(event);
-      } catch(e){
-        console.info('evolv: failed to retrieve active combinations', e);
-        return null;
-      }
-    })  
+    cleanupStoredCombinations(activeEids);
+    setStoredCombinations(eid, activeCombinationIds);
+    return activeCombinationIds;
+  } catch(e){
+    console.info('evolv: failed to retrieve active combinations', e);
+    return null;
+  }
 }
 
 function extendEvent(event, activeCombinations){
   //validate
   var isControl = event.ordinal === Math.min.apply(null, activeCombinations);
+  
   return {
     activeCombinations: isControl ? activeCombinations.join('|') : '',
     controlTag: isControl ? '(Control)' : ''
@@ -45,10 +51,14 @@ function extendEvent(event, activeCombinations){
 const CombinationKey = 'evolv:active-combinations';
 const BaseUrl = 'https://participants.evolv.ai/v1/'
 
+var fetchPromise = null;
 function fetchActiveExperiments(env){
-  return fetch(BaseUrl + env)
-    .then(response=> response.json())
-    .then(data=> data._experiments);
+  if (!fetchPromise){
+    fetchPromise = fetch(BaseUrl + env)
+      .then(response=> response.json())
+      .then(data=> data._experiments)
+  }
+  return fetchPromise;
 }
 
 function getStore(){

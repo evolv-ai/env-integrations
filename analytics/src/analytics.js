@@ -1,7 +1,7 @@
 import {EventContext} from './eventContext.js';
 import {sendAllocations} from './allocations.js';
 import {runStatement, getExpression, tokenizeExp} from './statement.js';
-import {extendEvent, deferredExtendEvent} from './extenders/index.js';
+import {hasExtentions, deferredExtendEvent} from './extenders/index.js';
 import {waitFor} from './waitFor.js';
 
 function listenToEvents(config){
@@ -54,11 +54,14 @@ function processStatements(pageConfig, eventType, evolvEvent){
     } catch(e){console.info('statement failed',e)}
   }
         
-  process(extendEvent(pageConfig, evolvEvent));
-  deferredExtendEvent(pageConfig, evolvEvent)
-    .then(event =>{
-      if (event) process(event)
-    });
+  if (!hasExtentions(pageConfig, evolvEvent)){
+    process(evolvEvent);
+  } else {
+    deferredExtendEvent(pageConfig, evolvEvent)
+      .then(event =>{
+        if (event) process(event)
+      });
+  }
 }
 
 function areStatementsReady(config){

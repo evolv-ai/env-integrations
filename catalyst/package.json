@@ -24,6 +24,12 @@
   },
   "license": "ISC",
   "devDependencies": {
-    "@rollup/plugin-json": "^4.1.0"
+    "@rollup/plugin-json": "^4.1.0",
+    "cypress-iframe": "^1.0.1",
+    "cypress-rollup-preprocessor": "^0.6.2",
+    "rollup": "^2.71.1"
+  },
+  "dependencies": {
+    "cypress": "^9.6.0"
   }
 }

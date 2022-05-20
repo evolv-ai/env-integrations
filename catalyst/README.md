@@ -6,64 +6,63 @@ An Evolv **Env Integration** to support the renderRule framework. This framework
 ## Goals
 The goals for this framework are to provide the following:
 1. Group all brittle site selectors in one place. This makes it easy to find the selectors that are based on customer's DOM that may be volatile. 
-2. Handle idemponency.
+2. Handle idempotency.
 3. Easly identify which parts of the page are experimented on. This could support tooling, support, and debugging.
-4. Experiment specific setTimeout and setInterval calls. These are impacted by spa page navigation. Ideally these would be wrapped in APIs that handl navigation automatically. 
+4. Experiment specific setTimeout and setInterval calls. These are affected by spa page navigation. Ideally these would be wrapped in APIs that handle navigation automatically. 
 5. Simplify coding and support declaritive where possible.
-6. Allow simple experiments to remain simple and support more complex tests (model view rendering)
-7. Simplify things like Mutation Observer..
+6. Allow simple experiments to remain simple and support more complex tests (model view rendering).
+7. Simplify things like Mutation Observer.
 
 ## Installation
 Add the npm integration connector `@evolv-delivery/catalyst`.
 
 ### Setup
-Add the following json config at environment level to enable the framework across a site
+Add the following json config at environment level to enable the framework across a site.
 ```
 {
-"pages": [
+	"pages": [
 		"/"
-]
+	]
 }
 ```
 
 ## Usage
-Once the integration is configured, you can setup some context js 
-
-
+Once the integration is configured, you can setup some context js.
 
 ## Example
 
 ### Context level coding
 
-
 ```
 // This is where you intialize the `rule` sandbox. Note the sandbox name appended at the end of the `renderRule`
 var rule = window.evolv.renderRule.my_sandbox_1;
-// Getting a reference to the store.  ToDo: describe the store
+// Getting a reference to the store.  TODO: describe the store
 var store = rule.store;
-// ToDo: perhaps rename so it doesn't collide or is confused with jQuery.
+// TODO: perhaps rename so it doesn't collide or is confused with jQuery.
 var $ = rule.$;
 
 /*
-instrumentDOM defines classes to keys. Those classes are then added to the one or more elements returned by the selectors. 
+instrumentDOM defines classes as keys. Those classes are then added to the one or more elements returned by the selectors. 
 By default, instrumentDOM prefixes the classname with `evolv-` and uses the property name as the suffix to the class.
 Each element is also tagged with a unique attribute to handle idenpotency (prevent an element from being manipulated more than once).
 */
 store.instrumentDOM({
-deviceTile:{
+	deviceTile:{
 		get dom() {
 				return $('.device-tile, .byod-device-tile');
 		}
-},
-podParent:{
+	},
+	podParent:{
 		get dom() {
 				return $('.evolv-deviceTile [id*=mvo_ovr_devices]').first().parent();
 		}
-},
-buttonParent:{
-		get dom(){return $('button.addALine)').parent();},
+	},
+	buttonParent:{
+		get dom() {
+			return $('button.addALine)').parent();
+		},
 		asClass: 'my-unique-button-class' // optional. 
-}
+	}
 });
 ```
 
@@ -106,14 +105,21 @@ var $ = rule.$;
 var $$ = rule.$$;
 
 store.instrumentDOM({
+	form: {
+			get dom() {
+				return $('form');
+			}
+	},
 	formInput: {
 			get dom() {
-					return $('form fieldset input');
+				// $$ returns the selector based on property name
+				return $$('form').find('fieldset input');
 			}
 	},
 	formLabel: {
 			get dom() {
-					return $('form fieldset label');
+				// $$ returns the selector based on property name
+				return $$('form').find('fieldset label');
 			}
 	}
 });
@@ -194,7 +200,7 @@ store.instrumentDOM({
 
 
 ### rule.whenItem(<instrumention key>)
-    
+
     
 rule.whenDom('.evolv-DeviceSection')
 

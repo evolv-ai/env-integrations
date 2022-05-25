@@ -42,9 +42,9 @@ Once the integration is configured, you can setup context javascript.
 ```js
 // This is where you intialize the `rule` sandbox. Note the sandbox name appended at the end of the `renderRule`
 var rule = window.evolv.renderRule.my_sandbox_1;
-// Getting a reference to the store. This is where shared variables related to the current render is stored.
+// Getting a reference to the store. This is where shared variables related to the current render are stored.
 var store = rule.store;
-// rename so it doesn't collide or is confused with jQuery. This is a basic selector function for catalyst.
+// Rename so it doesn't collide or is confused with jQuery. This is a basic selector function for catalyst.
 var $ = rule.$;
 
 /*
@@ -67,17 +67,16 @@ store.instrumentDOM({
     get dom(){ 
       return $('button.addALine)').parent(); 
     },
-    asClass: 'my-unique-button-class' // optional. 
+    asClass: 'my-unique-button-class' // optional and will completely replace the current class
   }
 });
 ```
 
-Variant level coding
+### Variant level coding
+
+#### Target Page (DOM)
 
 ```js
-/**************
-  Target Page (DOM)
-***************/
 
 <main>
   <form>
@@ -100,11 +99,13 @@ Variant level coding
       </fieldset>
   </form>
 </main>
+```
 
-/**************
-  Web Editor 
-  Context JS Panel code:
-***************/
+### Web Editor
+
+#### Context JS Panel code
+
+```js
 var rule = window.evolv.renderRule.visble_homepage_1
 var store = rule.store;
 var $ = rule.$;
@@ -141,11 +142,13 @@ rule
     var labelEl = inputEl.previousElementSibling;
     el.attr({"placeholder": labelEl.textContent});
   });
+```
 
-/**************
-  Web Editor 
-  Context SASS Panel code:
-***************/
+### Web Editor
+
+#### Context SASS Panel code
+
+```sass
 .evolv- {
   label {
     display: none
@@ -153,12 +156,7 @@ rule
 }
 ```
 
-whenItem('.evolv-buttonParent')
-whenItem(store.buttonParent)
-
-rule.subscribe(store.buttonParent)
-
-Or to specific function that span variants
+You can use `whenItem('buttonParent')`, `whenItem(store.buttonParent)`, or `rule.subscribe(store.buttonParent)` to select specific elements of a page for manipulation like in CSS/SASS or jQuery. One more similar option utilizes `whenDOM('.evolv-buttonParent')`
 
 ```js
 rule.app.createMainButton = function(){
@@ -170,13 +168,11 @@ rule.app.createMainButton = function(){
 };
 ```
 
-## Modes
-
 ## rule object
 
 ### rule.store
 
-#### store.instrumentDOM
+#### store.instrumentDOM()
 
 ```js
 store.instrumentDOM({
@@ -361,7 +357,7 @@ $("ul").removeClass("evolv-sidebar");
 The `append()` method attaches input selectors as children at the end of the specified selector.
 
 ```html
-<ul id="sidebar" >
+<ul id="sidebar">
   <li>Lorum ipsum</li>
   <li>Lorum ipsum</li>
   <li>Lorum ipsum</li>
@@ -457,7 +453,7 @@ $(elem).attr({"aria-label": "Pre-order"});
 This is loop iteration function that requires a callback input function.
 
 ```html
-<ul id="sidebar" >
+<ul id="sidebar">
   <li>First</li>
   <li>Second</li>
   <li>Third</li>
@@ -484,7 +480,7 @@ This function will wait for changes on the specified selector before executing t
 ```
 
 ```js
-$('#sidebar').watch( () =>{
+$('#sidebar').watch(() =>{
   $("li").each( elem => {
     elem.text("test");
   }

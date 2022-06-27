@@ -210,14 +210,27 @@ The "whenItem" method will wait for the specified instrument key to be created o
 The methods below are mostly analagous to their JavaScript or jQuery counterparts. However, this will return a Catalyst wrapped specified selector object.
 
 #### filter()
+<<<<<<< HEAD
+=======
+The `filter()` method creates a new array containing all of the elements that match the provided selector. Internally it uses the Array.prototype.matches() method to evaluate the elements.
 
-The `filter()` method creates a new array with all elements that pass the test implemented by the provided function.
+```html
+<h2 class="heading heading-1">Heading 1</h2>
+<h2 class="heading heading-2">Heading 2</h2>
+<h2 class="heading heading-3">Heading 3</h2>
+```
 
 ```js
-var words = ['spray', 'limit', 'elite', 'exuberant', 'destruction', 'present'];
-var result = $(words).filter((idx, word) => word.length > 6);
-console.log(result);
-// expected output: Array ["exuberant", "destruction", "present"]
+var rule = window.evolv.renderRule;
+$ = rule.$;
+
+rule.store.instrumentDOM({
+	headingsExceptHeadingThree:
+		get dom() {
+			return $('.heading').filter(':not(.heading-3)');
+		}
+});
+>>>>>>> 6289e8a (Fix and update Filter definition)
 ```
 
 #### find()

@@ -47,6 +47,10 @@ describe('My First Test', () => {
         cy.get('.evolv-bottomContainerSectionH2_third').contains('Headline 3');
     });
 
+    it('Confirm .parent() works', () => {
+        cy.get(".evolv-jumbotronH1Parent").should("exist");
+    });
+
     // it('Confirm "reactivateOnChange" works', () => {
         
     // });
@@ -83,9 +87,10 @@ describe('My First Test', () => {
     // Helper functions
     ///////////////////
 
-    // it('Confirm ".filter()" works', () => {
-        
-    // });
+    it('Confirm ".filter()" works', () => {
+        cy.get('.evolv-bottomContainerSection_filtered').should('exist');
+        cy.get('.evolv-bottomContainerSection_filtered').should('have.length', 2);
+    });
 
     // it('Confirm ".contains()" works', () => {
         
@@ -99,9 +104,7 @@ describe('My First Test', () => {
         
     // });
 
-    // it('Confirm ".parent()" works', () => {
-        
-    // });
+    
     
     // it('Confirm ".children()" works', () => {
         

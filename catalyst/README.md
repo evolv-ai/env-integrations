@@ -210,8 +210,7 @@ The "whenItem" method will wait for the specified instrument key to be created o
 The methods below are mostly analagous to their JavaScript or jQuery counterparts. However, this will return a Catalyst wrapped specified selector object.
 
 #### filter()
-<<<<<<< HEAD
-=======
+
 The `filter()` method creates a new array containing all of the elements that match the provided selector. Internally it uses the Array.prototype.matches() method to evaluate the elements.
 
 ```html
@@ -221,16 +220,9 @@ The `filter()` method creates a new array containing all of the elements that ma
 ```
 
 ```js
-var rule = window.evolv.renderRule;
-$ = rule.$;
+$('.heading').filter(':not(.heading-3)');
 
-rule.store.instrumentDOM({
-	headingsExceptHeadingThree:
-		get dom() {
-			return $('.heading').filter(':not(.heading-3)');
-		}
-});
->>>>>>> 6289e8a (Fix and update Filter definition)
+// expected output: array containing [ h2.heading-1, h2.heading-2 ] 
 ```
 
 #### find()
@@ -310,21 +302,17 @@ $("ul").children();
 
 #### contains()
 
-The `contains()` method returns a selector of the specified selector.
+The `contains()` method returns the elements in an array that contain the specified string. The method is case sensitive.
 
 ```html
-<ul id="sidebar">
-  <li>Lorum ipsum</li>
-  <li>Lorum ipsum</li>
-  <li>Lorum ipsum</li>
-  <li>Lorum ipsum</li>
-  <li>Lorum ipsum</li>
-</ul>
+<button id="learn-more">Learn more</button>
+<button id="checkout">Checkout</button>
 ```
 
 ```js
-$("ul").children();
-// expected output: array with all <li> elements.
+$("button").contains('Checkout');
+
+// expected output: array containing [ button#checkout ]
 ```
 
 #### addClass()
@@ -481,6 +469,9 @@ $("li").each( elem => {
 ```
 
 #### watch()
+
+<!-- watch needs info about what configuration can be passed into it -->
+<!-- watch needs working example -->
 
 This function will wait for changes on the specified selector before executing the callback input function.
 

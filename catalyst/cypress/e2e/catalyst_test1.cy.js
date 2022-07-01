@@ -47,7 +47,7 @@ describe('My First Test', () => {
         cy.get('.evolv-bottomContainerSectionH2_third').contains('Headline 3');
     });
 
-    it('Confirm .parent() works', () => {
+    it('Confirm ".parent()" works', () => {
         cy.get(".evolv-jumbotronH1Parent").should("exist");
     });
 
@@ -88,125 +88,131 @@ describe('My First Test', () => {
     ///////////////////
 
     it('Confirm ".filter()" works', () => {
-        cy.get('.evolv-bottomContainerSection_filtered').should('exist');
-        cy.get('.evolv-bottomContainerSection_filtered').should('have.length', 2);
+        cy.get('.evolv-bottomContainerSection_filtered').should('exist').should('have.length', 2);
     });
 
-    // it('Confirm ".contains()" works', () => {
-        
-    // });
+    it('Confirm ".contains()" works', () => {
+        cy.get('.evolv-containsCheckout').should('exist').contains('Checkout');
+    });
     
-    // it('Confirm ".find()" works', () => {
-        
-    // });
+    it('Confirm ".find()" works', () => {
+        cy.get('.evolv-findSecondDetailsButton').should('exist').contains('View details');
+    });
 
-    // it('Confirm ".closest()" works', () => {
-        
-    // });
+    it('Confirm ".closest()" works', () => {
+        cy.get('.evolv-closestRow').should('exist').should('have.class', 'row');
+    });
 
-    
-    
     // it('Confirm ".children()" works', () => {
-        
+    //     cy.get('.evolv-rowChildren').should('exist').should('have.length', 2);
     // });
-
 
     // it('Confirm ".next()" works', () => {
-        
+    //     cy.get('.evolv-nextSection').should('exist').should('have.length', 1).contains('Heading 2');
     // });
 
-    // it('Confirm ".prev()" works', () => {
-        
+    // it('Confirm ".prev()" works when', () => {
+    //     cy.get('.evolv-prevSection').should('exist').should('have.length', 1).contains('Heading 1');
     // });
 
-    // it('Confirm ".addClass()" works', () => {
-        
-    // });
+    it('Confirm ".addClass()" works', () => {
+        cy.get('h1').should('have.class', 'evolv-mainHeading');
+    });
 
-    // it('Confirm ".removeClass()" works', () => {
-        
-    // });
+    it('Confirm ".removeClass()" works', () => {
+        cy.get('footer > p').should('exist').should('not.have.class', 'copyright');
+    });
 
-    // it('Confirm ".append()" works', () => {
-        
-    // });
+    it('Confirm ".append()" works', () => {
+        cy.get('.footer-append').should('exist').contains('Testing by Charles Robertson');
+    });
 
-    // it('Confirm ".prepend()" works', () => {
-        
-    // });
+    it('Confirm ".prepend()" works', () => {
+        cy.get('.footer-prepend').should('exist').contains('Additional info:');
+    });
 
     // it('Confirm ".beforeMe()" works', () => {
-        
+    //     cy.get()
     // });
 
     // it('Confirm ".afterMe()" works', () => {
         
     // });
 
-
     // it('Confirm ".insertBefore()" works', () => {
-        
+    //     cy.get('.content-end').should('exist').contains('End')
     // });
 
     
     // it('Confirm ".insertAfter()" works', () => {
-        
+    //     cy.get('.sub-footer').should('exist').contains('below');
     // });
 
     
     // it('Confirm ".wrap()" works', () => {
-        
+    //     cy.get('.number-gallery-wrap').should('exist').children().first().should('have.class','number-gallery');
     // });
 
     
     // it('Confirm ".wrapAll()" works', () => {
-        
+    //     cy.get('.number-gallery-inner').should('exist').children().should('have.length', 6);
     // });
+    
+    it('Confirm ".markOnce()" works', () => {
+        cy.get('.number-gallery-item[marked="true"]').should('exist').should('have.length', 3);    
+    });
+    
+    it('Confirm ".on()" works', () => {
+        cy.get('h1').click().should('have.attr', 'evolv-click');
+    });
+    
+    it('Confirm ".html()" works when passed a string', () => {
+        cy.get('.html-test-string-heading').should('exist').contains('New Section');
+    });
 
+    it('Confirm ".html()" works for outputting a string', () => {
+        cy.get('.number-gallery-markup').should('exist').contains('<div class="number-gallery-item">1</div>');
+    });
     
-    // it('Confirm ".markOnce()" works', () => {
-        
-    // });
+    it('Confirm ".text()" works when passed a string', () => {
+        cy.get('.text-output').contains('This is a template');
+    });
+
+    it('Confirm ".text()" works for outputting a string', () => {
+        cy.get('.number-gallery-item:nth-child(6)').contains('six');
+    });
     
-    // it('Confirm ".on()" works', () => {
-        
-    // });
-    
-    // it('Confirm ".html()" works', () => {
-        
-    // });
-    
-    // it('Confirm ".text()" works', () => {
-        
-    // });
-    
-    // it('Confirm ".attr()" works', () => {
-        
-    // });
+    it('Confirm ".attr()" works when passed a string', () => {
+        cy.get('.attr-output').contains('test');
+    });
+
+    it('Confirm ".attr()" works for outputting a string', () => {
+        cy.get('.number-gallery').invoke('attr', 'evolv-count').should('eq', '6');
+    });
     
     // it('Confirm ".each()" works', () => {
         
     // });
     
-    // it('Confirm ".watch()" works', () => {
-        
-    // });
+    it('Confirm ".watch()" works', () => {
+        cy.get('.number-gallery-item:nth-child(7)').should('exist').should('have.css', 'background-color').should('eq', 'rgb(78, 132, 138)');
+    });
     
-    // it('Confirm ".firstDom()" works', () => {
-        
-    // });
+    it('Confirm ".firstDom()" works', () => {
+        cy.get('.number-gallery-item:first-child').should('have.css', 'background-color').should('eq', 'rgb(183, 63, 63)');
+    });
 
-    // it('Confirm ".lastDom()" works', () => {
-        
-    // });
+    it('Confirm ".lastDom()" works', () => {
+        cy.get('.number-gallery-item:nth-child(6)').should('have.css', 'background-color').should('eq', 'rgb(183, 63, 63)');
+    });
 
-    // it('Confirm ".first()" works', () => {
-        
-    // });
+    it('Confirm ".first()" works', () => {
+        cy.get('.number-gallery-item:first-child').should('have.css', 'font-weight').should('eq', '700');
+    });
 
-    // it('Confirm ".last()" works', () => {
-        
-    // });
+    it('Confirm ".last()" works', () => {
+        cy.get('.number-gallery-item:nth-child(6)').should('have.css', 'font-weight').should('eq', '700');
+    });
 
     // it('Confirm "validator.lengthGreatherThan" works', () => {
         

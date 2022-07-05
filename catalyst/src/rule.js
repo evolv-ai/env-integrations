@@ -1,6 +1,6 @@
 
 export function initializeRule($){
-  return {
+  var rule = {
     when: function(predicate){
       try {
         var trig = this.trigger(predicate);
@@ -77,4 +77,5 @@ export function initializeRule($){
       })
     }
   };
+  return rule;
 }

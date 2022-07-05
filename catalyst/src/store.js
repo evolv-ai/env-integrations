@@ -2,6 +2,8 @@
 export function initializeStore(rule){
   return {
     instrumentDOM: function(data){
+      var store = rule.store
+
       if (data){
         store.cache = Object.assign(store.cache || {}, data || {});
       } else {

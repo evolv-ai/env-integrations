@@ -2,7 +2,7 @@ describe('My First Test', () => {
 
     before(function () {
         cy.visit('https://lb8n9.csb.app/');
-        cy.get('script[src="https://media.evolv.ai/asset-manager/releases/latest/webloader.js"]').should('exist');
+        // cy.get('script[src="https://media.evolv.ai/asset-manager/releases/latest/webloader.js"]').should('exist');
         cy.wait(2000);
     });
 
@@ -55,9 +55,9 @@ describe('My First Test', () => {
         
     // });
 
-    // it('Confirm "rule.reactive" works', () => {
-        
-    // });
+    it('Confirm "rule.reactivate" works', () => {
+        cy.wait(500).get('[class^="evolv-"]').should('have.length', 5);
+    });
 
     // it('Confirm "store.reactive" works', () => {
         
@@ -103,17 +103,17 @@ describe('My First Test', () => {
         cy.get('.evolv-closestRow').should('exist').should('have.class', 'row');
     });
 
-    // it('Confirm ".children()" works', () => {
-    //     cy.get('.evolv-rowChildren').should('exist').should('have.length', 2);
-    // });
+    it('Confirm ".children()" works', () => {
+        cy.get('.evolv-rowChildrenNotFirst').should('exist').should('have.length', 2);
+    });
 
-    // it('Confirm ".next()" works', () => {
-    //     cy.get('.evolv-nextSection').should('exist').should('have.length', 1).contains('Heading 2');
-    // });
+    it('Confirm ".next()" works', () => {
+        cy.get('.evolv-nextSection').should('exist').should('have.length', 1).contains('Headline 2');
+    });
 
-    // it('Confirm ".prev()" works when', () => {
-    //     cy.get('.evolv-prevSection').should('exist').should('have.length', 1).contains('Heading 1');
-    // });
+    it('Confirm ".prev()" works when', () => {
+        cy.get('.evolv-prevSection').should('exist').should('have.length', 1).contains('Headline 1');
+    });
 
     it('Confirm ".addClass()" works', () => {
         cy.get('h1').should('have.class', 'evolv-mainHeading');
@@ -131,32 +131,29 @@ describe('My First Test', () => {
         cy.get('.footer-prepend').should('exist').contains('Additional info:');
     });
 
-    // it('Confirm ".beforeMe()" works', () => {
-    //     cy.get()
-    // });
+    it('Confirm ".beforeMe()" works', () => {
+        cy.get('.number-gallery-title').should('exist').contains('Number Gallery');
+    });
 
-    // it('Confirm ".afterMe()" works', () => {
-        
-    // });
+    it('Confirm ".afterMe()" works', () => {
+        cy.get('.section-nonexistant').should('exist').contains('but it does');
+    });
 
-    // it('Confirm ".insertBefore()" works', () => {
-    //     cy.get('.content-end').should('exist').contains('End')
-    // });
+    it('Confirm ".insertBefore()" works', () => {
+        cy.get('.content-end').should('exist').contains('End')
+    });
 
+    it('Confirm ".insertAfter()" works', () => {
+        cy.get('.sub-footer').should('exist').contains('below');
+    });
+
+    it('Confirm ".wrap()" works', () => {
+        cy.get('.number-gallery-wrap').should('exist').children().first().should('have.class','number-gallery');
+    });
     
-    // it('Confirm ".insertAfter()" works', () => {
-    //     cy.get('.sub-footer').should('exist').contains('below');
-    // });
-
-    
-    // it('Confirm ".wrap()" works', () => {
-    //     cy.get('.number-gallery-wrap').should('exist').children().first().should('have.class','number-gallery');
-    // });
-
-    
-    // it('Confirm ".wrapAll()" works', () => {
-    //     cy.get('.number-gallery-inner').should('exist').children().should('have.length', 6);
-    // });
+    it('Confirm ".wrapAll()" works', () => {
+        cy.get('.number-gallery-inner').should('exist').children().first('have.class', 'number-gallery-item');
+    });
     
     it('Confirm ".markOnce()" works', () => {
         cy.get('.number-gallery-item[marked="true"]').should('exist').should('have.length', 3);    
@@ -182,17 +179,17 @@ describe('My First Test', () => {
         cy.get('.number-gallery-item:nth-child(6)').contains('six');
     });
     
-    it('Confirm ".attr()" works when passed a string', () => {
+    it('Confirm ".attr()" works when getting an attribute', () => {
         cy.get('.attr-output').contains('test');
     });
 
-    it('Confirm ".attr()" works for outputting a string', () => {
-        cy.get('.number-gallery').invoke('attr', 'evolv-count').should('eq', '6');
+    it('Confirm ".attr()" works for setting an attribute', () => {
+        cy.get('.number-gallery').should('have.attr', 'evolv-count', '6');
     });
     
-    // it('Confirm ".each()" works', () => {
-        
-    // });
+    it('Confirm ".each()" works', () => {
+        cy.get('.number-gallery-item').first().contains('*');
+    });
     
     it('Confirm ".watch()" works', () => {
         cy.get('.number-gallery-item:nth-child(7)').should('exist').should('have.css', 'background-color').should('eq', 'rgb(78, 132, 138)');

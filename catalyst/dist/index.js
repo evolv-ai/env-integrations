@@ -65,7 +65,6 @@ ENode.prototype.parent = function(){
 };
 ENode.prototype.children = function(sel){
   var el = this.el;
-  console.log(el);
   return new ENode(el.reduce(function(a,b){
     return a.concat(Array.prototype.slice.call(b.children))
   }, [])).filter(sel);

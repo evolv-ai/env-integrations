@@ -283,6 +283,8 @@ $("li").parent();
 ```
 
 #### children()
+<!-- add bit about passing a selector to -->
+
 The `children()` method returns the child elements of the specified selector.
 
 ```html

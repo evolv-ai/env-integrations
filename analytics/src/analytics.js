@@ -43,6 +43,10 @@ function findMatchingConfig(configs){
 }
 
 function processStatements(pageConfig, eventType, evolvEvent){
+  if (pageConfig.blacklist && pageConfig.blacklist.includes(evolvEvent.group_id)){
+    return;
+  }
+
   function process(event){
     var statements = pageConfig.statements;
     var eventContext = new EventContext(event);

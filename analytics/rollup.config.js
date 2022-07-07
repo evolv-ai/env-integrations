@@ -20,6 +20,15 @@ function buildFile(src){
         json()
       ]
     },
+    {
+      input: `./test/harness.js`,
+      output: {
+        file: `./dist/harness.js`,
+      },
+      plugins: [
+        json()
+      ]
+    },
   ]
 }
 

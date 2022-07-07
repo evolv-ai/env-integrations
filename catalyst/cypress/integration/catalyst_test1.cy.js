@@ -51,14 +51,6 @@ describe('My First Test', () => {
         cy.get(".evolv-jumbotronH1Parent").should("exist");
     });
 
-    // it('Confirm "reactivateOnChange" works', () => {
-        
-    // });
-
-    it('Confirm "rule.reactivate" works', () => {
-        cy.wait(500).get('[class^="evolv-"]').should('have.length', 5);
-    });
-
     // it('Confirm "store.reactive" works', () => {
         
     // });
@@ -209,6 +201,10 @@ describe('My First Test', () => {
 
     it('Confirm ".last()" works', () => {
         cy.get('.number-gallery-item:nth-child(6)').should('have.css', 'font-weight').should('eq', '700');
+    });
+
+    it('Confirm "rule.reactivate" works', () => {
+        cy.wait(1500).get('[class*="evolv-"]').should('have.length', 22);
     });
 
     // it('Confirm "validator.lengthGreatherThan" works', () => {

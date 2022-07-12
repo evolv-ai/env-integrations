@@ -3,6 +3,11 @@
   "version": "0.6.0",
   "description": "Provides mechanism to generate events outside of an experiment",
   "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "rollup --config rollup.config.js",
     "watch": "rollup --config rollup.config.js --watch",

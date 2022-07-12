@@ -204,9 +204,16 @@ describe('My First Test', () => {
     });
 
     it('Confirm "rule.reactivate" works', () => {
-        cy.wait(1500).get('[class*="evolv-"]').should('have.length', 22);
+        cy.wait(1500).get('[class*="evolv-"]').should('have.length', 23);
     });
 
+    if('Confirm "rule.reactivateOnChange" works', () => {
+        const tabs = cy.get('.tab-header .tab');
+        tabs[1].click();
+        cy.get('.tab-panel-2 h3').should('have.class', 'evolv-tabPanelHeading');
+        tabs[0].click();
+        cy.get('.tab-panel-1 h3').should('have.class', 'evolv-tabPanelHeading');
+    });
     // it('Confirm "validator.lengthGreatherThan" works', () => {
         
     // });

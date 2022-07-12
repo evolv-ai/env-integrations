@@ -33,7 +33,7 @@ export function processConfig(config){
 
   addSpaListener(()=>{
     removeAllListeners();
-    processPages(pages);
+    // processPages(pages);
   })
 }
 

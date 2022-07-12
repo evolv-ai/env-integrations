@@ -3,11 +3,10 @@
   "version": "0.5.0",
   "description": "Provides mechanism to generate events outside of an experiment",
   "main": "dist/index.js",
-
   "scripts": {
     "build": "rollup --config rollup.config.js",
     "watch": "rollup --config rollup.config.js --watch",
-    "dev": "pushd dist; python -m SimpleHTTPServer 8000; popd",
+    "dev": "pushd dist; python3 -m http.server 8000; popd",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -25,6 +24,7 @@
   },
   "license": "ISC",
   "devDependencies": {
-    "jest": "^28.1.0"
+    "jest": "^28.1.0",
+    "@rollup/plugin-json": "^4.1.0"
   }
 }

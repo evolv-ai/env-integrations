@@ -15,6 +15,7 @@ function buildFile(src){
       input: `./test/harness.js`,
       output: {
         file: `./dist/harness.js`,
+        format: 'iife'
       },
       plugins: [
         json()

@@ -1,9 +1,17 @@
 {
   "name": "@evolv-delivery/emitter",
-  "version": "0.2.0",
+  "version": "0.6.0",
   "description": "Provides mechanism to generate events outside of an experiment",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
+    "build": "rollup --config rollup.config.js",
+    "watch": "rollup --config rollup.config.js --watch",
+    "dev": "pushd dist; python3 -m http.server 8000; popd",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -19,6 +27,9 @@
   "bugs": {
     "url": "https://github.com/evolv-ai/env-integrations/issues"
   },
-  "license": "ISC"
-
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^28.1.0",
+    "@rollup/plugin-json": "^4.1.0"
+  }
 }

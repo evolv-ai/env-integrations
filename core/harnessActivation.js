@@ -18,7 +18,7 @@ function waitFor(check, invoke, poll){
         clearInterval(polling);
         polling = null;
       }
-    } catch(e){console.info('listener not processed')}
+    } catch(e){console.info('listener not processed', e)}
   }, poll.interval)
   setTimeout(function(){ 
       if (!polling) return

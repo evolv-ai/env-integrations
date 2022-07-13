@@ -12,9 +12,9 @@ function buildFile(src){
       ]
     },
     {
-      input: `./test/testConfig.js`,
+      input: `./test/harness.js`,
       output: {
-        file: `./dist/testConfig.js`,
+        file: `./dist/harness.js`,
       },
       plugins: [
         json()

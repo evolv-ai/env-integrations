@@ -1,5 +1,4 @@
 
-import {getExpression} from '../../core/src/expression.js'
 import {debounce} from '../../core/debounce.js'
 
 function checkFilterRule(filter){

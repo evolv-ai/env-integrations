@@ -211,13 +211,18 @@ The methods below are mostly analagous to their JavaScript or jQuery counterpart
 
 #### filter()
 
-The `filter()` method creates a new array with all elements that pass the test implemented by the provided function.
+The `filter()` method creates a new array containing all of the elements that match the provided selector. Internally it uses the Array.prototype.matches() method to evaluate the elements.
+
+```html
+<h2 class="heading heading-1">Heading 1</h2>
+<h2 class="heading heading-2">Heading 2</h2>
+<h2 class="heading heading-3">Heading 3</h2>
+```
 
 ```js
-var words = ['spray', 'limit', 'elite', 'exuberant', 'destruction', 'present'];
-var result = $(words).filter((idx, word) => word.length > 6);
-console.log(result);
-// expected output: Array ["exuberant", "destruction", "present"]
+$('.heading').filter(':not(.heading-3)');
+
+// expected output: array containing [ h2.heading-1, h2.heading-2 ] 
 ```
 
 #### find()
@@ -278,6 +283,8 @@ $("li").parent();
 ```
 
 #### children()
+<!-- add bit about passing a selector to -->
+
 The `children()` method returns the child elements of the specified selector.
 
 ```html
@@ -297,21 +304,17 @@ $("ul").children();
 
 #### contains()
 
-The `contains()` method returns a selector of the specified selector.
+The `contains()` method returns the elements in an array that contain the specified string. The method is case sensitive.
 
 ```html
-<ul id="sidebar">
-  <li>Lorum ipsum</li>
-  <li>Lorum ipsum</li>
-  <li>Lorum ipsum</li>
-  <li>Lorum ipsum</li>
-  <li>Lorum ipsum</li>
-</ul>
+<button id="learn-more">Learn more</button>
+<button id="checkout">Checkout</button>
 ```
 
 ```js
-$("ul").children();
-// expected output: array with all <li> elements.
+$("button").contains('Checkout');
+
+// expected output: array containing [ button#checkout ]
 ```
 
 #### addClass()
@@ -468,6 +471,9 @@ $("li").each( elem => {
 ```
 
 #### watch()
+
+<!-- watch needs info about what configuration can be passed into it -->
+<!-- watch needs working example -->
 
 This function will wait for changes on the specified selector before executing the callback input function.
 

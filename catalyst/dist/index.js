@@ -65,15 +65,17 @@ ENode.prototype.parent = function(){
 };
 ENode.prototype.children = function(sel){
   var el = this.el;
-  return new ENode(el.reduce(function(a,e){
-    return a.concat(Array.prototype.slice.call(e.children))
-  })).filter(sel)
+  return new ENode(el.reduce(function(a,b){
+    return a.concat(Array.prototype.slice.call(b.children))
+  }, [])).filter(sel);
 };
 ENode.prototype.next = function(){
-  return new ENode(this.el.map(function(e){ return e.nextSibling}))
+  return new ENode(this.el.map(function(e){ 
+    return e.nextElementSibling
+  }));
 };
 ENode.prototype.prev = function(){
-  return new ENode(this.el.map(function(e){ return e.prevSibling}))
+  return new ENode(this.el.map(function(e){ return e.previousElementSibling}));
 };
 
 //manipulating class
@@ -166,7 +168,7 @@ ENode.prototype.wrapAll = function(item){
   while (wrapper.children.length) {
     wrapper = wrapper.firstElementChild;
   }
-  var innerItem = $(wrapper);
+  var innerItem = new ENode(wrapper);
 
   this.first().beforeMe(item);
   innerItem.append(this);
@@ -224,7 +226,7 @@ ENode.prototype.attr = function(attributes){
 ENode.prototype.each = function(fnc){
   this.el.forEach(function(e){
     var node = new ENode(e);
-    fnc.apply(node, node);
+    fnc.apply(null, [node]);
   });
   return this;
 };
@@ -274,7 +276,7 @@ const validator = {
 };
 
 function initializeRule($){
-  return {
+  var rule = {
     when: function(predicate){
       try {
         var trig = this.trigger(predicate);
@@ -343,19 +345,22 @@ function initializeRule($){
             console.warn('evolv invalid item', name);
             return null;
           }
-          var results = $('.evolv-'+(storeRef.asClass || name)).markOnce(attr);
+          var results = $('.evolv-' + (storeRef.asClass || name)).markOnce(attr);
           return results.length > 0 ? results : null;
         } catch (e){ 
-          console.warn('Evolv selector may be malformed for', exp, sel);
+          console.warn('Evolv instrument key may be malformed for', exp, name);
         }
       })
     }
   };
+  return rule;
 }
 
 function initializeStore(rule){
   return {
     instrumentDOM: function(data){
+      var store = rule.store;
+
       if (data){
         store.cache = Object.assign(store.cache || {}, data || {});
       } else {
@@ -462,13 +467,13 @@ function initializeIntervalHandler() {
   };
 }
 
-var $$1 = function(sel){
+var $ = function(sel){
   return new ENode(sel);
 };
 
 function initializeSandbox(name){
   var sandbox;
-  var rule = initializeRule($$1);
+  var rule = initializeRule($);
   var store = initializeStore(rule);
 
   sandbox = rule;
@@ -488,7 +493,7 @@ function initializeSandbox(name){
     return this.triggerHandler.reactivate()
   };
 
-  sandbox.$ = $$1;
+  sandbox.$ = $;
   sandbox.$$ = function(name){
     var storeRef = store.cache[name];
     if (!storeRef){
@@ -500,7 +505,7 @@ function initializeSandbox(name){
 
   sandbox.track = function(txt){
     var trackKey = 'evolv-' + this.exp;
-    var node = $$1('body');
+    var node = $('body');
     var tracking = node.attr(trackKey);
     tracking = tracking ?(tracking + ' ' + txt) :txt;
     node.attr({[trackKey]: tracking});

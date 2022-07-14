@@ -69,10 +69,10 @@ export function initializeRule($){
             console.warn('evolv invalid item', name);
             return null;
           }
-          var results = $('.evolv-'+(storeRef.asClass || name)).markOnce(attr);
+          var results = $('.evolv-' + (storeRef.asClass || name)).markOnce(attr);
           return results.length > 0 ? results : null;
         } catch (e){ 
-          console.warn('Evolv selector may be malformed for', exp, name);
+          console.warn('Evolv instrument key may be malformed for', exp, name);
         }
       })
     }

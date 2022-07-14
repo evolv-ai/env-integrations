@@ -66,15 +66,17 @@ ENode.prototype.parent = function(){
 };
 ENode.prototype.children = function(sel){
   var el = this.el;
-  return new ENode(el.reduce(function(a,e){
-    return a.concat(Array.prototype.slice.call(e.children))
-  })).filter(sel)
+  return new ENode(el.reduce(function(a,b){
+    return a.concat(Array.prototype.slice.call(b.children))
+  }, [])).filter(sel);
 };
 ENode.prototype.next = function(){
-  return new ENode(this.el.map(function(e){ return e.nextSibling}))
+  return new ENode(this.el.map(function(e){ 
+    return e.nextElementSibling
+  }));
 };
 ENode.prototype.prev = function(){
-  return new ENode(this.el.map(function(e){ return e.prevSibling}))
+  return new ENode(this.el.map(function(e){ return e.previousElementSibling}));
 };
 
 //manipulating class
@@ -168,7 +170,7 @@ ENode.prototype.wrapAll = function(item){
   while (wrapper.children.length) {
     wrapper = wrapper.firstElementChild;
   }
-  var innerItem = $(wrapper)
+  var innerItem = new ENode(wrapper);
 
   this.first().beforeMe(item);
   innerItem.append(this);
@@ -226,7 +228,7 @@ ENode.prototype.attr = function(attributes){
 ENode.prototype.each = function(fnc){
   this.el.forEach(function(e){
     var node = new ENode(e);
-    fnc.apply(node, node);
+    fnc.apply(null, [node]);
   });
   return this;
 };

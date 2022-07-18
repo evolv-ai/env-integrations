@@ -3,7 +3,7 @@ import {debounce} from '../../core/debounce.js'
 
 function checkFilterRule(filter){
   var val = window.evolv.client.context.get(filter.key)
-  return new RegExp(filter.value).test(val);
+  return new RegExp(filter.value, 'i').test(val);
 }
 
 export function listenForPage(page){

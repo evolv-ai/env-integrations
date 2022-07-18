@@ -5,10 +5,16 @@ Emitter now supports the following syntax:
 ```
 {"pages": [
   {
-    "filter": {
-      "url": "/smartphones",
-      // "window.vzdl.page.name": "gridwall"
-    },
+    "filter": [
+     {
+      "key": "url": 
+      "value": "/smartphones",
+     },
+     {
+      "key": "vz.pageName",
+      "value": "gridwall"
+     }
+     ]
     "events": [
       {
         "tag": "SPGW.ctr-all",

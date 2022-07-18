@@ -1,25 +1,20 @@
 
-import {getExpression} from '../../core/src/expression.js'
 import {debounce} from '../../core/debounce.js'
 
-function checkFilterRule(key, regex){
-  if (key === 'url') key = 'web.url';
-
-  var val = window.evolv.client.context.get(key)
-  return new RegExp(regex).test(val); 
+function checkFilterRule(filter){
+  var val = window.evolv.client.context.get(filter.key)
+  return new RegExp(filter.value, 'i').test(val);
 }
 
-
 export function listenForPage(page){
-  var filter = page.filter;
-  var filterKeys = Object.keys(filter);
+  var filters = page.filters || [];
   return {
     then(fnc) {
       var debouncedListener = debounce(function(){
-        var satisfied = filterKeys.every(k=>checkFilterRule(k, filter[k]));
+        var satisfied = filters.every(checkFilterRule);
         if (satisfied) fnc(true);
       })
-      window.evolv.client.on('context.changed', ()=> console.info('listening for page', filter) || debouncedListener())
+      window.evolv.client.on('context.changed', ()=> debouncedListener())
     }
   }
 }

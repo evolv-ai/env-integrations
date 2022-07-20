@@ -207,13 +207,15 @@ describe('My First Test', () => {
         cy.wait(1500).get('[class*="evolv-"]').should('have.length', 23);
     });
 
-    if('Confirm "rule.reactivateOnChange" works', () => {
-        const tabs = cy.get('.tab-header .tab');
-        tabs[1].click();
+    it('Confirm "rule.reactivateOnChange" works', () => {
+        cy.get('.tab-header .tab-2').click();
         cy.get('.tab-panel-2 h3').should('have.class', 'evolv-tabPanelHeading');
-        tabs[0].click();
+        cy.get('.tab-header .tab-1').click();
         cy.get('.tab-panel-1 h3').should('have.class', 'evolv-tabPanelHeading');
     });
+
+    // I didn't include the validator methods because those are intended for a future feature -Charles 7/20/22
+
     // it('Confirm "validator.lengthGreatherThan" works', () => {
         
     // });
@@ -227,6 +229,4 @@ describe('My First Test', () => {
     // it('Confirm "validator.notContains" works', () => {
         
     // });
-
-    
 });

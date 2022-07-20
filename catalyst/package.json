@@ -12,7 +12,8 @@
     "build": "rollup --config rollup.config.js",
     "watch": "rollup --config rollup.config.js --watch",
     "dev": "pushd dist; python -m SimpleHTTPServer 8000; popd",
-    "test": "npx cypress open"
+    "test": "npx http-server -a localhost -p 8000 dist & npx http-server -a localhost -p 8001 cypress/test-page",
+    "cypress": "npx cypress open"
   },
   "keywords": [
     "render",
@@ -32,6 +33,7 @@
     "@rollup/plugin-json": "^4.1.0",
     "cypress-iframe": "^1.0.1",
     "cypress-rollup-preprocessor": "^0.6.2",
+    "http-server": "^14.1.1",
     "rollup": "^2.71.1"
   },
   "dependencies": {

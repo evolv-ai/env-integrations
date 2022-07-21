@@ -1,0 +1,37 @@
+body {
+  padding-top: 3.5rem;
+}
+
+.number-gallery {
+  margin: 1rem 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  justify-items: center;
+}
+.number-gallery-item {
+  background-color: rgb(87, 78, 138);
+  color: white;
+  border-radius: 4px;
+  padding: 0.75rem;
+  width: 100%;
+  text-align: center;
+}
+
+.tab {
+  border: 1px solid black;
+  padding: 0.75rem 2rem;
+  background: white;
+  color: black;
+}
+
+.tab[aria-expanded="true"] {
+  background-color: black;
+  color: white;
+}
+
+.tab-panels {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  border: 1px solid black;
+}

@@ -1,9 +1,9 @@
-describe('My First Test', () => {
+describe('Catalyst Unit Test', () => {
 
     before(function () {
-        cy.visit('https://lb8n9.csb.app/');
+        cy.visit('http://localhost:8001');
         // cy.get('script[src="https://media.evolv.ai/asset-manager/releases/latest/webloader.js"]').should('exist');
-        cy.wait(2000);
+        cy.wait(1000);
     });
 
     after(function () {
@@ -204,7 +204,22 @@ describe('My First Test', () => {
     });
 
     it('Confirm "rule.reactivate" works', () => {
-        cy.wait(1500).get('[class*="evolv-"]').should('have.length', 23);
+        cy.get('[class*="evolv-"]').should('have.length', 23);
+        cy.window().then(window => {
+            const instrumented = window.document.querySelectorAll('[class*="evolv-"]');
+            instrumented.forEach((element) => {
+                const classes = Array.from(element.classList).filter(a => a.indexOf('evolv-') === 0 )
+                element.classList.remove(...classes)
+            });
+        }).then(a => {
+            cy.get('[class*="evolv-"]').should('have.length', 0);
+        })
+        
+        cy.window().then(window => {
+            window.evolv.renderRule.catalystTest.reactivate();
+        });
+
+        cy.get('[class*="evolv-"]').should('have.length', 23);
     });
 
     it('Confirm "rule.reactivateOnChange" works', () => {

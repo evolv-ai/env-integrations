@@ -12,8 +12,11 @@
     "build": "rollup --config rollup.config.js",
     "watch": "rollup --config rollup.config.js --watch",
     "dev": "pushd dist; python -m SimpleHTTPServer 8000; popd",
-    "test": "npx http-server -a localhost -p 8000 dist & npx http-server -a localhost -p 8001 cypress/test-page",
-    "cypress": "npx cypress open"
+    "serve:catalyst": "http-server --silent -a localhost -p 8000 dist",
+    "serve:sandbox": "http-server --silent -a localhost -p 8001 cypress/sandbox",
+    "test:sandbox": "npm run build && wait-on http://localhost:8000 && wait-on http://localhost:8001 && cypress run --spec cypress/integration/catalyst-test.cy.js ; pkill http-server",
+    "test": "npm run serve:catalyst & npm run serve:sandbox & npm run test:sandbox",
+    "cypress": "npm run serve:catalyst & npm run serve:sandbox & npm run build && wait-on http://localhost:8000 && wait-on http://localhost:8001 && cypress open ; pkill http-server"
   },
   "keywords": [
     "render",
@@ -34,7 +37,8 @@
     "cypress-iframe": "^1.0.1",
     "cypress-rollup-preprocessor": "^0.6.2",
     "http-server": "^14.1.1",
-    "rollup": "^2.71.1"
+    "rollup": "^2.71.1",
+    "start-server-and-test": "^1.14.0"
   },
   "dependencies": {
     "cypress": "^9.6.0"

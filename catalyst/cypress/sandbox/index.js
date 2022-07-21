@@ -235,7 +235,7 @@ setTimeout(function () {
     seven.classList.add("number-gallery-item");
     seven.textContent = "7";
     document.querySelector(".number-gallery-item:last-child").after(seven);
-  }, 1000);
+  }, 100);
 
   $(".number-gallery-item").firstDom().style.backgroundColor =
     "rgb(183 63 63)";
@@ -245,23 +245,23 @@ setTimeout(function () {
   $(".number-gallery-item").last().el[0].style.fontWeight = "bold";
 
   // Reactivate
-  setTimeout(() => {
-    const evolvInstruments = document.querySelectorAll('[class*="evolv-"]');
-    evolvInstruments.forEach((element) => {
-      element.classList.forEach((classItem) => {
-        if (classItem.indexOf("evolv-") === 0) {
-          element.classList.remove(classItem);
-        }
-      });
-    });
-  }, 500);
+  // setTimeout(() => {
+  //   const evolvInstruments = document.querySelectorAll('[class*="evolv-"]');
+  //   evolvInstruments.forEach((element) => {
+  //     element.classList.forEach((classItem) => {
+  //       if (classItem.indexOf("evolv-") === 0) {
+  //         element.classList.remove(classItem);
+  //       }
+  //     });
+  //   });
+  // }, 1000);
 
-  setTimeout(() => {
-    rule.reactivate();
-  }, 1000);
+  // setTimeout(() => {
+  //   rule.reactivate();
+  // }, 1500);
 
   rule.whenDOM(".tab-panels").reactivateOnChange();
-}, 2000);
+}, 1000);
 
 // Reactivate on change
 const tabSection = document.querySelector(".tabs");

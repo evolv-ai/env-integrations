@@ -1,1 +1,4 @@
 node_modules
+.DS_Store
+catalyst/cypress/videos
+catalyst/cypress/screenshots

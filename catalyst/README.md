@@ -191,7 +191,26 @@ rule.app.createMainButton = function(){
 };
 ```
 
-## rule object
+## renderRule
+
+The core Catalyst object containing essential methods, `$` selectors, as well as the `store` and `app` repositories for assets and functions that can be defined in the context and shared between variants.
+
+Adding a new property to the `renderRule` object creates a new sandbox with all of the properties of the original `renderRule` which allows for multiple experiments to run on the page simultaneously without colliding.
+
+Typically the following will appear at the top the context *and* each variant so that they all are working within the same sandbox.
+
+```js
+var rule = evolv.renderRule.new_sandbox;
+var store = rule.store
+var $ = rule.$
+```
+
+### renderRule properties
+
+| Property  | Description |
+| :-------- | :---------- |
+| $()       | Selects DOM elements and creates ENodes which are Catalyst objects containing DOM elements and manipulation methods |
+| 
 
 ### rule.store
 

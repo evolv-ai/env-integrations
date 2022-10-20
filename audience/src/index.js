@@ -1,125 +1,12 @@
+import { adapters } from './adapters';
 
 var audience = {
 }
+
 function refreshAudience(){
   try{
     window.evolv.context.update(audience);
-  } catch(e){console.info('evolv context not available')}
-}
-
-var MacroSet = {
-  map: function(array){
-    return function(tokens){
-      return array.map(function(n){return adapters.getExpressionValue(tokens, n)})
-    }
-  }
-};
-function bindMacro(macro, data){
-  var fnc = MacroSet[macro];
-  if (!fnc){
-    return function(){ console.info('Warning: ', macro, ' not a valid macro');}
-  }
-  return fnc(data)  
-}
-
-function tokenizeExp(exp){
-  return Array.isArray(exp) ? exp : exp.split('.')
-}
-
-var adapters = {
-  getExpressionValue(exp, context){
-    var tokens = tokenizeExp(exp);
-    var result = context || window;
-    
-    if (tokens[0] === 'window') tokens = tokens.slice(1);
-
-    while(tokens.length > 0 && result){
-      var token = tokens[0];
-      tokens = tokens.slice(1)
-      var openPos = token.indexOf('(');
-      if (openPos > 0){
-        try{
-          var closingPos = token.indexOf(')')
-          var param = token.slice(openPos+1, closingPos)
-          token = token.slice(0,openPos);
-          var fnc = result[token]
-
-          if (typeof fnc === 'function'){
-            result = fnc.apply(result, [param]);
-          } else if (token[0] === '@'){
-            var macro = bindMacro(token.slice(1), result);
-            result = macro(param)
-          }
-          else
-            result = undefined;
-        }
-        catch(e){}
-      } else {
-        if (!result[token] && tokens.length > 0){ //try flattened object index
-          token = token + '.' + tokens[0]
-          tokens = tokens.slice(1);
-        }
-        result = result[token];
-      }
-    }
-    return result;
-  },
-  setExpressionValue: function(exp, values, append){
-    var tokens = tokenizeExp(exp)
-    var key = tokens.pop();
-    var obj = adapters.getExpressionValue(tokens);
-    
-    if (!obj) return;
-  
-    if (append){
-      obj[key] += values;
-    } else{
-      obj[key] = values;
-    }
-  },
-  getFetchValue: function(fetchData) {
-    var url = fetchData.url || '';
-    var method = fetchData.method || 'POST'
-    var data  = fetchData.data || {};
-    return fetch(url, {
-        method: method,
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'same-origin',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify(data)
-    })
-    .then(function(response){return response.json();})
-    .then(function(response){
-      var expression = fetchData.expression || null;
-      var store = fetchData.bindTo || null;
-      var data = response.data;
-      var value = adapters.getExpressionValue(expression, data);
-      if (store){
-        adapters.setExpressionValue(store, data);
-      }
-      if (!value) return '';
-      
-      return value.toString();
-    })
-  },
-  getCookieValue: function(name) {
-    var cookie = document.cookie.split(';')
-        .find(function(item) {return item.trim().split('=')[0] === name })
-    if (!cookie) return null;
-
-    return cookie.split('=')[1];
-  },
-  getDomValue: function(sel) {
-    return document.querySelector(sel)  && 'found';
-  },
-  getJqDomValue: function(sel) {
-    return window.$ && ($(sel).length > 0)  && 'found';
-  }
+  } catch(e){console.info('evolv context not available');}
 }
 
 function getValue(obj){
@@ -144,14 +31,13 @@ function initConfig(){
     window.localStorage.setItem(distributionName, distribution);
   }
 
-  var qaAudienceEnabled = window.localStorage.getItem('evolv:qa_audience_enabled')
+  var qaAudienceEnabled = window.localStorage.getItem('evolv:qa_audience_enabled');
 
   return {
     distribution: parseInt(distribution),
     qaAudienceEnabled: qaAudienceEnabled
   }
 };
-
 
 
 var Spa = {
@@ -165,7 +51,7 @@ var Spa = {
   },
   recheck: function(force){
     var priorAudience = Object.assign({}, audience);
-    var prevLength = this.recheckQueue.length
+    var prevLength = this.recheckQueue.length;
     
     this.recheckQueue.forEach(function(l){
       addAudience(l.topKey, l.variable, l.audObj);
@@ -184,7 +70,7 @@ var Spa = {
     }
   },
   terminateRecheck: function(){
-    console.info('recheck is ended', this.recheckQueue)
+    console.info('recheck is ended', this.recheckQueue);
     clearInterval(this.recheckInterval);
     this.recheckInterval = 0;
   },
@@ -196,8 +82,8 @@ var Spa = {
     this.recheckQueue = this.queue.slice(0); 
     this.recheck(true);
 //    setTimeout(this.recheck.bind(this),0);//
-    this.recheckInterval = setInterval(this.recheck.bind(this), 25)
-    setTimeout(this.terminateRecheck.bind(this), 250)
+    this.recheckInterval = setInterval(this.recheck.bind(this), 25);
+    setTimeout(this.terminateRecheck.bind(this), 250);
   },
   initListener: function(){
     var listener = this.eventHandler.bind(this);
@@ -235,7 +121,7 @@ function addAudience(topKey, key, obj){
     }
 
     if (!obj.poll){
-      bindAudienceValue(obj.default || '')
+      bindAudienceValue(obj.default || '');
       return;
     }
     var pollingCount = 0;
@@ -252,9 +138,9 @@ function addAudience(topKey, key, obj){
           clearInterval(poll);
         }
       } catch(e){console.info('audience not processed', obj);}
-    }, obj.poll.interval || 50)
+    }, obj.poll.interval || 50);
     setTimeout(function(){ 
-      clearInterval(poll)
+      clearInterval(poll);
       if (!foundValue && obj.default){
         bindAudienceValue(obj.default || '');
         refreshAudience();
@@ -275,17 +161,17 @@ function setAudience(json){
       }
       
       var variables = Object.keys(namespace);
-      if (!audience[topKey]) audience[topKey] = {}
+      if (!audience[topKey]) audience[topKey] = {};
       variables.forEach(function(variable){
-        var audObj = namespace[variable]
+        var audObj = namespace[variable];
         if (!audObj.page || new RegExp(audObj.page).test(location.pathname)) {
-          addAudience(topKey, variable, audObj)
+          addAudience(topKey, variable, audObj);
           if (audObj.spa){
             Spa.addSpaListener(topKey, variable, audObj);
           }
         }
-      })
-    })
+      });
+    });
     refreshAudience();
   } catch(e){}
 }

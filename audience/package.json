@@ -4,6 +4,9 @@
   "description": "Allows audience filters to be populated from datalayer, cookie, fetch and dom ",
   "main": "src/index.js",
   "scripts": {
+    "build": "rollup --config rollup.config.js",
+    "watch": "rollup --config rollup.config.js --watch",
+    "dev": "pushd dist; python3 -m http.server 8000; popd",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -19,6 +22,9 @@
   "homepage": "https://github.com/evolv-ai/env-integrations/audience",
   "bugs": {
     "url": "https://github.com/evolv-ai/env-integrations/issues"
+  },
+  "devDependencies": {
+    "@rollup/plugin-json": "^4.1.0"
   },
   "license": "ISC"
 }

@@ -15,6 +15,7 @@ function getValue(obj){
   if (obj.type === 'dom') return adapters.getDomValue(obj.value);
   if (obj.type === 'jqdom') return adapters.getJqDomValue(obj.value);
   if (obj.type === 'cookie') return adapters.getCookieValue(obj.value);
+  if (obj.type === 'query') return adapters.getQueryValue(obj.value);
 
   return null;
 }

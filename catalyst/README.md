@@ -30,185 +30,7 @@ Add the following json config at environment level to enable the framework acros
 
 ## Usage
 
-Once the integration is configured, you can setup context javascript.
-
-## Example 1 - Instrumentation
-
-### Context
-
-```js
-// This is where you initialize the `rule` sandbox. Note the sandbox name appended at the end of the `renderRule`
-var rule = window.evolv.renderRule.my_sandbox_1;
-
-// Getting a reference to the store. This is where shared variables related to the current render are stored.
-var store = rule.store;
-
-// Rename so it doesn't collide with jQuery. This is a basic selector function for catalyst.
-var $ = rule.$;
-
-/*
-instrumentDOM defines classes to keys. Those classes are then added to the one or more elements returned by the selectors. 
-By default, instrumentDOM prefixes the class name with `evolv-` and uses the property name as the suffix to the class.
-Each element is also tagged with a unique attribute to handle idempotency (prevent an element from being manipulated more than once).
-*/
-store.instrumentDOM({
-    'device-tile': {
-        get dom() {
-            return $('.device-tile, .byod-device-tile');
-        },
-    },
-    'pod-parent': {
-        get dom() {
-            return $('.evolv-deviceTile [id*=mvo_ovr_devices]')
-                .first()
-                .parent();
-        },
-    },
-    'button-parent': {
-        get dom() {
-            return $('button.addALine)').parent();
-        },
-        asClass: 'my-unique-button-class', // Will apply class of 'evolv-my-unique-button-class' instead of 'evolv-button-parent'
-    },
-});
-```
-
-## Example 2
-
-### Target page before
-
-```html
-<main>
-    <form>
-        <fieldset>
-            <legend>User Info</legend>
-            <ul>
-                <li>
-                    <label for="firstName">First Name</label>
-                    <input type="text" id="firstName" name="firstName" />
-                </li>
-                <li>
-                    <label for="lastName">Last Name</label>
-                    <input type="text" id="lastName" name="lastName" />
-                </li>
-                <li>
-                    <label for="telNumber">Tel Number</label>
-                    <input type="tel" id="telNumber" name="telNumber" />
-                </li>
-            </ul>
-        </fieldset>
-    </form>
-</main>
-```
-
-### Context
-
-```js
-var rule = window.evolv.renderRule.visible_homepage_1;
-var store = rule.store;
-var $ = rule.$;
-var $$ = rule.$$;
-
-store.instrumentDOM({
-    'form-input': {
-        get dom() {
-            return $('form fieldset input');
-        },
-    },
-    'form-label': {
-        get dom() {
-            return $('form fieldset label');
-        },
-    },
-});
-
-rule.whenDOM('.evolv-form-input').then((input) => {
-    var label = input.prev();
-    input.attr({ placeholder: label.text() });
-});
-```
-
-Alternatively use `whenItem` to reference the property name that was instrumented.
-
-```js
-rule.whenItem('form-input').then((input) => {
-    var label = input.prev();
-    input.attr({ placeholder: label.text() });
-});
-```
-
-### Context SASS
-
-```sass
-.evolv {
-  &-form-label {
-    display: none;
-  }
-}
-```
-
-### Target page after
-
-```html
-<!-- Note: all labels now are hidden by CSS -->
-<main>
-    <form>
-        <fieldset>
-            <legend>User Info</legend>
-            <ul>
-                <li>
-                    <label for="firstName" class="evolv-form-label"
-                        >First Name</label
-                    >
-                    <input
-                        type="text"
-                        id="firstName"
-                        name="firstName"
-                        class="evolv-form-input"
-                        placeholder="First Name"
-                    />
-                </li>
-                <li>
-                    <label for="lastName" class="evolv-form-label"
-                        >Last Name</label
-                    >
-                    <input
-                        type="text"
-                        id="lastName"
-                        name="lastName"
-                        class="evolv-form-input"
-                        placeholder="Last Name"
-                    />
-                </li>
-                <li>
-                    <label for="telNumber" class="evolv-form-label"
-                        >Tel Number</label
-                    >
-                    <input
-                        type="tel"
-                        id="telNumber"
-                        name="telNumber"
-                        class="evolv-form-input"
-                        placeholder="Tel Number"
-                    />
-                </li>
-            </ul>
-        </fieldset>
-    </form>
-</main>
-```
-
-You can use `whenItem('buttonParent')`, `whenItem(store.buttonParent)` to select specific elements of a page for manipulation like jQuery. One more similar option utilizes `whenDOM('.evolv-buttonParent')`
-
-```js
-rule.app.createMainButton = function(){
-  rule
-    .whenDOM('.evolv-buttonParent')
-    .then(function(buttonParent){
-      buttonParent.append(...);
-    }
-};
-```
+For comprehensive examples see the Examples section at the bottom.
 
 ## renderRule
 
@@ -1242,3 +1064,185 @@ $('li').last();
 ```
 
 ---
+
+## Examples
+
+Once the integration is configured, you can setup context javascript.
+
+## Example 1 - Instrumentation
+
+### Context
+
+```js
+// This is where you initialize the `rule` sandbox. Note the sandbox name appended at the end of the `renderRule`
+var rule = window.evolv.renderRule.my_sandbox_1;
+
+// Getting a reference to the store. This is where shared variables related to the current render are stored.
+var store = rule.store;
+
+// Rename so it doesn't collide with jQuery. This is a basic selector function for catalyst.
+var $ = rule.$;
+
+/*
+instrumentDOM defines classes to keys. Those classes are then added to the one or more elements returned by the selectors. 
+By default, instrumentDOM prefixes the class name with `evolv-` and uses the property name as the suffix to the class.
+Each element is also tagged with a unique attribute to handle idempotency (prevent an element from being manipulated more than once).
+*/
+store.instrumentDOM({
+    'device-tile': {
+        get dom() {
+            return $('.device-tile, .byod-device-tile');
+        },
+    },
+    'pod-parent': {
+        get dom() {
+            return $('.evolv-deviceTile [id*=mvo_ovr_devices]')
+                .first()
+                .parent();
+        },
+    },
+    'button-parent': {
+        get dom() {
+            return $('button.addALine)').parent();
+        },
+        asClass: 'my-unique-button-class', // Will apply class of 'evolv-my-unique-button-class' instead of 'evolv-button-parent'
+    },
+});
+```
+
+## Example 2
+
+### Target page before
+
+```html
+<main>
+    <form>
+        <fieldset>
+            <legend>User Info</legend>
+            <ul>
+                <li>
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" name="firstName" />
+                </li>
+                <li>
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" />
+                </li>
+                <li>
+                    <label for="telNumber">Tel Number</label>
+                    <input type="tel" id="telNumber" name="telNumber" />
+                </li>
+            </ul>
+        </fieldset>
+    </form>
+</main>
+```
+
+### Context
+
+```js
+var rule = window.evolv.renderRule.visible_homepage_1;
+var store = rule.store;
+var $ = rule.$;
+var $$ = rule.$$;
+
+store.instrumentDOM({
+    'form-input': {
+        get dom() {
+            return $('form fieldset input');
+        },
+    },
+    'form-label': {
+        get dom() {
+            return $('form fieldset label');
+        },
+    },
+});
+
+rule.whenDOM('.evolv-form-input').then((input) => {
+    var label = input.prev();
+    input.attr({ placeholder: label.text() });
+});
+```
+
+Alternatively use `whenItem` to reference the property name that was instrumented.
+
+```js
+rule.whenItem('form-input').then((input) => {
+    var label = input.prev();
+    input.attr({ placeholder: label.text() });
+});
+```
+
+### Context SASS
+
+```sass
+.evolv {
+  &-form-label {
+    display: none;
+  }
+}
+```
+
+### Target page after
+
+```html
+<!-- Note: all labels now are hidden by CSS -->
+<main>
+    <form>
+        <fieldset>
+            <legend>User Info</legend>
+            <ul>
+                <li>
+                    <label for="firstName" class="evolv-form-label"
+                        >First Name</label
+                    >
+                    <input
+                        type="text"
+                        id="firstName"
+                        name="firstName"
+                        class="evolv-form-input"
+                        placeholder="First Name"
+                    />
+                </li>
+                <li>
+                    <label for="lastName" class="evolv-form-label"
+                        >Last Name</label
+                    >
+                    <input
+                        type="text"
+                        id="lastName"
+                        name="lastName"
+                        class="evolv-form-input"
+                        placeholder="Last Name"
+                    />
+                </li>
+                <li>
+                    <label for="telNumber" class="evolv-form-label"
+                        >Tel Number</label
+                    >
+                    <input
+                        type="tel"
+                        id="telNumber"
+                        name="telNumber"
+                        class="evolv-form-input"
+                        placeholder="Tel Number"
+                    />
+                </li>
+            </ul>
+        </fieldset>
+    </form>
+</main>
+```
+
+You can use `whenItem('buttonParent')`, `whenItem(store.buttonParent)` to select specific elements of a page for manipulation like jQuery. One more similar option utilizes `whenDOM('.evolv-buttonParent')`
+
+```js
+rule.app.createMainButton = function(){
+  rule
+    .whenDOM('.evolv-buttonParent')
+    .then(function(buttonParent){
+      buttonParent.append(...);
+    }
+};
+```

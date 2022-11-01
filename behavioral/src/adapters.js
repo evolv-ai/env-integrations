@@ -32,7 +32,7 @@ export const adapters = {
           return new RegExp(filePattern, 'i').test(location.href)
         })
 
-        if (matched){
+        if (matched && (!newState.status || !newState.focus)){
           newState.focus = appendTag(tag, newState.focus);
         }
       })

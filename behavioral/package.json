@@ -1,0 +1,35 @@
+{
+  "name": "@evolv-delivery/behavioral",
+  "version": "0.2.0",
+  "description": "Populate Evolv context based on configurable visitor behaviors",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rollup --config rollup.config.js",
+    "watch": "rollup --config rollup.config.js --watch",
+    "dev": "pushd dist; python3 -m http.server 8000; popd",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "behaviors",
+    "context",
+    "DSL"
+  ],
+  "author": "richardcowin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evolv-ai/env-integrations.git"
+  },
+  "homepage": "https://github.com/evolv-ai/env-integrations/behavioral",
+  "bugs": {
+    "url": "https://github.com/evolv-ai/env-integrations/issues"
+  },
+  "devDependencies": {
+    "@rollup/plugin-json": "^4.1.0"
+  },
+  "license": "ISC"
+}

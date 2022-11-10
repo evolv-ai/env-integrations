@@ -13,10 +13,11 @@ function appendTag(tag, string){
 
 export const adapters = {
   returnVisitor: function(config, oldState, behavioralData){
-    var newState = Object.assign({}, oldState)
+    var newState = Object.assign({visitCount: 0}, oldState)
 
     if (isNewSession(behavioralData, config.inactiveMinutes)){
       newState.status = true;
+      newState.visitCount = newState.visitCount + 1;
       newState.firstSessionPage = true;
     } else {
       newState.status = newState.status || false;
@@ -32,7 +33,7 @@ export const adapters = {
           return new RegExp(filePattern, 'i').test(location.href)
         })
 
-        if (matched){
+        if (matched && (!newState.status || !newState.focus)){
           newState.focus = appendTag(tag, newState.focus);
         }
       })

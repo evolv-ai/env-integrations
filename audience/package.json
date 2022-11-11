@@ -1,8 +1,8 @@
 {
   "name": "@evolv-delivery/audience",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "Allows audience filters to be populated from datalayer, cookie, fetch and dom ",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "rollup --config rollup.config.js",
     "watch": "rollup --config rollup.config.js --watch",
@@ -19,7 +19,7 @@
     "type": "git",
     "url": "https://github.com/evolv-ai/env-integrations.git"
   },
-  "homepage": "https://github.com/evolv-ai/env-integrations/audience",
+  "homepage": "https://github.com/evolv-ai/env-integrations/",
   "bugs": {
     "url": "https://github.com/evolv-ai/env-integrations/issues"
   },

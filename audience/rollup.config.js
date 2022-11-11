@@ -1,5 +1,6 @@
 import json from '@rollup/plugin-json'
 
+
 function buildFile(src){
   return  [   
     {
@@ -11,9 +12,9 @@ function buildFile(src){
       ]
     },
     {
-      input: `./test/testConfig.js`,
+      input: `./test/harness.js`,
       output: {
-        file: `./dist/testConfig.js`,
+        file: `./dist/harness.js`,
       },
       plugins: [
         json()

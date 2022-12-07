@@ -1,4 +1,3 @@
-
 var eventKeys = {
   confirmed: 'experiments.confirmations',
   contaminated: 'experiments.contaminations'
@@ -11,18 +10,10 @@ function findAllocation(cid) {
   }
 }
 
-export function sendAllocations(eventType, emit, sentEventAllocations) {
-  var sentAllocations = sentEventAllocations[eventType] || sentEventAllocations.others;
+export function extractAllocations(eventType) {
   var eventKey = eventKeys[eventType] || '';
   var candidates = window.evolv.context.get(eventKey) || [];
-
-  for (let i = 0; i < candidates.length; i++) {
-    try{
-      var cid = candidates[i].cid
-      if (!sentAllocations[cid]){
-        emit(eventType, findAllocation(cid))
-        sentAllocations[cid] = true;
-      }
-    } catch(e){console.info('Evolv: Analytics not sent', e);}
-  }
+  return candidates.map(function(candidate) {
+    return findAllocation(candidate.cid)
+  });
 }

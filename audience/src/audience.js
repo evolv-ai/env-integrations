@@ -10,12 +10,18 @@ function refreshAudience(){
 }
 
 function getValue(obj){
-  if (obj.type === 'expression') return adapters.getExpressionValue(obj.value);
-  if (obj.type === 'fetch') return adapters.getFetchValue(obj.value);
-  if (obj.type === 'dom') return adapters.getDomValue(obj.value);
-  if (obj.type === 'jqdom') return adapters.getJqDomValue(obj.value);
-  if (obj.type === 'cookie') return adapters.getCookieValue(obj.value);
-  if (obj.type === 'query') return adapters.getQueryValue(obj.value);
+  var key = obj.key || obj.value;
+  var source = obj.type;
+
+  switch(source){
+    case 'expression': return adapters.getExpressionValue(key);
+    case 'fetch':      return adapters.getFetchValue(key);
+    case 'dom':        return adapters.getDomValue(key);
+    case 'jqdom':      return adapters.getJqDomValue(key);
+    case 'cookie':     return adapters.getCookieValue(key);
+    case 'query':      return adapters.getQueryValue(key);
+    case 'extension':  return adapters.getExtensionValue(key);
+  }
 
   return null;
 }
@@ -23,22 +29,6 @@ function getValue(obj){
 function convertValue(val){
   return val.toString();
 }
-
-function initConfig(){
-  var distributionName = 'evolv:distribution';
-  var distribution = window.localStorage.getItem(distributionName);
-  if (!distribution) {
-    distribution = Math.floor(Math.random()*100);
-    window.localStorage.setItem(distributionName, distribution);
-  }
-
-  var qaAudienceEnabled = window.localStorage.getItem('evolv:qa_audience_enabled');
-
-  return {
-    distribution: parseInt(distribution),
-    qaAudienceEnabled: qaAudienceEnabled
-  }
-};
 
 
 var Spa = {
@@ -95,9 +85,47 @@ var Spa = {
 
 Spa.initListener();
 
+
 function addAudience(topKey, key, obj){
+
+  function applyMap(val, map, match='first'){
+    function getValue(option) {
+      return option.default || option.result
+    }
+    var fallback;
+    if (match === 'first'){
+      var results = map.find(function(mapOption){
+        if (!mapOption.when) {
+          return mapOption.default || mapOption.result;
+        }
+        
+        var pattern = new RegExp(mapOption.when);
+        return pattern.test(val);
+      });
+      if (results) return getValue(results);
+    } else {
+      var results = map.filter(function(mapOption){
+          if (!mapOption.when) {
+            fallback = mapOption;
+            return null;
+          }
+          
+          var pattern = new RegExp(mapOption.when);
+          return pattern.test(val);
+      });
+      if (results.length === 0 && fallback) return getValue(fallback)
+      if (results.length === 1) return getValue(results[0]);
+      return null;
+    }
+  }
+  
   function bindAudienceValue(val, inc){
     var newVal = convertValue(val);
+    if (obj.map){
+        newVal = applyMap(newVal, obj.map, obj.match);
+        if (!newVal) return;
+    }
+
     var audienceContext = topKey ? audience[topKey] : audience;
 
     if (audienceContext[key] ===  newVal) return false;

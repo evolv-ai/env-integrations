@@ -17,6 +17,18 @@ function tokenizeExp(exp){
   return Array.isArray(exp) ? exp : exp.split('.');
 }
 
+function initDistribution(){
+  var distributionName = 'evolv:distribution';
+  var distribution = window.localStorage.getItem(distributionName);
+  if (!distribution) {
+    distribution = Math.floor(Math.random()*100);
+    window.localStorage.setItem(distributionName, distribution);
+  }
+
+  return parseInt(distribution)
+};
+
+
 export const adapters = {
   getExpressionValue(exp, context){
     var tokens = tokenizeExp(exp);
@@ -118,6 +130,14 @@ export const adapters = {
         return queryMatch[1];
     } else {
         return null;
+    }
+  },
+  getExtensionValue: function(name){
+    switch (name) {
+      case 'distribution': 
+        return initDistribution();
+      default:
+        console.warn("Evolv - No audience extension called: ", name)
     }
   }
 }

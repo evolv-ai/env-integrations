@@ -124,13 +124,9 @@ export const adapters = {
     return window.$ && ($(sel).length > 0)  && 'found';
   },
   getQueryValue: function(name) {
-  var queryRegEx = new RegExp(`[?&]${name}=([^&]+).*$`)
-  var queryMatch = location.href.match(queryRegEx);
-    if (queryMatch) {
-        return queryMatch[1];
-    } else {
-        return null;
-    }
+    try{
+      return new URL(location.href).searchParams.get(name);
+    } catch(e){ return null;}
   },
   getExtensionValue: function(name){
     switch (name) {

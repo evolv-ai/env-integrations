@@ -54,7 +54,6 @@ var Spa = {
         refreshAudience();
     }
     
-    //console.info('finishing spa update', this.recheckQueue, priorAudience, audience)
 
     if (this.recheckQueue.length === 0){
       this.terminateRecheck();
@@ -66,13 +65,10 @@ var Spa = {
     this.recheckInterval = 0;
   },
   eventHandler: function(){
-    if (this.queue === 0) return;
-
-    audience.config.spaNav = 'true'; //
+    if (this.queue.length === 0) return;
 
     this.recheckQueue = this.queue.slice(0); 
     this.recheck(true);
-//    setTimeout(this.recheck.bind(this),0);//
     this.recheckInterval = setInterval(this.recheck.bind(this), 25);
     setTimeout(this.terminateRecheck.bind(this), 250);
   },

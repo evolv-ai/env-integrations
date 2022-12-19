@@ -17,6 +17,18 @@ function tokenizeExp(exp){
   return Array.isArray(exp) ? exp : exp.split('.');
 }
 
+function initDistribution(){
+  var distributionName = 'evolv:distribution';
+  var distribution = window.localStorage.getItem(distributionName);
+  if (!distribution) {
+    distribution = Math.floor(Math.random()*100);
+    window.localStorage.setItem(distributionName, distribution);
+  }
+
+  return parseInt(distribution)
+};
+
+
 export const adapters = {
   getExpressionValue(exp, context){
     var tokens = tokenizeExp(exp);
@@ -112,12 +124,16 @@ export const adapters = {
     return window.$ && ($(sel).length > 0)  && 'found';
   },
   getQueryValue: function(name) {
-  var queryRegEx = new RegExp(`[?&]${name}=([^&]+).*$`)
-  var queryMatch = location.href.match(queryRegEx);
-    if (queryMatch) {
-        return queryMatch[1];
-    } else {
-        return null;
+    try{
+      return new URL(location.href).searchParams.get(name);
+    } catch(e){ return null;}
+  },
+  getExtensionValue: function(name){
+    switch (name) {
+      case 'distribution': 
+        return initDistribution();
+      default:
+        console.warn("Evolv - No audience extension called: ", name)
     }
   }
 }

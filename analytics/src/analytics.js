@@ -1,11 +1,10 @@
 import {EventContext} from './eventContext.js';
-import {sendAllocations} from './allocations.js';
+import {extractAllocations} from './allocations.js';
 import {runStatement, getExpression, tokenizeExp} from './statement.js';
-import {hasExtentions, deferredExtendEvent} from './extenders/index.js';
 import {waitFor} from './waitFor.js';
 
 function listenToEvents(config){
-  var poll = config.poll || {duration: 2000, interval:50};
+  var poll = config.poll || {duration: 20000, interval:50};
   var events = config.events || ['confirmed'];
   var sentEventAllocations = {
     confirmed: {},
@@ -14,60 +13,65 @@ function listenToEvents(config){
   };
   var emitCheck = config.check;
   var emit = config.emit;
-
+  var pageOptions = config.pageOptions || [];
   function checkEvolv(){ return window.evolv}
-
   function bindListener() {
     events.forEach(function(eventType){
-      function emitAllocations(){
-        sendAllocations(eventType, emit, sentEventAllocations)
+      var sentAllocations = sentEventAllocations[eventType] || sentEventAllocations.others;
+      function emitAllocations(pageConfig, allocation){
+        try {
+          var cid = allocation.cid
+          if (!sentAllocations[cid]){
+            emit(pageConfig, eventType, allocation)
+            sentAllocations[cid] = true;
+          }
+        } catch(e){console.info('Evolv: Analytics not sent', e);}
       }
+  
       window.evolv.client.on(eventType, function (type) {
-        waitFor(emitCheck, emitAllocations, poll);
+        var allocations = extractAllocations(eventType);
+        allocations.forEach(function(allocation) {
+          var pageConfig = findMatchingConfig(pageOptions, allocation);
+          if (!pageConfig) return;
+          waitFor(emitCheck.bind(null, pageConfig), emitAllocations.bind(null,pageConfig, allocation), poll);
+        })
       });
-    })
+    });
   }
-
   waitFor(checkEvolv, bindListener, poll);
 }
-
 //json config processing
-function findMatchingConfig(configs){
+function findMatchingConfig(configs, event){
   for (var i=0; i< configs.length; i++){
-      var config = configs[i]
-      if (!config.page || new RegExp(config.page).test(location.pathname)) {
-          return config
-      }
+    var config = configs[i]
+    if (contextMatch(config, event)) {
+        return config
+    }
   }
   return null;
 }
 
-function processStatements(pageConfig, eventType, evolvEvent){
-  if (pageConfig.blacklist && pageConfig.blacklist.includes(evolvEvent.group_id)){
-    return;
+//json config processing
+function contextMatch(config, event) {
+  if (!config.page || new RegExp(config.page).test(location.pathname)) {
+    var experiments = config.experiments;
+    return (!experiments
+        || !experiments.ids
+        || (experiments.operator == "include" && experiments.ids.includes(event.group_id))
+        || (experiments.operator == "exclude" && !experiments.ids.includes(event.group_id))
+    );
   }
-
-  function process(event){
-    var statements = pageConfig.statements;
-    var eventContext = new EventContext(event);
-
-    try{
-      statements.forEach(function(statement){
-        runStatement(statement, eventContext);
-      })
-    } catch(e){console.info('statement failed',e)}
-  }
-        
-  if (!hasExtentions(pageConfig, evolvEvent)){
-    process(evolvEvent);
-  } else {
-    deferredExtendEvent(pageConfig, evolvEvent)
-      .then(event =>{
-        if (event) process(event)
-      });
-  }
+  return false;
 }
-
+function processStatements(pageConfig, eventType, evolvEvent){
+  var statements = pageConfig.statements;
+  var eventContext = new EventContext(evolvEvent);
+  try{
+    statements.forEach(function(statement){
+      runStatement(statement, eventContext);
+    })
+  } catch(e){console.info('statement failed',e)}
+}
 function areStatementsReady(config){
   return config.statements
     .every(function(statement){
@@ -82,20 +86,15 @@ function areStatementsReady(config){
       }
     });
 }
-
 export function processAnalytics(config){
   var configKeys = Object.keys(config);
-
   configKeys.forEach(function(key){
     try{
-      var pageConfig = findMatchingConfig(config[key] || []);
-      if (!pageConfig) return;
-
+      var pageOptions = config[key]
       listenToEvents({
-        events: pageConfig.events, 
-        check: areStatementsReady.bind(null, pageConfig),
-        emit: processStatements.bind(null, pageConfig), 
-        poll: pageConfig.poll
+        pageOptions: pageOptions,
+        check: areStatementsReady,
+        emit: processStatements
       });
     } catch(e){console.info('Evolv: Analytics not setup for', key)}
   })

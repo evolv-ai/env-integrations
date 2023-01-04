@@ -1,40 +1,40 @@
 {
-  "name": "@evolv-delivery/catalyst",
-  "version": "0.5.2",
-  "description": "Provides a rendering sdk for experiments",
-  "main": "dist/index.js",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "build": "rollup --config rollup.config.js",
-    "watch": "rollup --config rollup.config.js --watch",
-    "dev": "pushd dist; python -m SimpleHTTPServer 8000; popd",
-    "test": "npx cypress open"
-  },
-  "keywords": [
-    "render",
-    "UI"
-  ],
-  "author": "richardcowin",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/evolv-ai/env-integrations.git"
-  },
-  "homepage": "https://github.com/evolv-ai/env-integrations/catalyst",
-  "bugs": {
-    "url": "https://github.com/evolv-ai/env-integrations/issues"
-  },
-  "license": "ISC",
-  "devDependencies": {
-    "@rollup/plugin-json": "^4.1.0",
-    "cypress-iframe": "^1.0.1",
-    "cypress-rollup-preprocessor": "^0.6.2",
-    "rollup": "^2.71.1"
-  },
-  "dependencies": {
-    "cypress": "^9.6.0"
-  }
+    "name": "@charles-evolv/catalyst-dev",
+    "version": "0.1.26",
+    "description": "Upgrading the Catalyst core and adding new features",
+    "main": "dist/index.js",
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "type": "module",
+    "scripts": {
+        "build": "rollup -c",
+        "watch:rollup": "rollup -c --watch",
+        "serve:catalyst": "http-server serve -p 3333 --cors --silent",
+        "serve:sandbox": "http-server cypress/sandbox -p 3334 --silent",
+        "serve": "npm-run-all -c -p serve:*",
+        "start": "npm-run-all -c -p watch:* serve:catalyst",
+        "cypress": "npx wait-on http://localhost:3333 && npx wait-on http://localhost:3334 && cypress run --spec ./cypress/e2e/catalyst-test.cy.js",
+        "test": "npm-run-all -s build -p serve:* cypress"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/charles-robertson-evolv-ai/catalyst.git"
+    },
+    "author": "Charles McKay Robertson",
+    "license": "ISC",
+    "devDependencies": {
+        "@babel/preset-env": "^7.20.2",
+        "@rollup/plugin-babel": "^6.0.3",
+        "@rollup/plugin-json": "^5.0.1",
+        "cypress": "^12.2.0",
+        "http-server": "^14.1.1",
+        "npm-run-all": "^4.1.5",
+        "rollup": "^3.2.3"
+    },
+    "bugs": {
+        "url": "https://github.com/charles-robertson-evolv-ai/catalyst/issues"
+    },
+    "homepage": "https://github.com/charles-robertson-evolv-ai/catalyst#readme"
 }

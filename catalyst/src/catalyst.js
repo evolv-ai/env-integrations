@@ -1,70 +1,114 @@
-import {initializeSandbox} from './sandbox.js';
+import { initializeSandbox } from './sandbox';
+import { initializeIntervalPoll } from './interval-poll';
 
-export function initializeCatalyst(){
-  var renderRule = initializeSandbox('_general');
-  renderRule.sandboxes = [];
+export function initializeCatalyst() {
+    const catalyst = initializeSandbox('catalyst');
+    const debug = catalyst.debug;
 
-  let renderRuleProxy = new Proxy(renderRule, {
-    get(target, name, receiver) {
-        let rv = Reflect.get(target, name, receiver);
-        if (!rv) {
-            target[name] = initializeSandbox(name); 
-            rv = Reflect.get(target, name, receiver);
-            renderRule.sandboxes.push(rv);
-        }
-        rv.lastAccessTime = new Date().getTime();
-        return rv;
+    catalyst.sandboxes = [];
+
+    // Creates proxy for window.evolv.catalyst that adds a new sandbox whenever
+    // a new property is accessed.
+    let catalystProxy = new Proxy(catalyst, {
+        get(target, name, receiver) {
+            let catalystReflection = Reflect.get(target, name, receiver);
+            if (!catalystReflection) {
+                const sandbox = initializeSandbox(name);
+                let hasInitializedActiveKeyListener = false;
+
+                // Automatically initializes the active key listener for SPA handling if either
+                // property is set. Only permitted to run once. isActive() is deprecated.
+                const sandboxProxy = new Proxy(sandbox, {
+                    set(target, property, value) {
+                        target[property] = value;
+
+                        if (
+                            !hasInitializedActiveKeyListener &&
+                            (property === 'id' || property === 'isActive')
+                        ) {
+                            sandbox._evolvContext.initializeActiveKeyListener(
+                                value
+                            );
+                            hasInitializedActiveKeyListener = true;
+                        } else if (
+                            property === 'id' ||
+                            property === 'isActive'
+                        ) {
+                            sandbox.debug(
+                                'init sandbox: active key listener already initialized'
+                            );
+                        }
+
+                        return true;
+                    },
+                });
+                target[name] = sandboxProxy;
+                catalystReflection = Reflect.get(target, name, receiver);
+                catalyst.sandboxes.push(sandboxProxy);
+            }
+
+            return catalystReflection;
+        },
+    });
+
+    catalyst._intervalPoll = initializeIntervalPoll(catalyst);
+
+    // The main mutation observer for all sandboxes
+    debug('global observer: init');
+
+    catalyst._globalObserver = {
+        observer: new MutationObserver(() => {
+            let anySandboxActive = false;
+            for (const sandbox of catalyst.sandboxes) {
+                if (sandbox._evolvContext.state.current === 'inactive')
+                    continue;
+                anySandboxActive = true;
+                sandbox.instrument.debouncedProcessQueue();
+            }
+            if (!anySandboxActive) {
+                debug('global observer: no sandboxes active');
+                catalyst._globalObserver.disconnect();
+            }
+        }),
+        connect: () => {
+            debug('global observer: observe');
+            catalyst._globalObserver.observer.observe(document.body, {
+                childList: true,
+                attributes: true,
+                subtree: true,
+            });
+            catalyst._globalObserver.state = 'active';
+        },
+        disconnect: () => {
+            debug('global observer: disconnect');
+            catalyst._globalObserver.observer.disconnect();
+            catalyst._globalObserver.state = 'inactive';
+        },
+    };
+
+    catalyst._globalObserver.connect();
+
+    return catalystProxy;
+}
+
+export function processConfig(config) {
+    function pageMatch(page) {
+        if (!page) return false;
+
+        return new RegExp(page).test(location.pathname);
     }
-  });
 
-  const spaCleanupThreshold = 500;
-  function isFreshAccess(sb){
-    if (sb.isActive) return sb.isActive();
-    return (sb.lastAccessTime + spaCleanupThreshold) > new Date().getTime();
-  }
-  
-  function clearOnNav(){
-    var activeSandboxes = [];
-    try{  
-      activeSandboxes = renderRule.sandboxes.filter(function(sb){
-        if (isFreshAccess(sb)){
-          sb.reactivate();
-          return true;
-        }
+    window.evolv = window.evolv || {};
+    var pages = config && config.pages ? config.pages : ['.*'];
+    var matches = pages.some(pageMatch);
+    var evolv = window.evolv;
 
-        if(sb.triggerHandler && sb.triggerHandler.clearIntervalTimer){
-          sb.triggerHandler.clearIntervalTimer();
-        }
-        renderRuleProxy[sb.exp] = null;
-      });
-    } catch(e){console.info('evolv: warning terminating for spa', e);}
-    console.info('evolv active sandboxes after spa', activeSandboxes);
-    renderRule.sandboxes = activeSandboxes;
-  }
-  
-  window.addEventListener('popstate', clearOnNav);
-  window.addEventListener('stateupdate_evolv', clearOnNav);
+    if (matches) {
+        if (window.evolv.catalyst) return window.evolv.catalyst;
 
-  return renderRuleProxy;
-}
+        evolv.catalyst = initializeCatalyst();
+        evolv.renderRule = evolv.catalyst;
 
-function pageMatch(page){
-  if (!page) return false;
-
-  return new RegExp(page).test(location.pathname);
-}
-
-window.evolv = window.evolv || {} ;
-
-export function processConfig(config){
-  var pages = config.pages || ['.*'];
-  var matches = pages.some(pageMatch);
-  var evolv = window.evolv;
-  if (matches){
-    if (window.evolv.catalyst) return window.evolv.catalyst;
-
-    evolv.catalyst = initializeCatalyst();
-    evolv.renderRule = evolv.catalyst
-    return evolv.catalyst;
-  }
+        return evolv.catalyst;
+    }
 }

@@ -1,53 +1,64 @@
-import {ENode} from './enode.js';
-import {validator} from './validator.js';
-import {initializeRule} from './rule.js';
-import {initializeStore} from './store.js';
-import {initializeIntervalHandler} from './intervalHandler.js';
+import { version } from '../package.json';
+import { initializeLogs } from './logs';
+import { $, select, selectAll } from './enode';
+import { initializeSelectInstrument, initializeInstrument } from './instrument';
+import { initializeEvolvContext, initializeTrack } from './evolv-context';
+import { initializeSandboxIntervalPoll } from './interval-poll';
+import { initializeStore } from './store';
+import {
+    initializeWhenContext,
+    initializeWhenMutate,
+    initializeWhenDOM,
+    initializeWhenItem,
+    initializeWhenElement,
+    initializeWhenElements,
+    initializeWaitUntil,
+} from './when.js';
 
-var $ = function(sel){
-  return new ENode(sel);
-};
+function initializeSandbox(name) {
+    const sandbox = {};
+    sandbox.name = name;
 
-export function initializeSandbox(name){
-  var sandbox;
-  var rule = initializeRule($);
-  var store = initializeStore(rule);
+    initializeLogs(sandbox);
+    const log = sandbox.log;
+    const debug = sandbox.debug;
 
-  sandbox = rule;
-
-  sandbox.rule = rule;
-  rule.store = store;
-  rule.exp = name;
-  sandbox.app = {};
-
-  sandbox.triggerHandler = initializeIntervalHandler();
-  sandbox.validate = validator;
-
-  rule.trigger = function(selFnc){
-    return this.triggerHandler.trigger(selFnc)
-  };
-  rule.reactivate = function(){
-    return this.triggerHandler.reactivate()
-  };
-
-  sandbox.$ = $;
-  sandbox.$$ = function(name){
-    var storeRef = store.cache[name];
-    if (!storeRef){
-      console.warn('evolv invalid item', name);
-      return new ENode();
+    if (name === 'catalyst') {
+        log(`init catalyst version ${version}`);
+        log(`log level: ${sandbox.logs}`);
+        sandbox.version = version;
+    } else {
+        debug(`init context sandbox: ${name}`);
+        if (window.evolv.catalyst._globalObserver.state === 'inactive')
+            window.evolv.catalyst._globalObserver.connect();
     }
-    return new ENode('.evolv-'+(storeRef.asClass || name));
-  };
 
-  sandbox.track = function(txt){
-    var trackKey = 'evolv-' + this.exp;
-    var node = $('body');
-    var tracking = node.attr(trackKey)
-    tracking = tracking ?(tracking + ' ' + txt) :txt
-    node.attr({[trackKey]: tracking});
-    return this;             
-  };
+    sandbox.$ = selectAll;
+    sandbox.select = select;
+    sandbox.selectAll = selectAll;
 
-  return sandbox;
+    if (sandbox.name !== 'catalyst') {
+        sandbox.selectInstrument = initializeSelectInstrument(sandbox);
+        sandbox.$$ = sandbox.selectInstrument;
+        sandbox.store = initializeStore(sandbox);
+        sandbox.app = {};
+        sandbox.instrument = initializeInstrument(sandbox);
+        sandbox._intervalPoll = initializeSandboxIntervalPoll(sandbox);
+        sandbox._evolvContext = initializeEvolvContext(sandbox);
+        sandbox.whenContext = initializeWhenContext(sandbox);
+        sandbox.whenMutate = initializeWhenMutate(sandbox);
+        sandbox.whenDOM = initializeWhenDOM(sandbox);
+        sandbox.whenItem = initializeWhenItem(sandbox);
+        sandbox.whenElement = initializeWhenElement(sandbox);
+        sandbox.whenElements = initializeWhenElements(sandbox);
+        sandbox.waitUntil = initializeWaitUntil(sandbox);
+        sandbox.track = initializeTrack(sandbox);
+    }
+
+    // Backwards compatibility
+    sandbox.reactivate = () => {};
+
+    return sandbox;
 }
+
+export { initializeSandbox };

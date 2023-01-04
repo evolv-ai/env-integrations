@@ -1,37 +1,24 @@
+function initializeStore(sandbox) {
+    return {
+        instrumentDOM: (data) => {
+            const argumentArray = [];
 
-export function initializeStore(rule){
-  return {
-    instrumentDOM: function(data){
-      var store = rule.store
+            for (const key in data) {
+                const dataItem = data[key];
+                const select = Object.getOwnPropertyDescriptor(
+                    dataItem,
+                    'dom'
+                ).get;
+                const options = {};
+                if (dataItem.hasOwnProperty('asClass'))
+                    options.asClass = dataItem.asClass;
 
-      if (data){
-        store.cache = Object.assign(store.cache || {}, data || {});
-      } else {
-        data = store.cache;
-      }
-      var check = function(obj, key){
-        rule
-          .when(function(){
-            try{
-              return obj.dom.length >= (obj.count || 1)
-            } catch (e){
-              console.warn('Selector may be malformed', e);
+                argumentArray.push([key, select, options]);
             }
-          })
-          .thenInBulk(function(){
-            obj.node = obj.dom;
-            if (obj.asClass || key) {
-              obj.node.addClass('evolv-' + (obj.asClass || key));
-            }
-            if (obj.asAttr) {
-                var objAttr = {['evolv-' + obj.asAttr]: true };
-                obj.node.attr(objAttr);
-            }            
-          });
-      };
-      for(var key in data){
-        check(data[key], key);     
-      }
-    }
-  }
+
+            sandbox.instrument.add(argumentArray);
+        },
+    };
 }
+
+export { initializeStore };

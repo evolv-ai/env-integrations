@@ -1,167 +1,273 @@
-// dom manipulation package
-function toNodeValue(sel, context){
-  context = context || document;
-  if (!sel){
-    return [];
-  } else if (typeof sel === 'string'){
-    if (sel[0] === '<') {
-      var div = context.createElement('div');
-      div.innerHTML = sel.trim();
-      return [div.firstChild]; 
-    } else {
-      return context.querySelectorAll(sel);
-    }
-  } else if (sel instanceof Element){
-    return [sel]
-  } else if (sel.constructor === ENode){
-    return sel.el
-  } else if (Array.isArray(sel)){
-    return sel
+var version = "0.1.26";
+
+function initializeLogs(sandbox) {
+  // Uses console.info() because VBG blocks console.log();
+
+  const environmentLogDefaults = {
+    // VCG
+    b02d16aa80: 'silent',
+    // Prod
+    add8459f1c: 'normal',
+    // Staging
+    '55e68a2ba9': 'normal',
+    // Development
+    eee20e49ae: 'normal',
+    // Prototype
+    b5d276c11b: 'normal',
+    // verizon qa
+
+    // VBG
+    '13d2e2d4fb': 'silent',
+    // Prod
+    '4271e3bfc8': 'normal',
+    // QA Testing
+    '6bfb40849e': 'normal' // UAT
+  };
+
+  const participantsURL = document.querySelector('script[src^="https://participants.evolv.ai"]');
+  const environmentMatch = participantsURL ? participantsURL.getAttribute('src').match(/(?<=https:\/\/participants\.evolv\.ai\/v1\/)[a-z0-9]*(?=\/)/) : null;
+  let environmentId = environmentMatch ? environmentMatch[0] : null;
+  const environmentLogs = environmentId ? environmentLogDefaults[environmentId] : null;
+  const localStorageItem = localStorage.getItem('evolv:catalyst-logs');
+  const localStorageMatch = localStorageItem ? localStorageItem.match(/silent|normal|debug/i) : null;
+  const localStorageLogs = localStorageMatch ? localStorageMatch[0] : null;
+  if (environmentLogs === 'silent') {
+    sandbox.logs = localStorageLogs || 'silent';
   } else {
-    return [];
+    sandbox.logs = localStorageLogs || sandbox.logs || 'normal';
   }
+  sandbox.logColor = localStorageItem ? localStorageItem.includes('color') : null;
+  const logPrefix = `[evolv-${sandbox.name}]`;
+  const logPrefixColor = [`%c${logPrefix}`, 'background-color: rgba(255, 122, 65, .5); border: 1px solid rgba(255, 122, 65, 1); border-radius: 2px'];
+  const debugPrefixColor = [`%c${logPrefix}`, 'background-color: rgba(255, 122, 65, .25); border: 1px solid rgba(255, 122, 65, .5); border-radius: 2px'];
+  sandbox.log = (...args) => {
+    const logs = sandbox.logs;
+    if (logs === 'normal' || logs === 'debug') {
+      if (sandbox.logColor) console.info(...logPrefixColor, ...args);else console.info(logPrefix, ...args);
+    }
+  };
+  sandbox.warn = (...args) => {
+    const logs = sandbox.logs;
+    if (logs === 'normal' || logs === 'debug') {
+      if (sandbox.logColor) console.warn(...logPrefixColor, ...args);else console.info(logPrefix, ...args);
+    }
+  };
+  sandbox.debug = (...args) => {
+    if (sandbox.logs === 'debug') {
+      if (sandbox.logColor) console.info(...debugPrefixColor, ...args);else console.info(logPrefix, ...args);
+    }
+  };
 }
 
-const ENode = function(sel, context){
+function toSingleNodeValue(select, context) {
   context = context || document;
-  var el = toNodeValue(sel, context);
+  if (!select) {
+    return [];
+  } else if (typeof select === 'string') {
+    if (select[0] === '<') {
+      var template = document.createElement('template');
+      template.innerHTML = select.trim();
+      return [template.content.firstChild];
+    } else if (select[0] === '/') {
+      var firstNode = document.evaluate(select, context, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+      return [firstNode];
+    } else return [context.querySelector(select)];
+  } else if (select instanceof Element) return [select];else if (select.constructor === ENode) return select.el.slice(0, 1);else if (Array.isArray(select)) return select.slice(0, 1);else return [];
+}
+function toMultiNodeValue(select, context) {
+  context = context || document;
+  if (!select) {
+    return [];
+  } else if (typeof select === 'string') {
+    if (select[0] === '<') {
+      var template = context.createElement('template');
+      template.innerHTML = select.trim();
+      return Array.from(template.content.childNodes);
+    } else if (select[0] === '/') {
+      var snapshot = document.evaluate(select, context, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+      var length = snapshot.snapshotLength;
+      var el = new Array(length);
+      for (var i = 0; i < length; i++) {
+        el[i] = snapshot.snapshotItem(i);
+      }
+      return el;
+    } else {
+      return Array.from(context.querySelectorAll(select));
+    }
+  } else if (select instanceof Element) return [select];else if (select.constructor === ENode) return select.el;else if (Array.isArray(select)) return select;else return [];
+}
+const ENode = function (select, context, toNodeValueFunc) {
+  context = context || document;
+  toNodeValueFunc = toNodeValueFunc || toMultiNodeValue;
+  var el = toNodeValueFunc(select, context);
   this.el = Array.prototype.slice.call(el);
   this.length = this.el.length;
 };
 
-//fltering
-ENode.prototype.filter = function(sel){
+// Checks
+ENode.prototype.exists = function () {
+  return this.length > 0 && this.el[0] !== null;
+};
+
+// Tests if all enodes are connected
+ENode.prototype.isConnected = function () {
+  return this.exists() && this.el.findIndex(e => !e.isConnected) === -1;
+};
+
+// Tests if all enodes have the indicated class
+ENode.prototype.hasClass = function (className) {
+  return this.exists() && this.el.findIndex(e => !e.classList.contains(className)) === -1;
+};
+ENode.prototype.isEqualTo = function (enode) {
+  if (enode.constructor !== ENode) {
+    return false;
+  } else if (this.length !== enode.length) {
+    return false;
+  } else {
+    for (let i = 0; i < this.length; i++) {
+      if (this.el[i] !== enode.el[i]) return false;
+    }
+  }
+  return true;
+};
+
+// Filters
+ENode.prototype.filter = function (sel) {
   var el = this.el;
   if (!sel) return this;
-  return new ENode(el.filter(function(e){
-    return e.matches(sel)
-  }))
+  return new ENode(el.filter(function (e) {
+    return e.matches(sel);
+  }));
 };
 ENode.prototype.contains = function (text) {
   var el = this.el;
-  return new ENode(el.filter(function (e) { return e.textContent.includes(text)}));
+  if (text instanceof RegExp) {
+    return new ENode(el.filter(function (e) {
+      return regex.test(e.textContent);
+    }));
+  } else {
+    return new ENode(el.filter(function (e) {
+      return e.textContent.includes(text);
+    }));
+  }
 };
 
 //navigation
-ENode.prototype.find = function(sel){
+ENode.prototype.find = function (sel) {
   var el = this.el;
-  return new ENode(el.map(function(e){
-    return Array.prototype.slice.call(toNodeValue(sel, e))
-  }).flat(2))
+  return new ENode(el.map(function (e) {
+    return Array.prototype.slice.call(toMultiNodeValue(sel, e));
+  }).flat(2));
 };
-ENode.prototype.closest = function(sel){
+ENode.prototype.closest = function (sel) {
   var el = this.el;
-  return new ENode(el.map(function(e){
-    return e.closest(sel)
-  }))
-};
-ENode.prototype.parent = function(){
-  var el = this.el;
-  var parents = el.map(function(e){return e.parentNode});
-  parents = parents.filter(function(item, pos){
-      return parents.indexOf(item) == pos; 
-    });
-  return new ENode(parents)
-};
-ENode.prototype.children = function(sel){
-  var el = this.el;
-  return new ENode(el.reduce(function(a,b){
-    return a.concat(Array.prototype.slice.call(b.children))
-  }, [])).filter(sel);
-};
-ENode.prototype.next = function(){
-  return new ENode(this.el.map(function(e){ 
-    return e.nextElementSibling
+  return new ENode(el.map(function (e) {
+    return e.closest(sel);
   }));
 };
-ENode.prototype.prev = function(){
-  return new ENode(this.el.map(function(e){ return e.previousElementSibling}));
+ENode.prototype.parent = function () {
+  var el = this.el;
+  var parents = el.map(function (e) {
+    return e.parentNode;
+  });
+  parents = parents.filter(function (item, pos) {
+    return parents.indexOf(item) == pos && item !== null && item.nodeName !== '#document-fragment';
+  });
+  return new ENode(parents);
+};
+ENode.prototype.children = function (sel) {
+  var el = this.el;
+  return new ENode(el.reduce(function (a, b) {
+    return a.concat(Array.prototype.slice.call(b.children));
+  }, [])).filter(sel);
+};
+ENode.prototype.next = function () {
+  return new ENode(this.el.map(function (e) {
+    return e.nextElementSibling;
+  }).filter(e => e));
+};
+ENode.prototype.prev = function () {
+  return new ENode(this.el.map(function (e) {
+    return e.previousElementSibling || [];
+  }).filter(e => e));
 };
 
 //manipulating class
-ENode.prototype.addClass = function(classString){
-  this.el.forEach(function(e){
-    classString.split(' ').forEach(function(className){
+ENode.prototype.addClass = function (classString) {
+  this.el.forEach(function (e) {
+    classString.split(' ').forEach(function (className) {
       e.classList.add(className);
     });
   });
   return this;
 };
-ENode.prototype.removeClass = function(className){
-  function removeTheClass(e){e.classList.remove(className);}
+ENode.prototype.removeClass = function (className) {
+  function removeTheClass(e) {
+    e.classList.remove(className);
+  }
   this.el.forEach(removeTheClass);
   return this;
 };
 
 //repositioning and insertion
-ENode.prototype.append = function(item){
+ENode.prototype.append = function (item) {
   var node = this.el[0];
   if (!node) return;
-
-  var items = toNodeValue(item);
-  items.forEach(function(e){node.append(e);});
-
+  var items = toMultiNodeValue(item);
+  items.forEach(function (e) {
+    node.append(e);
+  });
   return this;
 };
-
-ENode.prototype.prepend = function(item){
+ENode.prototype.prepend = function (item) {
   var node = this.el[0];
   if (!node) return;
-
-  var items = toNodeValue(item);
-  items.forEach(function(e){node.prepend(e);});
-
+  var items = toMultiNodeValue(item);
+  console.log({
+    items
+  });
+  items.forEach(function (e) {
+    node.prepend(e);
+  });
   return this;
 };
-ENode.prototype.beforeMe = function(item){
-  if (typeof item === 'string'){
+ENode.prototype.beforeMe = function (item) {
+  if (typeof item === 'string') {
     item = new ENode(item);
   }
   item.insertBefore(this);
   return this;
 };
-ENode.prototype.afterMe = function(item){
-  if (typeof item === 'string'){
+ENode.prototype.afterMe = function (item) {
+  if (typeof item === 'string') {
     item = new ENode(item);
   }
   item.insertAfter(this);
-  return this
-};
-ENode.prototype.insertBefore = function(item){
-  var node = this.el[0];
-  if (!node) {
-    console.info('no content for insert');
-    return this;
-  }
-  if (typeof item === 'string'){
-    item = document.querySelectorAll(item);
-  } else if (item.constructor === ENode){
-    item = item.el[0];
-  }
-  item.parentNode.insertBefore(node, item);
   return this;
 };
-ENode.prototype.insertAfter = function(item){
+ENode.prototype.insertBefore = function (item) {
   var node = this.el[0];
-  if (!node) {
-    console.info('no content for insert');
-    return this;
-  }
-  if (typeof item === 'string'){
-    item = document.querySelectorAll(item);
-  } else if (item.constructor === ENode){
-    item = item.el[0];
-  }
-  item.parentNode.insertBefore(node, item.nextSibling);
+  if (!node) return this;
+  if (typeof item === 'string') item = document.querySelectorAll(item);else if (item.constructor === ENode) item = item.el[0];
+  if (!item) return this;
+  item.insertAdjacentElement('beforebegin', node);
   return this;
 };
-ENode.prototype.wrap = function(item){
+ENode.prototype.insertAfter = function (item) {
+  var node = this.el[0];
+  if (!node) return this;
+  if (typeof item === 'string') item = document.querySelectorAll(item);else if (item.constructor === ENode) item = item.el[0];
+  if (!item) return this;
+  item.insertAdjacentElement('afterend', node);
+  return this;
+};
+ENode.prototype.wrap = function (item) {
   return this.el.forEach(function (e) {
-    (new ENode(e)).wrapAll(item);
+    new ENode(e).wrapAll(item);
   });
 };
-ENode.prototype.wrapAll = function(item){
-  if (typeof item === 'string'){
+ENode.prototype.wrapAll = function (item) {
+  if (typeof item === 'string') {
     item = new ENode(item);
   }
   var wrapper = item.firstDom();
@@ -169,53 +275,62 @@ ENode.prototype.wrapAll = function(item){
     wrapper = wrapper.firstElementChild;
   }
   var innerItem = new ENode(wrapper);
-
   this.first().beforeMe(item);
   innerItem.append(this);
   return this;
 };
 
 //
-ENode.prototype.markOnce = function(attr){
-  var results = this.el.filter(function(e){
+ENode.prototype.markOnce = function (attr) {
+  var results = this.el.filter(function (e) {
     return !e.getAttribute(attr);
   });
-  results.forEach(function(e){e.setAttribute(attr, true);});
-  return new ENode(results)
+  results.forEach(function (e) {
+    e.setAttribute(attr, true);
+  });
+  return new ENode(results);
 };
 
 //listener
-ENode.prototype.on = function(tag, fnc){
-  this.el.forEach(function(e){
-    tag.split(' ').forEach(function(eventTag){
-      e.addEventListener(eventTag,fnc);
+ENode.prototype.on = function (tag, fnc) {
+  this.el.forEach(function (e) {
+    tag.split(' ').forEach(function (eventTag) {
+      e.addEventListener(eventTag, fnc);
     });
   });
   return this;
 };
 
 //content
-ENode.prototype.html = function(str){
-  if (!str) return this.el.map(function(e){return e.innerHTML}).join();
-
-  this.el.forEach(function(e){e.innerHTML = str;});
+ENode.prototype.html = function (str) {
+  if (!str) return this.el.map(function (e) {
+    return e.innerHTML;
+  }).join();
+  this.el.forEach(function (e) {
+    e.innerHTML = str;
+  });
   return this;
 };
-ENode.prototype.text = function(str){
-  if (!str) return this.el.map(function(e){return e.textContent}).join(' ');
-
-  this.el.forEach(function(e){e.textContent = str;});
+ENode.prototype.text = function (str) {
+  if (!str) return this.el.map(function (e) {
+    return e.textContent;
+  }).join(' ');
+  this.el.forEach(function (e) {
+    e.textContent = str;
+  });
   return this;
 };
-ENode.prototype.attr = function(attributes){
-  if (typeof attributes === 'string'){
+ENode.prototype.attr = function (attributes) {
+  if (typeof attributes === 'string') {
     var prop = attributes;
-    return this.el.map(function(e){return e.getAttribute(prop)}).join(' ');
+    return this.el.map(function (e) {
+      return e.getAttribute(prop);
+    }).join(' ');
   } else {
-    this.el.forEach(function(e){
+    this.el.forEach(function (e) {
       var keys = Object.keys(attributes);
-      keys.forEach(function(key){
-          e.setAttribute(key,attributes[key]);
+      keys.forEach(function (key) {
+        e.setAttribute(key, attributes[key]);
       });
     });
     return this;
@@ -223,361 +338,769 @@ ENode.prototype.attr = function(attributes){
 };
 
 // constructs
-ENode.prototype.each = function(fnc){
-  this.el.forEach(function(e){
+ENode.prototype.each = function (fnc) {
+  this.el.forEach(function (e) {
     var node = new ENode(e);
     fnc.apply(null, [node]);
   });
   return this;
 };
-
-ENode.prototype.watch = function(options){
+ENode.prototype.watch = function (options) {
   var defaultConfig = {
     attributes: false,
     childList: true,
     characterData: false,
     subtree: true
   };
-  var config = Object.assign({}, defaultConfig, options || {},);
+  var config = Object.assign({}, defaultConfig, options || {});
   var cb;
   var observer = new MutationObserver(function (mutations) {
     if (cb) cb(mutations);
   });
-  this.el.forEach(function(e){ observer.observe(e, config);});
-  return {then: function(fnc){
-    cb = fnc;
-  }}
+  this.el.forEach(function (e) {
+    observer.observe(e, config);
+  });
+  return {
+    then: function (fnc) {
+      cb = fnc;
+    }
+  };
 };
 
 //getting first and last elements
-ENode.prototype.firstDom = function(){
+ENode.prototype.firstDOM = function () {
   return this.el[0];
 };
-ENode.prototype.lastDom = function(){
-  return this.el.slice(-1)[0]
+// Deprecated
+ENode.prototype.firstDom = function () {
+  return this.el[0];
 };
-ENode.prototype.first = function(){
+ENode.prototype.lastDOM = function () {
+  return this.el.slice(-1)[0];
+};
+ENode.prototype.lastDom = function () {
+  return this.el.slice(-1)[0];
+};
+ENode.prototype.first = function () {
   return new ENode(this.firstDom());
 };
-ENode.prototype.last = function(){
+ENode.prototype.last = function () {
   return new ENode(this.lastDom());
 };
-
-const validator = {
-  lengthGreaterThan: function(val){
-    return function(dom){ return dom.length >= val}
-  },
-  contains: function(val){
-    return function(dom){ return !!dom.find(val)}
-  },
-  notContains: function(val){
-    return function(dom){ return !dom.find(val)}
-  }
+var $ = (select, context) => {
+  return new ENode(select, context);
+};
+var select = (select, context) => {
+  return new ENode(select, context, toSingleNodeValue);
+};
+var selectAll = (select, context) => {
+  return new ENode(select, context, toMultiNodeValue);
 };
 
-function initializeRule($){
-  var rule = {
-    when: function(predicate){
+function initializeInstrument(sandbox) {
+  const debug = sandbox.debug;
+  const warn = sandbox.warn;
+  let isProcessing = false;
+  let processCount = 0;
+  let didItemChange = false;
+  const instrument = {};
+  instrument.queue = {};
+  instrument._onMutate = [];
+  function debounce(func, timeout = 17) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        func.apply(this, args);
+      }, timeout);
+    };
+  }
+  function processQueueItem(key) {
+    const item = instrument.queue[key];
+    const enode = item.enode;
+    const className = item.className;
+    const type = item.type;
+    let wasConnected, isConnected, hasClass, newEnode;
+    if (type === 'single') {
+      newEnode = enode.isConnected() ? enode : item.select();
+    } else {
+      newEnode = item.select();
+    }
+    wasConnected = item.state === 'connected';
+    isConnected = newEnode.isConnected();
+    hasClass = newEnode.hasClass(className) || newEnode.exists() && className === null;
+    if (!wasConnected && isConnected || isConnected && !hasClass || type !== 'single' && isConnected && className === null && !enode.isEqualTo(newEnode)) {
+      item.enode = newEnode;
+      if (className) item.enode.addClass(className);
+      item.state = 'connected';
+      debug('process instrument: connect', `'${key}'`, item);
+      item.onConnect.forEach(callback => callback());
+      didItemChange = true;
+    } else if (wasConnected && !isConnected) {
+      item.enode = newEnode;
+      item.state = 'disconnected';
+      debug('process instrument: disconnect', `'${key}'`, item);
+      item.onDisconnect.forEach(callback => callback());
+      didItemChange = true;
+    }
+  }
+  instrument.processQueue = () => {
+    if (isProcessing) return;
+    isProcessing = true;
+    processCount++;
+    didItemChange = false;
+    let then = performance.now();
+    for (const key in instrument.queue) {
+      processQueueItem(key);
+    }
+    debug('process instrument: complete', `${(performance.now() - then).toFixed(2)}ms`, processCount);
+    isProcessing = false;
+
+    // Covers scenario where mutations are missed during long process
+    if (didItemChange) {
+      debug('process instrument: item changed, reprocessing');
+      instrument.debouncedProcessQueue();
+    }
+    instrument._onMutate.forEach(callback => callback());
+  };
+  instrument.debouncedProcessQueue = debounce(() => {
+    instrument.processQueue();
+  });
+  function addItem(key, select, options) {
+    if (typeof key !== 'string' && typeof select !== 'function') {
+      warn(`add instrument: requires item key string and select function, input invalid:`, {
+        key,
+        select,
+        options
+      });
+      return;
+    } else if (instrument.queue.hasOwnProperty(key)) {
+      debug(`add instrument: queue item '${key}' already exists`);
+      return;
+    }
+    debug('add instrument:', key, select, options);
+    const item = {
+      select: select,
+      onConnect: options && options.onConnect ? options.onConnect : [],
+      onDisconnect: options && options.onDisconnect ? options.onDisconnect : [],
+      type: options && options.type === 'single' ? 'single' : 'multi',
+      enode: $(),
+      state: 'disconnected'
+    };
+    if (options && options.hasOwnProperty('asClass')) item.className = options.asClass ? 'evolv-' + options.asClass : null;else item.className = 'evolv-' + key;
+    instrument.queue[key] = item;
+  }
+  instrument.add = (key, select, options) => {
+    if (Array.isArray(key)) {
+      key.forEach(item => {
+        addItem(...item);
+      });
+    } else {
+      addItem(key, select, options);
+    }
+    instrument.processQueue();
+  };
+  instrument.remove = key => {
+    debug('remove instrument:', key);
+    const queue = instrument.queue;
+    const item = queue[key];
+    item.enode.removeClass(item.className);
+    delete queue[key];
+  };
+  instrument.deinstrument = () => {
+    debug('deinstrument: removing classes and clearing queues');
+    for (const key in instrument.queue) {
+      instrument.remove(key);
+    }
+    instrument._onMutate = [];
+    sandbox.whenDOM.reset();
+  };
+  return instrument;
+}
+function initializeSelectInstrument(sandbox) {
+  return key => {
+    const item = sandbox.instrument.queue[key];
+    if (!item) {
+      warn(`select instrument: '${key}' not found in instrument queue`);
+      return $();
+    } else if (item.state === 'disconnected') {
+      return $();
+    }
+    return item.type === 'single' ? item.enode.first() : item.enode;
+  };
+}
+
+function initializeEvolvContext(sandbox) {
+  const debug = sandbox.debug;
+  const warn = sandbox.warn;
+  return {
+    state: {
+      current: 'active',
+      previous: 'active'
+    },
+    onActivate: [window.evolv.catalyst._globalObserver.connect, window.evolv.catalyst._intervalPoll.startPolling],
+    onDeactivate: [window.evolv.catalyst._globalObserver.disconnect, sandbox.instrument.deinstrument, sandbox._intervalPoll.reset],
+    initializeActiveKeyListener: value => {
+      debug('active key listener: init');
+      debug('active key listener: waiting for window.evolv.client');
+      sandbox.waitUntil(() => window.evolv && window.evolv.client && window.evolv.client.getActiveKeys).then(() => {
+        // If contextKey is null, getActiveKeys will still trigger and use rule.isActive to evaluate state
+        const contextKey = typeof value === 'string' ? `web.${value}` : null;
+        window.evolv.client.getActiveKeys(contextKey).listen(keys => {
+          let isActive;
+          if (typeof value === 'string') isActive = () => keys.current.length > 0;else if (typeof value === 'function') isActive = value;else warn('init active key listener: requires context id string or isActive function, invalid input', value);
+          const previous = sandbox._evolvContext.state.current;
+          sandbox._evolvContext.state.current = isActive() ? 'active' : 'inactive';
+          const current = sandbox._evolvContext.state.current;
+          if (previous === 'inactive' && current === 'active') {
+            debug(`active key listener: activate context '${sandbox.name}'`);
+            sandbox._evolvContext.onActivate.forEach(callback => callback());
+          } else if (previous === 'active' && current === 'inactive') {
+            debug(`active key listener: deactivate context '${sandbox.name}'`);
+            sandbox._evolvContext.onDeactivate.forEach(callback => callback());
+          } else {
+            debug(`active key listener: no change, current state '${current}'`);
+          }
+        });
+      });
+    }
+  };
+}
+function initializeTrack(sandbox) {
+  const debug = sandbox.debug;
+  return variant => {
+    debug('track:', variant);
+
+    // Backward compatibility
+    var trackKey = 'evolv-' + sandbox.name;
+    var body = sandbox.select(document.body);
+    const className = `${sandbox.name}-${variant}`;
+    sandbox.whenContext('active').then(() => {
+      debug(`init variant: variant ${variant} active`);
+
+      // Backward compatibility
+      var tracking = body.attr(trackKey);
+      if (!tracking.split(' ').includes(variant)) {
+        tracking = tracking ? tracking + ' ' + variant : variant;
+        body.attr({
+          [trackKey]: tracking
+        });
+      }
+      sandbox.instrument.add(className, () => sandbox.select(document.body));
+    });
+    sandbox.whenContext('inactive').then(() => {
+      debug(`init variant: variant ${variant} inactive`);
+
+      // Backward compatibility
+      body.el[0].removeAttribute(trackKey);
+    });
+  };
+}
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+  try {
+    var info = gen[key](arg);
+    var value = info.value;
+  } catch (error) {
+    reject(error);
+    return;
+  }
+  if (info.done) {
+    resolve(value);
+  } else {
+    Promise.resolve(value).then(_next, _throw);
+  }
+}
+function _asyncToGenerator(fn) {
+  return function () {
+    var self = this,
+      args = arguments;
+    return new Promise(function (resolve, reject) {
+      var gen = fn.apply(self, args);
+      function _next(value) {
+        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+      }
+      function _throw(err) {
+        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+      }
+      _next(undefined);
+    });
+  };
+}
+
+function initializeIntervalPoll(catalyst) {
+  function processQueue(sandbox) {
+    const queue = sandbox._intervalPoll.queue;
+    for (let i = 0; i < queue.length; i++) {
+      const entry = queue[i];
+      let timeElapsed = performance.now() - entry.startTime;
+      if (entry.timeout && entry.timeout < timeElapsed) {
+        sandbox.debug('waitUntil: condition timed out', entry);
+        queue.splice(i, 1);
+        continue;
+      }
       try {
-        var trig = this.trigger(predicate);
-        var variant = null;
-        var hasTriggered = false;
-        var gdom = null;
-        function runVariant(dom){
-          try {
-          if (!hasTriggered) return;
-
-          variant(dom);
-          } catch(e) {
-            console.info('evolv "then" clause failed',e);
-          }
+        if (entry.condition()) {
+          sandbox.debug('waitUntil: condition met:', entry.condition, entry.condition(), `${(performance.now() - entry.startTime).toFixed(2)}ms`);
+          entry.callback();
+          queue.splice(i, 1);
         }
-        trig(function (dom) {
-          gdom = dom;
-          hasTriggered = true;
-          if (variant) runVariant(dom);
-        });
-        return {
-          thenInBulk: function (fnc) {
-            variant = fnc;
-            if (hasTriggered) runVariant(gdom);
-          },
-          then: function (fnc) {
-            variant = function(dom){
-              gdom.el.forEach(item=> fnc($(item)));
-            };
-            if (hasTriggered) runVariant(gdom);
-          },
-          reactivateOnChange: function(config){
-            this.thenInBulk(function(obj){
-              obj.watch(config)
-                .then(()=>rule.reactivate(config));
-            });
-          }
-        };
-      } catch(e){
-        console.warn('evolv "when" failed');
-      }
-    },
-    nextIndex: 0,
-    whenDOM: function(sel){
-      var exp = this.exp;
-      var index = rule.nextIndex++;
-      return rule.when(function() {
-        try{
-          var attr = 'evolv-'+ exp + index;
-          var results = $(sel).markOnce(attr);
-          return results.length > 0 ? results : null;
-        } catch (e){ 
-          console.warn('Evolv selector may be malformed for', exp, sel);
-        }
-      })
-    },
-    whenItem: function(name){
-      var exp = this.exp;
-      var store = this.store;
-      var index = rule.nextIndex++;
-      return rule.when(function() {
-        try{
-          var attr = 'evolv-'+ exp + index;
-          var storeRef = store.cache[name];
-          if (!storeRef){
-            console.warn('evolv invalid item', name);
-            return null;
-          }
-          var results = $('.evolv-' + (storeRef.asClass || name)).markOnce(attr);
-          return results.length > 0 ? results : null;
-        } catch (e){ 
-          console.warn('Evolv instrument key may be malformed for', exp, name);
-        }
-      })
-    }
-  };
-  return rule;
-}
-
-function initializeStore(rule){
-  return {
-    instrumentDOM: function(data){
-      var store = rule.store;
-
-      if (data){
-        store.cache = Object.assign(store.cache || {}, data || {});
-      } else {
-        data = store.cache;
-      }
-      var check = function(obj, key){
-        rule
-          .when(function(){
-            try{
-              return obj.dom.length >= (obj.count || 1)
-            } catch (e){
-              console.warn('Selector may be malformed', e);
-            }
-          })
-          .thenInBulk(function(){
-            obj.node = obj.dom;
-            if (obj.asClass || key) {
-              obj.node.addClass('evolv-' + (obj.asClass || key));
-            }
-            if (obj.asAttr) {
-                var objAttr = {['evolv-' + obj.asAttr]: true };
-                obj.node.attr(objAttr);
-            }            
-          });
-      };
-      for(var key in data){
-        check(data[key], key);     
+      } catch (error) {
+        // Prevents 60 error messages per second if the condition contains an error
+        sandbox.warn('waitUntil: error in condition, removing from queue', error);
+        queue.splice(i, 1);
       }
     }
   }
+  function processQueues() {
+    return new Promise(resolve => {
+      const processQueuesLoop = () => {
+        let anySandboxActive = false;
+        let queueTotal = 0;
+        for (const sandbox of catalyst.sandboxes) {
+          if (sandbox._evolvContext.state.current === 'inactive') continue;
+          anySandboxActive = true;
+          processQueue(sandbox);
+          queueTotal += sandbox._intervalPoll.queue.length;
+        }
+        if (!anySandboxActive) {
+          catalyst.debug('interval poll: no active sandboxes');
+          return resolve(false);
+        } else if (queueTotal === 0) {
+          catalyst.debug('interval poll: all queues empty');
+          return resolve(false);
+        } else {
+          requestAnimationFrame(processQueuesLoop);
+        }
+      };
+      processQueuesLoop();
+    });
+  }
+  return {
+    isPolling: false,
+    startPolling: function () {
+      var _ref = _asyncToGenerator(function* () {
+        const intervalPoll = catalyst._intervalPoll;
+        if (intervalPoll.isPolling) return;
+        catalyst.debug('interval poll: start polling');
+        intervalPoll.isPolling = true;
+        intervalPoll.isPolling = yield processQueues();
+        catalyst.debug('interval poll: stop polling');
+      });
+      return function startPolling() {
+        return _ref.apply(this, arguments);
+      };
+    }()
+  };
+}
+function initializeSandboxIntervalPoll(sandbox) {
+  return {
+    queue: [],
+    reset: () => {
+      if (sandbox._intervalPoll.queue.length > 0) {
+        sandbox.debug('interval poll: clear queue');
+        sandbox._intervalPoll.queue = [];
+      }
+    }
+  };
 }
 
-function initializeIntervalHandler() {
+function initializeStore(sandbox) {
   return {
-    triggerHistoryQueue: [],
-    triggerQueue: null,
-    trigger: function(selFnc){
-      if (!this.triggerQueue){
-        this.triggerQueue = [];
-        this.startProcessing();
+    instrumentDOM: data => {
+      const argumentArray = [];
+      for (const key in data) {
+        const dataItem = data[key];
+        const select = Object.getOwnPropertyDescriptor(dataItem, 'dom').get;
+        const options = {};
+        if (dataItem.hasOwnProperty('asClass')) options.asClass = dataItem.asClass;
+        argumentArray.push([key, select, options]);
       }
+      sandbox.instrument.add(argumentArray);
+    }
+  };
+}
 
-      var task = {selFnc: selFnc, action: function(){}};
-      this.triggerQueue.push(task);
-      this.triggerHistoryQueue.push(task);
+function hash(string) {
+  let hash = 0;
+  const increment = Math.trunc(string.length / 512) || 1;
+  for (let i = 0; i < string.length; i += increment) {
+    let chr = string.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+  }
+  hash &= 0xffff;
+  return hash;
+}
+function initializeWhenContext(sandbox) {
+  const debug = sandbox.debug;
+  return state => {
+    let queueName;
+    if (!(state === 'active' || state === undefined || state === 'inactive')) {
+      return {
+        then: () => {
+          warn(`whenContext: unknown state, requires 'active' or 'inactive', default is 'active'`);
+        }
+      };
+    } else if (state === 'active' || undefined) {
+      queueName = 'onActivate';
+    } else {
+      queueName = 'onDeactivate';
+    }
+    return {
+      then: callback => {
+        const newEntry = () => {
+          debug(`whenContext: fire on ${state === 'inactive' ? 'deactivate' : 'activate'}`, callback);
+          callback();
+        };
+        newEntry.hash = hash(callback.toString());
 
-      return function(fnc){
-        task.action = fnc;
-      }
-    },
-    reactivate: function(){
-      this.triggerQueue = this.triggerHistoryQueue.slice(0);
-      this.startProcessing(500);
-    },
-    intervalTimer : null,
-    clearIntervalTimer: function(){
-      if (this.intervalTimer){
-        clearInterval(this.intervalTimer);
-        this.intervalTimer = null;
-      }
-    },
-    startProcessing: function(duration){
-      var int = 60;
-      var dur = duration || 10000;
-
-      this.clearIntervalTimer();
-
-      function process() {
-        var baseItems = this.triggerQueue.slice();
-        var items = baseItems;
-
-        var results;
-        do {
-          items = results || items;
-          results = items.filter(function(task){
-            var dom = task.selFnc();
-            if (dom) {
-              try{
-                task.action(dom);
-              } catch(e){
-                console.warn('failed variant', e);
-                window.evolv.client.contaminate({reason:'variant-failed', details: e}, true);
-              }
-            }
-            return !dom;
-          });
-        } while(items.length > results.length)
-
-        this.triggerQueue = this.triggerQueue.filter(function(item){
-          return results.includes(item) || !baseItems.includes(item)
-        });
-        if (results.length === 0){
-          setTimeout(function(){ //give other calls a chance to join before we end this.
-            if (this.triggerQueue.length !== 0) return;
-
-            this.clearIntervalTimer();
-          }.bind(this), 30);
+        // Dedupe callbacks
+        if (sandbox._evolvContext[queueName].findIndex(entry => entry.hash === newEntry.hash) !== -1) {
+          debug(`whenContext: duplicate callback not assigned to '${state}' state`, callback);
+          return;
+        }
+        debug(`whenContext: queue callback for '${state}' state, current state: '${sandbox._evolvContext.state.current}'`, callback);
+        sandbox._evolvContext[queueName].push(newEntry);
+        if (state === 'active' && sandbox._evolvContext.state.current === 'active') {
+          newEntry();
+        } else if (state === 'inactive' && sandbox._evolvContext.state.current === 'inactive') {
+          newEntry();
         }
       }
-      this.intervalTimer = setInterval(process.bind(this), int);
-      // $(function(){setTimeout(process.bind(this),1);});
-      setTimeout(this.clearIntervalTimer.bind(this), dur);
+    };
+  };
+}
+function initializeWhenMutate(sandbox) {
+  const debug = sandbox.debug;
+  return () => {
+    return {
+      then: callback => {
+        const newEntry = () => {
+          debug(`whenMutate: fire on mutate`, callback);
+          callback();
+        };
+        newEntry.hash = hash(callback.toString());
+
+        // Dedupe callbacks
+        if (sandbox.instrument._onMutate.findIndex(entry => entry.hash === newEntry.hash) !== -1) {
+          debug(`whenMutate: duplicate callback not assigned to on-mutate queue`, callback);
+          return;
+        }
+        debug('whenMutate: add callback to on-mutate queue', callback);
+        sandbox.instrument._onMutate.push(newEntry);
+      }
+    };
+  };
+}
+function initializeWhenItem(sandbox) {
+  const debug = sandbox.debug;
+  const warn = sandbox.warn;
+  return (key, options) => {
+    const item = sandbox.instrument.queue[key];
+    const logPrefix = options && options.logPrefix ? options.logPrefix : 'whenItem';
+    let queueName, action;
+    if (options && options.disconnect) {
+      queueName = 'onDisconnect';
+      action = 'disconnect';
+    } else {
+      queueName = 'onConnect';
+      action = 'connect';
     }
+    if (!item) {
+      warn(`${logPrefix}: instrument item '${key}' not defined`);
+      return {
+        then: () => null
+      };
+    }
+    const thenFunc = (callback, isInBulk) => {
+      debug(`${logPrefix}: '${key}' add on-${action} callback`, {
+        callback
+      });
+      let newEntry;
+      const index = item[queueName].length + 1;
+      if (!isInBulk) {
+        newEntry = () => {
+          const enode = item.type === 'single' ? item.enode.first() : item.enode;
+          debug(`${logPrefix}: '${key}'`, `fire on ${action}:`, callback);
+          enode.markOnce(`evolv-${key}-${index}`).each(enodeItem => callback(enodeItem));
+        };
+      } else {
+        newEntry = () => {
+          const enode = item.type === 'single' ? item.enode.first() : item.enode;
+          debug(`${logPrefix}: '${key}'`, `fire in bulk on ${action}:`, callback);
+          callback(enode.markOnce(`evolv-${key}-${index}`));
+        };
+      }
+      newEntry.hash = options && options.hash ? options.hash : hash(callback.toString());
+      if (item[queueName].findIndex(entry => entry.hash === newEntry.hash) !== -1) {
+        debug(`${logPrefix}: duplicate on-${action} callback not assigned to item '${key}':`, callback);
+        return;
+      }
+      item[queueName].push(newEntry);
+      if (queueName === 'onConnect' && sandbox.instrument.queue[key].enode.isConnected()) newEntry();
+    };
+    function thenInBulkFunc(callback) {
+      thenFunc(callback, true);
+    }
+    return {
+      then: thenFunc,
+      // Deprecated
+      thenInBulk: thenInBulkFunc,
+      // Deprecated
+      reactivateOnChange: () => {}
+    };
+  };
+}
+function initializeWhenDOM(sandbox) {
+  const counts = {};
+  const history = [];
+  const debug = sandbox.debug;
+  const warn = sandbox.warn;
+  const whenDOM = (select, options) => {
+    const logPrefix = options && options.logPrefix ? options.logPrefix : 'whenDOM';
+    const keyPrefix = options && options.keyPrefix ? options.keyPrefix : 'when-dom-';
+    const type = options && options.type ? options.type : 'multi';
+    let selectFunc, count, key, foundPrevious;
+    const previous = history.find(item => item.select === select);
+    const whenItemOptions = {
+      logPrefix
+    };
+    if (options && options.hash) whenItemOptions.hash = options.hash;
+    if (previous && keyPrefix === previous.keyPrefix) {
+      selectFunc = previous.selectFunc;
+      key = previous.key;
+      debug(`${logPrefix}: selector '${select}' found in item '${key}'`);
+      foundPrevious = true;
+    } else {
+      // Increment keys with different prefixes separately;
+      if (!counts[keyPrefix]) counts[keyPrefix] = 1;
+
+      // Accept string or enode
+      if (typeof select === 'string') selectFunc = () => $(select);else if (typeof select === 'object' && select.constructor === ENode) selectFunc = () => select;else {
+        warn(`${logPrefix}: unrecognized input ${select}, requires string or enode`);
+        return {
+          then: () => null
+        };
+      }
+      count = counts[keyPrefix]++;
+      key = keyPrefix + count;
+      history.push({
+        select: select,
+        selectFunc: selectFunc,
+        keyPrefix: keyPrefix,
+        key: key
+      });
+    }
+    return {
+      then: callback => {
+        if (!foundPrevious) sandbox.instrument.add(key, selectFunc, {
+          asClass: null,
+          type: type
+        });
+        sandbox.whenItem(key, whenItemOptions).then(callback);
+      },
+      thenInBulk: callback => {
+        if (!foundPrevious) sandbox.instrument.add(key, selectFunc, {
+          asClass: null,
+          type: type
+        });
+        sandbox.whenItem(key, whenItemOptions).thenInBulk(callback);
+      },
+      // Deprecated
+      reactivateOnChange: () => {}
+    };
+  };
+  whenDOM.counts = counts;
+  whenDOM.history = history;
+  whenDOM.reset = function () {
+    debug('whenDOM: reset selector history');
+    for (const key in this.counts) {
+      delete this.counts[key];
+    }
+    this.history.length = 0;
+  };
+  return whenDOM;
+}
+function initializeWhenElement(sandbox) {
+  return select => {
+    return {
+      then: callback => {
+        sandbox.whenDOM(select, {
+          keyPrefix: 'when-element-',
+          logPrefix: 'whenElement',
+          type: 'single',
+          hash: hash(callback.toString())
+        }).then(enode => callback(enode.el[0]));
+      }
+    };
+  };
+}
+function initializeWhenElements(sandbox) {
+  return select => {
+    return {
+      then: callback => {
+        sandbox.whenDOM(select, {
+          keyPrefix: 'when-elements-',
+          logPrefix: 'whenElements',
+          hash: hash(callback.toString())
+        }).then(enode => callback(enode.el[0]));
+      }
+    };
+  };
+}
+function initializeWaitUntil(sandbox) {
+  const debug = sandbox.debug;
+  const warn = sandbox.warn;
+  return (condition, timeout) => {
+    if (typeof condition !== 'function') {
+      warn('waitUntil: requires callback function that evaluates to true or false, input invalid', condition);
+    }
+    debug('waitUntil: add callback to interval poll queue', {
+      condition,
+      timeout
+    });
+    return {
+      then: callback => {
+        const queue = sandbox._intervalPoll.queue;
+        const newEntry = {
+          condition: condition,
+          callback: () => callback(condition()),
+          timeout: timeout || null,
+          startTime: performance.now(),
+          hash: hash(callback.toString())
+        };
+        if (queue.some(entry => entry.hash === newEntry.hash)) {
+          debug(`waitUntil: duplicate callback not added to interval poll queue`, callback);
+          return;
+        }
+        queue.push(newEntry);
+        window.evolv.catalyst._intervalPoll.startPolling();
+      }
+    };
   };
 }
 
-var $ = function(sel){
-  return new ENode(sel);
-};
+function initializeSandbox(name) {
+  const sandbox = {};
+  sandbox.name = name;
+  initializeLogs(sandbox);
+  const log = sandbox.log;
+  const debug = sandbox.debug;
+  if (name === 'catalyst') {
+    log(`init catalyst version ${version}`);
+    log(`log level: ${sandbox.logs}`);
+    sandbox.version = version;
+  } else {
+    debug(`init context sandbox: ${name}`);
+    if (window.evolv.catalyst._globalObserver.state === 'inactive') window.evolv.catalyst._globalObserver.connect();
+  }
+  sandbox.$ = selectAll;
+  sandbox.select = select;
+  sandbox.selectAll = selectAll;
+  if (sandbox.name !== 'catalyst') {
+    sandbox.selectInstrument = initializeSelectInstrument(sandbox);
+    sandbox.$$ = sandbox.selectInstrument;
+    sandbox.store = initializeStore(sandbox);
+    sandbox.app = {};
+    sandbox.instrument = initializeInstrument(sandbox);
+    sandbox._intervalPoll = initializeSandboxIntervalPoll(sandbox);
+    sandbox._evolvContext = initializeEvolvContext(sandbox);
+    sandbox.whenContext = initializeWhenContext(sandbox);
+    sandbox.whenMutate = initializeWhenMutate(sandbox);
+    sandbox.whenDOM = initializeWhenDOM(sandbox);
+    sandbox.whenItem = initializeWhenItem(sandbox);
+    sandbox.whenElement = initializeWhenElement(sandbox);
+    sandbox.whenElements = initializeWhenElements(sandbox);
+    sandbox.waitUntil = initializeWaitUntil(sandbox);
+    sandbox.track = initializeTrack(sandbox);
+  }
 
-function initializeSandbox(name){
-  var sandbox;
-  var rule = initializeRule($);
-  var store = initializeStore(rule);
-
-  sandbox = rule;
-
-  sandbox.rule = rule;
-  rule.store = store;
-  rule.exp = name;
-  sandbox.app = {};
-
-  sandbox.triggerHandler = initializeIntervalHandler();
-  sandbox.validate = validator;
-
-  rule.trigger = function(selFnc){
-    return this.triggerHandler.trigger(selFnc)
-  };
-  rule.reactivate = function(){
-    return this.triggerHandler.reactivate()
-  };
-
-  sandbox.$ = $;
-  sandbox.$$ = function(name){
-    var storeRef = store.cache[name];
-    if (!storeRef){
-      console.warn('evolv invalid item', name);
-      return new ENode();
-    }
-    return new ENode('.evolv-'+(storeRef.asClass || name));
-  };
-
-  sandbox.track = function(txt){
-    var trackKey = 'evolv-' + this.exp;
-    var node = $('body');
-    var tracking = node.attr(trackKey);
-    tracking = tracking ?(tracking + ' ' + txt) :txt;
-    node.attr({[trackKey]: tracking});
-    return this;             
-  };
-
+  // Backwards compatibility
+  sandbox.reactivate = () => {};
   return sandbox;
 }
 
-function initializeCatalyst(){
-  var renderRule = initializeSandbox('_general');
-  renderRule.sandboxes = [];
+function initializeCatalyst() {
+  const catalyst = initializeSandbox('catalyst');
+  const debug = catalyst.debug;
+  catalyst.sandboxes = [];
 
-  let renderRuleProxy = new Proxy(renderRule, {
+  // Creates proxy for window.evolv.catalyst that adds a new sandbox whenever
+  // a new property is accessed.
+  let catalystProxy = new Proxy(catalyst, {
     get(target, name, receiver) {
-        let rv = Reflect.get(target, name, receiver);
-        if (!rv) {
-            target[name] = initializeSandbox(name); 
-            rv = Reflect.get(target, name, receiver);
-            renderRule.sandboxes.push(rv);
-        }
-        rv.lastAccessTime = new Date().getTime();
-        return rv;
+      let catalystReflection = Reflect.get(target, name, receiver);
+      if (!catalystReflection) {
+        const sandbox = initializeSandbox(name);
+        let hasInitializedActiveKeyListener = false;
+
+        // Automatically initializes the active key listener for SPA handling if either
+        // property is set. Only permitted to run once. isActive() is deprecated.
+        const sandboxProxy = new Proxy(sandbox, {
+          set(target, property, value) {
+            target[property] = value;
+            if (!hasInitializedActiveKeyListener && (property === 'id' || property === 'isActive')) {
+              sandbox._evolvContext.initializeActiveKeyListener(value);
+              hasInitializedActiveKeyListener = true;
+            } else if (property === 'id' || property === 'isActive') {
+              sandbox.debug('init sandbox: active key listener already initialized');
+            }
+            return true;
+          }
+        });
+        target[name] = sandboxProxy;
+        catalystReflection = Reflect.get(target, name, receiver);
+        catalyst.sandboxes.push(sandboxProxy);
+      }
+      return catalystReflection;
     }
   });
+  catalyst._intervalPoll = initializeIntervalPoll(catalyst);
 
-  const spaCleanupThreshold = 500;
-  function isFreshAccess(sb){
-    if (sb.isActive) return sb.isActive();
-    return (sb.lastAccessTime + spaCleanupThreshold) > new Date().getTime();
-  }
-  
-  function clearOnNav(){
-    var activeSandboxes = [];
-    try{  
-      activeSandboxes = renderRule.sandboxes.filter(function(sb){
-        if (isFreshAccess(sb)){
-          sb.reactivate();
-          return true;
-        }
-
-        if(sb.triggerHandler && sb.triggerHandler.clearIntervalTimer){
-          sb.triggerHandler.clearIntervalTimer();
-        }
-        renderRuleProxy[sb.exp] = null;
+  // The main mutation observer for all sandboxes
+  debug('global observer: init');
+  catalyst._globalObserver = {
+    observer: new MutationObserver(() => {
+      let anySandboxActive = false;
+      for (const sandbox of catalyst.sandboxes) {
+        if (sandbox._evolvContext.state.current === 'inactive') continue;
+        anySandboxActive = true;
+        sandbox.instrument.debouncedProcessQueue();
+      }
+      if (!anySandboxActive) {
+        debug('global observer: no sandboxes active');
+        catalyst._globalObserver.disconnect();
+      }
+    }),
+    connect: () => {
+      debug('global observer: observe');
+      catalyst._globalObserver.observer.observe(document.body, {
+        childList: true,
+        attributes: true,
+        subtree: true
       });
-    } catch(e){console.info('evolv: warning terminating for spa', e);}
-    console.info('evolv active sandboxes after spa', activeSandboxes);
-    renderRule.sandboxes = activeSandboxes;
+      catalyst._globalObserver.state = 'active';
+    },
+    disconnect: () => {
+      debug('global observer: disconnect');
+      catalyst._globalObserver.observer.disconnect();
+      catalyst._globalObserver.state = 'inactive';
+    }
+  };
+  catalyst._globalObserver.connect();
+  return catalystProxy;
+}
+function processConfig(config) {
+  function pageMatch(page) {
+    if (!page) return false;
+    return new RegExp(page).test(location.pathname);
   }
-  
-  window.addEventListener('popstate', clearOnNav);
-  window.addEventListener('stateupdate_evolv', clearOnNav);
-
-  return renderRuleProxy;
-}
-
-function pageMatch(page){
-  if (!page) return false;
-
-  return new RegExp(page).test(location.pathname);
-}
-
-window.evolv = window.evolv || {} ;
-
-function processConfig(config){
-  var pages = config.pages || ['.*'];
+  window.evolv = window.evolv || {};
+  var pages = config && config.pages ? config.pages : ['.*'];
   var matches = pages.some(pageMatch);
   var evolv = window.evolv;
-  if (matches){
+  if (matches) {
     if (window.evolv.catalyst) return window.evolv.catalyst;
-
     evolv.catalyst = initializeCatalyst();
     evolv.renderRule = evolv.catalyst;
     return evolv.catalyst;

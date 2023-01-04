@@ -1,6 +1,6 @@
 {
   "name": "@evolv-delivery/behavioral",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Populate Evolv context based on configurable visitor behaviors",
   "main": "dist/index.js",
   "files": [
@@ -24,7 +24,7 @@
     "type": "git",
     "url": "https://github.com/evolv-ai/env-integrations.git"
   },
-  "homepage": "https://github.com/evolv-ai/env-integrations/behavioral",
+  "homepage": "https://github.com/evolv-ai/env-integrations/",
   "bugs": {
     "url": "https://github.com/evolv-ai/env-integrations/issues"
   },

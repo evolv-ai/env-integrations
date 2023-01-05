@@ -11,12 +11,25 @@
     "scripts": {
         "build": "rollup -c",
         "watch:rollup": "rollup -c --watch",
-        "serve:catalyst": "http-server serve -p 3333 --cors --silent",
-        "serve:sandbox": "http-server cypress/sandbox -p 3334 --silent",
-        "serve": "npm-run-all -c -p serve:*",
-        "start": "npm-run-all -c -p watch:* serve:catalyst",
-        "cypress": "npx wait-on http://localhost:3333 && npx wait-on http://localhost:3334 && cypress run --spec ./cypress/e2e/catalyst-test.cy.js",
-        "test": "npm-run-all -s build -p serve:* cypress"
+        "serve:catalyst": "set -m; http-server serve -p 3333 --cors --silent & echo $! > .catalystpid; fg > /dev/null",
+        "serve:sandbox": "set -m; http-server cypress/sandbox -p 3334 --silent & echo $! > .sandboxpid; fg > /dev/null",
+        "cleanup": "kill $(cat .sandboxpid) $(cat .catalystpid); rm .sandboxpid .catalystpid",
+        "serve": "npm-run-all -p serve:*",
+        "start": "npm-run-all -p watch:* serve:catalyst",
+        "cypress": "npx wait-on http://localhost:3333 && npx wait-on http://localhost:3334 && cypress run --spec ./cypress/e2e/catalyst-test.cy.js; result=$?; npm run cleanup; exit $result",
+        "test": "npm-run-all -s build -p serve cypress"
+    },
+    "prettier": {
+        "tabWidth": 4,
+        "singleQuote": true,
+        "overrides": [
+            {
+                "files": "*.yml",
+                "options": {
+                    "tabWidth": 2
+                }
+            }
+        ]
     },
     "repository": {
         "type": "git",

@@ -7,5 +7,7 @@ export default defineConfig({
         },
 
         testIsolation: false,
+        video: false,
+        screenshotOnRunFailure: false,
     },
 });

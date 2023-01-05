@@ -1,0 +1,24 @@
+name: Run Tests
+
+on:
+    push:
+        paths:
+            - 'catalyst/**'
+
+jobs:
+    deploy:
+        name: Run Catalyst Test
+        runs-on: ubuntu-latest
+        steps:
+            - name: Set up Node
+              uses: actions/setup-node@v1
+              with:
+                  node-version: '16'
+            - name: Checkout Ref
+              uses: actions/checkout@v1
+              # ref is not set as it should be using master only
+            - name: Run Tests
+              working-directory: ./catalyst/
+              run: |
+                  npm install
+                  npm run test

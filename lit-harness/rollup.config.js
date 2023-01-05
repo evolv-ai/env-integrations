@@ -1,0 +1,37 @@
+import json from '@rollup/plugin-json'
+import resolve from 'rollup-plugin-node-resolve';
+import commonJS from 'rollup-plugin-commonjs';
+
+function buildFile(src){
+  return  [   
+    {
+      input: `./src/index.js`,
+      output: {
+        file: `./dist/index.js`,
+        format: 'iife'
+      },
+      plugins: [
+        resolve(),
+        commonJS({
+          include: 'node_modules/**'
+        })
+      ]
+    },
+    {
+      input: `./test/harness.js`,
+      output: {
+        file: `./dist/harness.js`,
+        format: 'iife'
+      },
+      plugins: [
+        json(),
+        resolve(),
+        commonJS({
+          include: 'node_modules/**'
+        })
+      ]
+    },
+  ]
+}
+
+export default buildFile()

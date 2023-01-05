@@ -1,0 +1,40 @@
+{
+    "name": "@evolv-delivery/lit-harness",
+    "version": "0.1.0",
+    "description": "An integration harness for using lit in evolv experiments",
+    "main": "dist/index.js",
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
+    "scripts": {
+        "build": "rollup --config rollup.config.js",
+        "watch": "rollup --config rollup.config.js --watch",
+        "dev": "pushd dist; python3 -m http.server 8000; popd",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "audience",
+        "context",
+        "DSL"
+    ],
+    "author": "richardcowin",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/evolv-ai/env-integrations.git"
+    },
+    "homepage": "https://github.com/evolv-ai/env-integrations/",
+    "bugs": {
+        "url": "https://github.com/evolv-ai/env-integrations/issues"
+    },
+    "devDependencies": {
+        "@rollup/plugin-json": "^4.1.0",
+        "lit-html": "^2.5.0"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "rollup-plugin-commonjs": "^10.1.0",
+        "rollup-plugin-node-resolve": "^5.2.0"
+    }
+}

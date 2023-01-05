@@ -1,4 +1,4 @@
-var version = "0.1.26";
+var version = "0.6.0";
 
 function initializeLogs(sandbox) {
     // Uses console.info() because VBG blocks console.log();

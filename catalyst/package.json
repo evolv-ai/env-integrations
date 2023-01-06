@@ -15,10 +15,9 @@
         "serve:catalyst": "http-server serve -p 3333 --cors --silent",
         "serve:sandbox": "http-server cypress/sandbox -p 3334 --silent",
         "stop": "lsof -ti tcp:3333 -i tcp:3334 | xargs kill",
-        "serve": "npm-run-all -p serve:*",
         "start": "npm-run-all -p watch:* serve:catalyst",
         "test:cypress": "npx wait-on http://localhost:3333 && npx wait-on http://localhost:3334 && cypress run --spec ./cypress/e2e/catalyst-test.cy.js; npm run stop",
-        "test": "npm-run-all -s build -p serve test:cypress"
+        "test": "npm-run-all -s build -p serve:* test:cypress"
     },
     "keywords": [
         "render",

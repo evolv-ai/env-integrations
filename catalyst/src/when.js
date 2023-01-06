@@ -215,7 +215,6 @@ function initializeWhenItem(sandbox) {
 
         return {
             then: thenFunc,
-            // Deprecated
             thenInBulk: thenInBulkFunc,
             // Deprecated
             reactivateOnChange: () => {},

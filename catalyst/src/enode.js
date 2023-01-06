@@ -1,12 +1,11 @@
 function toSingleNodeValue(select, context) {
     context = context || document;
-    if (!select) {
-        return [];
-    } else if (typeof select === 'string') {
+    let element = null;
+    if (typeof select === 'string') {
         if (select[0] === '<') {
             var template = document.createElement('template');
             template.innerHTML = select.trim();
-            return [template.content.firstChild];
+            element = template.content.firstChild;
         } else if (select[0] === '/') {
             var firstNode = document.evaluate(
                 select,
@@ -15,11 +14,15 @@ function toSingleNodeValue(select, context) {
                 XPathResult.FIRST_ORDERED_NODE_TYPE,
                 null
             ).singleNodeValue;
-            return [firstNode];
-        } else return [context.querySelector(select)];
-    } else if (select instanceof Element) return [select];
-    else if (select.constructor === ENode) return select.el.slice(0, 1);
-    else if (Array.isArray(select)) return select.slice(0, 1);
+            element = firstNode;
+        } else {
+            element = context.querySelector(select);
+        }
+    } else if (select instanceof Element) element = select;
+    else if (select.constructor === ENode) element = select.el[0];
+    else if (Array.isArray(select)) element = select[0];
+
+    if (element) return [element];
     else return [];
 }
 
@@ -217,14 +220,14 @@ ENode.prototype.prepend = function (item) {
     if (!node) return;
 
     var items = toMultiNodeValue(item);
-    console.log({ items });
 
-    items.forEach(function (e) {
-        node.prepend(e);
-    });
+    for (let i = items.length - 1; i >= 0; i--) {
+        node.prepend(items[i]);
+    }
 
     return this;
 };
+
 ENode.prototype.beforeMe = function (item) {
     if (typeof item === 'string') {
         item = new ENode(item);

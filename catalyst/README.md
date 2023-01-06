@@ -169,8 +169,6 @@ rule.isActive = () => {
 ```
 ---
 
----
-
 ### rule.instrument.add()
 
 *New in 0.6.0* - Replaces [rule.store.instrumentDOM()](#rulestoreinstrumentdom). Accepts an instrument key, select function, and options or an array of these inputs and adds an entry in `rule.instrument.queue`.
@@ -271,10 +269,6 @@ var pageHeading = $i('page-heading'); // Output: pageHeading.el Array(1) 0: h1.e
 
 ---
 
-### rule.key()
-
----
-
 ### rule.track()
 
 Applies a variant-specific attribute to the `body` to allow you define all the variant CSS at the context level. If multiple variants are active simultaneously they will be space-delimited in the attribute. *New in 0.6.0* - Attribute will be removed with SPA navigation away from the page.
@@ -339,7 +333,7 @@ Target HTML where variant C1V1 and C2V2 are active:
 ---
 ### rule.whenContext()
 
-*New in 0.6.0* - Listens for `evolv.client.getActiveKeys` and fires a callback when the sandbox state changes to `active` or `inactive`. Useful for SPA cleanup functions.
+*New in 0.6.0* - Listens for `evolv.client.getActiveKeys` and fires a callback when the sandbox state changes to `active` or `inactive`. Useful for SPA cleanup functions. The default state of an experiment is `active`, even if no `rule.id` or `rule.idActive` criteria were provided.
 
 | Syntax | Description | Notes |
 | :----- | :---------- | ----- |
@@ -366,14 +360,15 @@ rule.whenContext('inactive').then(() => cleanUp());
 
 ### rule.whenMutate()
 
-*New in 0.6.0* - Fires a callback when there is a change detected on the page. More specifically this fires after processing the instrument queue which is debounced, so it doesn't fire on *every* mutation but when a mutation or cluster of mutations happen and then stop for at least 1/60th of a second. Can replace many instances that would have required `rule.watch()` without having to add another mutation observer to the page. Is that better for performance? Nobody knows.
+*New in 0.6.0* - Fires a callback when there is a change detected on the page. More specifically this fires after processing the instrument queue which is debounced, so it doesn't fire on *every* mutation but when a mutation or cluster of mutations happen and then stop for at least 1/60th of a second. Can replace many instances that would have required `rule.watch()` without having to add another mutation observer to the page. Is that better for performance? Nobody knows. Does it prevent infinite loops that crash the page? Yes.
 
 | Syntax | Description | Notes |
 | :----- | :---------- | ----- |
 | `rule.whenMutate().then(<callback>)` | `<callback>`: Callback to added to the `onMutate` queue | |
 
 ```js
-// In this example there's a price on the page that can change dynamically so we create a function that updates the price and set it to fire whenever there's a mutation on the page.
+// In this example there's a price on the page that can change dynamically so we create a function
+// that updates the price and set it to fire whenever there's a mutation on the page.
 
 const rule = window.evolv.catalyst.xyz;
 const $ = rule.select;
@@ -396,8 +391,9 @@ function updatePrice() {
 
 updatePrice();
 
-rule.onMutate().then(updatePrice);
+rule.whenMutate().then(updatePrice);
 ```
+
 ---
 
 ### .whenItem()

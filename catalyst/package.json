@@ -35,7 +35,10 @@
     "bugs": {
         "url": "https://github.com/evolv-ai/env-integrations/issues"
     },
-    "author": "Richard Cowin and Charles Robertson",
+    "author": "richardcowin",
+    "contributors": [
+        "Charles Robertson <charles.robertson@evolv.ai> (charlesrobertson.io)"
+    ],
     "license": "ISC",
     "devDependencies": {
         "@babel/plugin-transform-async-to-generator": "^7.20.7",

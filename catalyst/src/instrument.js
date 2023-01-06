@@ -86,7 +86,7 @@ function initializeInstrument(sandbox) {
         // Covers scenario where mutations are missed during long process
         if (didItemChange) {
             debug('process instrument: item changed, reprocessing');
-            instrument.debouncedProcessQueue();
+            instrument.processQueue();
         }
 
         instrument._onMutate.forEach((callback) => callback());

@@ -28,7 +28,7 @@ setTimeout(() => {
     // Here we can only test the active state because there is no live Evolv snippet and SPA routing setup
     rule.whenContext('active').then(() => {
         $('.when-methods .row').append(
-            `<div class="col-md-4">
+            `<div class="when-context col-md-4">
                     <h3>whenContext</h3>
                     <p>The current context is '${rule._evolvContext.state.current}'</p>
                 </div>
@@ -38,7 +38,7 @@ setTimeout(() => {
 
     rule.whenMutate().then(() => {
         $('.when-methods .row').markOnce('when-mutate')
-            .append(`<div class="col-md-4">
+            .append(`<div class="when-mutate col-md-4">
                         <h3>whenMutate</h3>
                         <p>A mutation occurred
                     </p>
@@ -46,7 +46,7 @@ setTimeout(() => {
     });
 
     rule.whenItem('when-methods').then((whenMethods) => {
-        whenMethods.find('.row').append(`<div class="col-md-4">
+        whenMethods.find('.row').append(`<div class="when-item col-md-4">
                 <h3>whenItem</h3>
                 <p>Element instrumented
             </p>
@@ -54,7 +54,7 @@ setTimeout(() => {
     });
 
     rule.whenDOM('.when-methods.delayed-class .row').then((row) =>
-        row.append(`<div class="col-md-4">
+        row.append(`<div class="when-dom col-md-4">
             <h3>whenDOM</h3>
             <p>The delayed class has now appeared
         </p>
@@ -66,7 +66,7 @@ setTimeout(() => {
     rule.whenElement('.when-methods.delayed-class .row').then((row) =>
         row.insertAdjacentHTML(
             'beforeend',
-            `<div class="col-md-4">
+            `<div class="when-element col-md-4">
             <h3>whenElement</h3>
             <p>The delayed class has now appeared
         </p>
@@ -80,7 +80,7 @@ setTimeout(() => {
         whenMethodsCount++;
 
         $('.when-methods .row').markOnce('when-elements')
-            .append(`<div class="col-md-4">
+            .append(`<div class="when-elements col-md-4">
                 <h3>whenElements</h3>
                 <p><span class="when-methods-count">${whenMethodsCount}</span> when methods found
                 </p>
@@ -89,135 +89,100 @@ setTimeout(() => {
         $('.when-methods-count').text(whenMethodsCount);
     });
 
-    store.instrumentDOM({
-        bottomContainerSection: {
-            get dom() {
-                return $('.container .row .col-md-4');
-            },
-        },
-        bottomContainerSectionH2: {
-            get dom() {
-                return $('.evolv-bottomContainerSection h2');
-            },
-        },
-        bottomContainerSectionH2_first: {
-            get dom() {
-                return $('.evolv-bottomContainerSection:nth-of-type(1) h2');
-            },
-        },
-        bottomContainerSectionH2_second: {
-            get dom() {
-                return $('.evolv-bottomContainerSection:nth-of-type(2) h2');
-            },
-        },
-        bottomContainerSectionH2_third: {
-            get dom() {
-                return $('.evolv-bottomContainerSection:nth-of-type(3) h2');
-            },
-        },
-        bottomContainerSection_filtered: {
-            get dom() {
-                return $('.row h2').filter(
-                    ':not(.evolv-bottomContainerSectionH2_third)'
-                );
-            },
-        },
-        jumbotronH1: {
-            get dom() {
-                return $('.jumbotron h1');
-            },
-        },
-        jumbotronH1Parent: {
-            get dom() {
-                return $('.evolv-jumbotronH1').parent();
-            },
-        },
-        containsCheckout: {
-            get dom() {
-                return $('button').contains('Checkout');
-            },
-        },
-        findSecondDetailsButton: {
-            get dom() {
-                return $('.row').find('.col-md-4:nth-child(2) .btn');
-            },
-        },
-        closestRow: {
-            get dom() {
-                return $('.col-md-4').closest('.row');
-            },
-        },
-        numberEight: {
-            get dom() {
-                return $('.number-gallery-item:nth-child(8)');
-            },
-        },
-        rowChildren: {
-            get dom() {
-                return $('.row').children();
-            },
-        },
-        rowChildrenNotFirst: {
-            get dom() {
-                return $('.row').children(':not(:first-child)');
-            },
-        },
-        nextSection: {
-            get dom() {
-                return $('.col-md-4:first-child').next();
-            },
-        },
-        prevSection: {
-            get dom() {
-                return $('.col-md-4:nth-child(2)').prev();
-            },
-        },
-        tabPanelHeading: {
-            get dom() {
-                return $('.tab-panels h3');
-            },
-        },
-    });
+    // store.instrumentDOM({
+    //     bottomContainerSection: {
+    //         get dom() {
+    //             return $('.container .row .col-md-4');
+    //         },
+    //     },
+    //     bottomContainerSectionH2: {
+    //         get dom() {
+    //             return $('.evolv-bottomContainerSection h2');
+    //         },
+    //     },
+    //     bottomContainerSectionH2_first: {
+    //         get dom() {
+    //             return $('.evolv-bottomContainerSection:nth-of-type(1) h2');
+    //         },
+    //     },
+    //     bottomContainerSectionH2_second: {
+    //         get dom() {
+    //             return $('.evolv-bottomContainerSection:nth-of-type(2) h2');
+    //         },
+    //     },
+    //     bottomContainerSectionH2_third: {
+    //         get dom() {
+    //             return $('.evolv-bottomContainerSection:nth-of-type(3) h2');
+    //         },
+    //     },
+    //     bottomContainerSection_filtered: {
+    //         get dom() {
+    //             return $('.row h2').filter(
+    //                 ':not(.evolv-bottomContainerSectionH2_third)'
+    //             );
+    //         },
+    //     },
+    //     jumbotronH1: {
+    //         get dom() {
+    //             return $('.jumbotron h1');
+    //         },
+    //     },
+    //     jumbotronH1Parent: {
+    //         get dom() {
+    //             return $('.evolv-jumbotronH1').parent();
+    //         },
+    //     },
+    //     containsCheckout: {
+    //         get dom() {
+    //             return $('button').contains('Checkout');
+    //         },
+    //     },
+    //     findSecondDetailsButton: {
+    //         get dom() {
+    //             return $('.row').find('.col-md-4:nth-child(2) .btn');
+    //         },
+    //     },
+    //     closestRow: {
+    //         get dom() {
+    //             return $('.col-md-4').closest('.row');
+    //         },
+    //     },
+    //     numberEight: {
+    //         get dom() {
+    //             return $('.number-gallery-item:nth-child(8)');
+    //         },
+    //     },
+    //     rowChildren: {
+    //         get dom() {
+    //             return $('.row').children();
+    //         },
+    //     },
+    //     rowChildrenNotFirst: {
+    //         get dom() {
+    //             return $('.row').children(':not(:first-child)');
+    //         },
+    //     },
+    //     nextSection: {
+    //         get dom() {
+    //             return $('.col-md-4:first-child').next();
+    //         },
+    //     },
+    //     prevSection: {
+    //         get dom() {
+    //             return $('.col-md-4:nth-child(2)').prev();
+    //         },
+    //     },
+    //     tabPanelHeading: {
+    //         get dom() {
+    //             return $('.tab-panels h3');
+    //         },
+    //     },
+    // });
 
-    // Confirm "whenDOM" works
-    rule.whenDOM('.evolv-body').then(function (el1) {
-        var body = el1.firstDom();
-        body.classList.add('whenDOM_tagged');
-        body.insertAdjacentHTML('afterbegin', '<p>whenDOM was here</p>');
-
-        rule.whenDOM('.evolv-learnButton').then(function (el2) {
-            var learnButton = el2.firstDom();
-            learnButton.textContent = 'Learn things';
-        });
-    });
-
-    // Confirm "whenItem" works
-    rule.whenItem('bottomContainerSection').then(function (el1) {
-        var bottomContainerHeadline = el1.firstDom();
-        bottomContainerHeadline.classList.add('whenItem_tagged');
-
-        rule.whenItem('bottomContainerSectionH2').then(function (el2) {
-            var headlineEl = el2.firstDom();
-            headlineEl.classList.add('whenItem_tagged');
-        });
-    });
-    rule.whenItem('bottomContainerSectionH2_first').then(function (el) {
-        var headlineEl = el.firstDom();
-        headlineEl.textContent = 'Headline 1';
-    });
-    rule.whenItem('bottomContainerSectionH2_second').then(function (el) {
-        var headlineEl = el.firstDom();
-        headlineEl.textContent = 'Headline 2';
-    });
-    rule.whenItem('bottomContainerSectionH2_third').then(function (el) {
-        var headlineEl = el.firstDom();
-        headlineEl.textContent = 'Headline 3';
-    });
-
-    // Manipulate Class
-    rule.whenItem('jumbotronH1').then((ENode) => {
-        ENode.addClass('evolv-mainHeading');
-    });
+    // // Manipulate Class
+    // rule.whenItem('jumbotronH1').then((ENode) => {
+    //     ENode.addClass('evolv-mainHeading');
+    // });
 
     $('.copyright').removeClass('copyright');
 

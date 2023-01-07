@@ -36,10 +36,44 @@ describe('Catalyst 0.6.0+ E2E Test', () => {
             .should('have.length', 7);
     });
 
-    //     it('Confirm "whenDOM" works', () => {
-    //         cy.get('body.whenDOM_tagged').should('exist');
-    //         cy.get('.evolv-learnButton').contains('Learn things');
-    //     });
+    it('Confirm "whenContext" works', () => {
+        cy.get('.when-context').should('exist').contains('active');
+    });
+
+    it('Confirm "whenMutate" works', () => {
+        cy.get('.when-mutate').should('exist').contains('A mutation occurred');
+    });
+
+    it('Confirm "whenItem" works', () => {
+        cy.get('.when-item').should('exist').contains('Element instrumented');
+    });
+
+    it('Confirm "whenDOM" works', () => {
+        cy.get('.when-dom')
+            .should('exist')
+            .contains('The delayed class has now appeared');
+    });
+
+    it('Confirm "whenElement" works', () => {
+        cy.get('.when-element')
+            .should('exist')
+            .contains('The delayed class has now appeared');
+    });
+
+    it('Confirm "whenElements" works', () => {
+        cy.get('.when-elements').should('exist').contains('when methods found');
+        cy.log(
+            'COUNT:',
+            cy
+                .get('.when-methods-count')
+                .should('exist')
+                .invoke('text')
+                .then((text) => {
+                    const count = parseFloat(text);
+                    expect(count).to.be.greaterThan(5);
+                })
+        );
+    });
 
     //     it('Confirm "whenItem" works', () => {
     //         cy.get('.evolv-bottomContainerSection.whenItem_tagged').should('exist');

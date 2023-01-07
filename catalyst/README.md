@@ -360,38 +360,45 @@ rule.whenContext('inactive').then(() => cleanUp());
 
 ### rule.whenMutate()
 
-*New in 0.6.0* - Fires a callback when there is a change detected on the page. More specifically this fires after processing the instrument queue which is debounced, so it doesn't fire on *every* mutation but when a mutation or cluster of mutations happen and then stop for at least 1/60th of a second. Can replace many instances that would have required `rule.watch()` without having to add another mutation observer to the page. Is that better for performance? Nobody knows. Does it prevent infinite loops that crash the page? Yes.
+*New in 0.6.0* - Fires a callback when there is a change detected on the page. More specifically this fires after processing the instrument queue which is debounced, so it doesn't fire on *every* mutation but when a mutation or cluster of mutations happen and then stop for at least 1/60th of a second. Can replace many instances that would have required `rule.watch()` without having to add another mutation observer to the page. Is that better for performance? Nobody knows. Does it prevent infinite loops that crash the page from multiple mutation observers goosing each other? Yes. It is of course still possible to create infinite loops if your callback mutates the page every time it runs so don't do that. Instead use whenMutate to watch for some condition or specific change and only trigger your DOM update on that condition (see example).
 
 | Syntax | Description | Notes |
 | :----- | :---------- | ----- |
 | `rule.whenMutate().then(<callback>)` | `<callback>`: Callback to added to the `onMutate` queue | |
 
 ```js
-// In this example there's a price on the page that can change dynamically so we create a function
+// In this example there's a price on the page that can change dynamically and we need to make a 
+// new price element with different text that updates accordingly. We create a function
 // that updates the price and set it to fire whenever there's a mutation on the page.
 
 const rule = window.evolv.catalyst.xyz;
 const $ = rule.select;
 
-function updatePrice() {
-    const price = $('.price');
-    const priceString = price.text();
+rule.instrument.add('price', () => $('.price'))
 
-    const newPrice = $('.evolv-price');
-    const newPriceString = `The price is currently ${price}`;
+rule.whenItem('price').then(price => {
+    const newPrice = $(`<p class="evolv-price">${newPriceString}</p>`).insertAfter(price);
 
-    price.addClass('evolv-display-none');
+    function updatePrice() {
+        const priceString = price.text();
+        const newPriceString = `Hot new price! ${priceString} Yowza!`;
 
-    if (!newPrice.exists()) {
-        $(`<p class="evolv-price">${newPriceString}</p>`).insertAfter(price)
-    } else {
-        newPrice.text(newPriceString)
+        if (priceString !== rule.store.oldPriceString) {
+            newPrice.text(newPriceString)
+        }
+
+        rule.store.oldPriceString = priceString;
     }
-}
 
-updatePrice();
+    updatePrice();
 
-rule.whenMutate().then(updatePrice);
+    rule.whenMutate().then(updatePrice);
+});
+
+```
+
+```css
+    .evolv-xyz .price { display: none; }
 ```
 
 ---

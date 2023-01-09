@@ -1,4 +1,4 @@
-*Lit Harness
+* Lit Harness
 
 This package provides an evolv environment integration harness for `lit-html`.
 

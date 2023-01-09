@@ -132,7 +132,7 @@ const rule = window.evolv.catalyst.xyz
 rule.id = this.key.split('.')[1] // context_id
 ```
 
-The context id can also be found in the metamodel. If the metamodel was created in the Web Editor `context_id` would be a randomly generated hash, if using a build process like the project scaffold you would manually assign it.
+The context id can also be found in the metamodel. If the metamodel was created in the Web Editor `context_id` would be a randomly generated hash, if using a build process like the project scaffold you would manually assign it. One sandbox can have one `rule.id` or `rule.isActive()` defined, but not both.
 
 ```yml
 web:
@@ -149,7 +149,7 @@ The context key also corresponds to the class added to the `html` element when t
 
 ### rule.isActive()
 
-Declared at the context level code, defines criteria for determining whether the current context is active. Assigning this function initializes the active key listener for SPA handling.
+Declared at the context level code, defines criteria for determining whether the current context is active. Assigning this function initializes the active key listener for SPA handling. One sandbox can have one `rule.id` or `rule.isActive()` defined, but not both.
 
 | Syntax               | Description     | Notes |
 | :------------------- | :-------------- | :---- |
@@ -225,7 +225,7 @@ The default instrument selector prior to 0.6.0. Now a proxy for [rule.selectInst
 | :------------------- | :-------------- | :---- |
 | `$(<selector>, <context>)` | `<selector>`: String containing CSS selector<br>Context (optional): Element, default is `document`<br>`$('p')`, `$('.some-class')`, `$('.parent > [attr=some-attribute]'` | |
 | `$(<XPath>, <context>)`    | Selector: String containing XPath selector<br> Context (optional): Element, default is `document`<br>`$('//p')`, `$('//button[contains(text(),"Go")]')`, `$('//h3[contains(text(),"Heading")]/parent::*/parent::*')` | |
-| `$(<ENode>)`             | Another ENode, returns a new ENode containing the first element of the original ENode<br>`var pageHeading = $('h1'); var pageHeadingRef = $(pageHeading) | |
+| `$(<ENode>)`             | Another ENode, returns a new ENode containing the first element of the original ENode<br>`var pageHeading = $('h1'); var pageHeadingRef = $(pageHeading)` | |
 | `$(<element>)`           | A variable referencing an element<br>`$(document.body)` | |
 | `$(<array>)`             | An array of elements, returns an ENode containing the first element of the array<br>`var everyLi = Array.from(document.querySelectorAll('li')); $(everyLi)` | |
 | `$(<HTML>)`              | Creates a new ENode from an HTML string containing a single parent element<br>`$('<div class="evolv-card"><h3>Heading</h3><p>Some text.</p></div>')`<br>Note: Prior to v.0.6.0`$('<div class="sibling-1"></div><div class="sibling-2"></div>')` would return an ENode only containing the first `div` | |
@@ -273,7 +273,7 @@ var pageHeading = $i('page-heading'); // Output: pageHeading.el Array(1) 0: h1.e
 
 Applies a variant-specific attribute to the `body` to allow you define all the variant CSS at the context level. If multiple variants are active simultaneously they will be space-delimited in the attribute. *New in 0.6.0* - Attribute will be removed with SPA navigation away from the page.
 
-*New in 0.6.0* - Also applies a variant-specific class to the `body` element;
+*New in 0.6.0* - Also applies a variant-specific class to the `body` element. The class is applied using `instrument.add()` so that it persists even if all classes are deleted from the `body` element or the `body` element is replaced.
 
 **Note:** With 11 or more variants it's easy to misapply styles because `body[evolv-ab_test*='1-1']` matches `<body evolv-ab_text="11-1">` this can solved by using brackets around your variant identifiers. For example: `rule.track('[1-1]')`. This issue does not exist if you reference the new class instead of the attribute.
 
@@ -339,6 +339,8 @@ Target HTML where variant C1V1 and C2V2 are active:
 | :----- | :---------- | ----- |
 | `rule.whenContext(<state>).then(<callback>)` | `<state>`: String containing `active` or `inactive`<br>`<callback>`: Callback to be added to the `onActivate` or `onDeactivate` queue | |
 
+Example:
+
 ```js
 const rule = window.evolv.catalyst['ab-test'];
 const $ = rule.select;
@@ -366,6 +368,8 @@ rule.whenContext('inactive').then(() => cleanUp());
 | :----- | :---------- | ----- |
 | `rule.whenMutate().then(<callback>)` | `<callback>`: Callback to added to the `onMutate` queue | |
 
+Example:
+
 ```js
 // In this example there's a price on the page that can change dynamically and we need to make a 
 // new price element with different text that updates accordingly. We create a function
@@ -383,6 +387,8 @@ rule.whenItem('price').then(price => {
         const priceString = price.text();
         const newPriceString = `Hot new price! ${priceString} Yowza!`;
 
+        // This check prevents infinite loops by setting the new price to update
+        // ONLY when the original price has changed
         if (priceString !== rule.store.oldPriceString) {
             newPrice.text(newPriceString)
         }
@@ -412,6 +418,8 @@ The `whenItem()` method will wait for the selector associated with the specified
 | `rule.whenItem(<instrument key>)` | String containing a key to the `instrument.queue` object<br>`rule.whenItem('product')` | |
 | `.then(ENode => callback(<ENode>))` | Executes a callback on each new element found in the ENode | |
 | `.thenInBulk(ENode => callback(<ENode>))` | Executes a callback on the group of elements in the ENode | |
+
+Example:
 
 ```js
 const rule = window.evolv.catalyst['ab-test'];
@@ -451,6 +459,8 @@ Waits for the specified selector or ENode to be selectable on the page and will 
 | `.then(<ENode> => callback(<ENode>))` | Creates an ENode for each new element found and passes them to a callback | |
 | `.thenInBulk(<ENode> => callback(<ENode>))` | Creates an ENode containing the group of elements found and passes it to a callback  | |
 
+Example:
+
 ```js
 rule.whenDOM('h1').then((h1) => h1.text('New improved heading'));
 ```
@@ -465,6 +475,8 @@ rule.whenDOM('h1').then((h1) => h1.text('New improved heading'));
 | :----- | :---------- | ----- |
 | `rule.whenElement(<selector>)` | String containing CSS selector<br>`rule.whenElement('.product').then(product => {}).then(<element> => callback(<element>))` | |
 | `rule.whenElement(<ENode>)`    | ENode<br>`rule.whenElement($('button')).then(button => button.classList.add('evolv-button').then(<element> => callback(<element>))` | |
+
+Example:
 
 ```js
 const rule = window.evolv.catalyst.xyz;
@@ -484,6 +496,8 @@ rule.whenElement('.product img').then(img => img.style.width = '100%');
 | `rule.whenElement(<selector>).then(<element> => <callback(<element>)>)` | String containing CSS selector<br>`rule.whenElement('.product').then(product => {})` | |
 | `rule.whenElement(<ENode>)`    | ENode<br>`rule.whenElement($('button')).then(button => button.classList.add('evolv-button').then(<element> => callback(<element>))` | |
 
+Example:
+
 ```js
 const rule = window.evolv.catalyst.xyz;
 
@@ -501,6 +515,8 @@ rule.whenElements('.product img').then(img => img.style.width = '100%');
 | :----- | :---------- | ----- |
 | `rule.waitUntil(<condition>)` | `<condition>`: a function that returns truthy | |
 
+Example:
+
 ```js
 const rule = window.evolv.catalyst.xyz;
 const log = rule.log
@@ -513,13 +529,17 @@ setTimeout(() => window.x = 100, 3000);
 // [evolv-xyz] x: 100
 ```
 
+---
+
 ### rule.store
 
 A object to house assets, variables, templates, icons, etc to be used in your experiment and shared between variants. It has the benefit of:
 
 -   Only accessible from within the experiment sandbox so it doesn't pollute the global scope
 -   Allows assets to be defined in the context and used in variants
--   Contains `.instrumentDOM()` method *Deprecated, use [rule.instrument.add()](#) instead* (add link here)
+-   Contains `.instrumentDOM()` method. *(Deprecated)* 
+
+Example:
 
 Context:
 
@@ -542,7 +562,7 @@ $('#circle-text').prepend($(store.icons.circle));
 
 ### rule.store.instrumentDOM()
 
-The `instrumentDOM()` method finds the elements passed into it, caches them, and applies classes. Instrumented objects can accessed by their associated key using the `rule.$$()` or `rule.whenItem()` methods.
+The `instrumentDOM()` method finds the elements passed into it, caches them, and applies classes. Instrumented objects can accessed by their associated key using the `rule.$$()` or `rule.whenItem()` methods. *Deprecated use [rule.instrument.add()](#ruleinstrumentadd) instead*
 
 ```js
 store.instrumentDOM({
@@ -574,13 +594,137 @@ console.log(products.el); // [ div.product, div.product, div.product ]
 
 ---
 
+### exists()
+
+*New in 0.6.0* - Tests that the ENode is not empty.
+
+| Syntax | Description | Returns | Notes |
+| :----- | :---------- | :------ | :---- |
+| `ENode.exists()` | Accepts no input | `true` or `false` | Added in 0.6.0 |
+
+Example:
+
+```html
+<h1>Page heading</h1>
+```
+
+```js
+const rule = window.evolv.catalyst.xyz;
+const $ = rule.select
+
+$('h1').exists()    // true
+$('h2').exists()    // false
+```
+
+---
+
+### isConnected()
+
+*New in 0.6.0* - Tests that all elements in the ENode are currently connected (attached to the DOM). Created to be used internally by the instrumentation process but may have use in experiments.
+
+| Syntax | Description | Returns | Notes |
+| :----- | :---------- | :------ | :---- |
+| `ENode.isConnected()` | Accepts no input | `true` or `false` | Added in 0.6.0 |
+
+```html
+<h2 class="heading-1">Heading 1</h2>
+<h2 class="heading-2">Heading 2</h2>
+<h2 class="heading-3">Heading 3</h2>
+```
+
+```js
+const rule = window.evolv.catalyst.xyz;
+const $$ = rule.selectAll
+
+const h2 = $$('h2')
+// h2.el = [ h2.heading-1, h2.heading-2, h2.heading-3 ]
+
+h2.isConnected()
+// true
+
+h2.el[1].remove()
+// h2.el = [ h2.heading-1, h2.heading-2, h2.heading-3 ]
+// h2.el[1] reference still exists but h2.heading-2 is no longer on the page
+
+h2.isConnected()
+// false
+```
+
+---
+
+### hasClass()
+*New in 0.6.0* - Tests that all elements in the ENode have the specified class. Created to be used internally by the instrumentation process but may have use in experiments.
+
+| Syntax | Description | Returns | Notes |
+| :----- | :---------- | :------ | :---- |
+| `ENode.hasClass(<className>)` | `<className>`: String containing the class name to be tested  | `true` or `false` | Added in 0.6.0 |
+
+```html
+<h2 class="heading">Heading 1</h2>
+<h2 class="heading">Heading 2</h2>
+<h2 class="heading">Heading 3</h2>
+```
+
+```js
+const rule = window.evolv.catalyst.xyz;
+const $$ = rule.selectAll
+
+const headings = $$('.heading')
+// headings.el = [ h2.heading, h2.heading, h2.heading ]
+
+headings.hasClass('heading')
+// true
+
+headings.el[1].classList.remove('heading')
+// headings.el = [ h2.heading, h2, h2.heading ]
+
+headings.hasClass('heading')
+// false
+```
+
+---
+
+### isEqualTo()
+*New in 0.6.0* - Tests that an ENode contains the same set of elements as the specified ENode. Created to be used internally by the instrumentation process but may have use in experiments.
+
+| Syntax | Description | Returns | Notes |
+| :----- | :---------- | :------ | :---- |
+| `ENode.isEqualTo(<ENode>)` | `<ENode>`: The ENode for comparison  | `true` or `false` | Added in 0.6.0 |
+
+```html
+<h2 class="heading-1">Heading 1</h2>
+<h2 class="heading-2">Heading 2</h2>
+<h2 class="heading-3">Heading 3</h2>
+```
+
+```js
+const rule = window.evolv.catalyst.xyz;
+const $$ = rule.selectAll
+
+const h2 = $$('h2')
+// h2.el: [ h2.heading-1, h2.heading-2, h2.heading-3 ]
+
+const headings = $$('class^=heading')
+// headings.el: [ h2.heading-1, h2.heading-2, h2.heading-3 ]
+
+h2.isEqualTo(headings)
+// true
+
+const heading1and3 = headings.filter(':not(.heading-2)');
+// heading1and3.el: [ h2.heading-1, h2.heading-3 ]
+
+h2.isEqualTo(heading1and3)
+// false
+```
+---
+
 ### filter()
 
-The `filter()` method creates a new array containing all of the elements that match the provided selector. Internally it uses the Array.prototype.matches() method to evaluate the elements.
+Returns an ENode containing all of the elements that match the provided selector. Internally it uses the Array.prototype.matches() method to evaluate the elements.
 
 | Syntax                 | Description                    | Returns |
 | :--------------------- | :----------------------------- | :------ |
-| ENode.filter(selector) | String containing CSS selector | ENode   |
+| `ENode.filter(<selector>)` | `<selector>`: String containing CSS selector | ENode   |
 
 Example:
 
@@ -602,10 +746,10 @@ $('.heading').filter(':not(.heading-3)');
 
 The `contains()` method returns the elements in an ENode that contain the specified string. The method is case sensitive.
 
-| Syntax                | Description                       | Returns | Notes |
-| :-------------------- | :-------------------------------- | :------ | :---- |
-| ENode.contains(text)  | String containing text            | ENode   | |
-| ENode.contains(regex) | Regular expression                | ENode   | Added in 0.6.0 |
+| Syntax | Description | Returns | Notes |
+| :----- | :---------- | :------ | :---- |
+| `ENode.contains(<text>)`  | `<text>`: String containing text            | ENode   | |
+| `ENode.contains(<regex>)` | `<regex>`: Regular expression               | ENode   | Added in 0.6.0 |
 
 Example:
 
@@ -624,10 +768,10 @@ button.contains(/Learn more/); // Output: ENode containing [ button#learn-more ]
 
 ### find()
 
-The `find()` method returns the all elements that match the specified child selector.
+The `find()` method returns the all elements within the DOM structure of an ENode that match the specified selector.
 
-| Syntax               | Description                    | Returns |
-| :------------------- | :----------------------------- | :------ |
+| Syntax | Description | Returns | Notes |
+| :----- | :---------- | :------ | :---- |
 | ENode.find(selector) | String containing CSS selector | ENode   |
 
 Example:

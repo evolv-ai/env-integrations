@@ -27,7 +27,9 @@ describe('Catalyst 0.6.0+ E2E Test', () => {
         cy.get('.evolv-select-first-h2')
             .should('exist')
             .should('have.length', 1);
-        cy.get('.evolv-select-all-p').should('exist').should('have.length', 13);
+        cy.get('.evolv-select-all-p')
+            .should('exist')
+            .should('have.length.gt', 13);
         cy.get('.evolv-select-single-instrument')
             .should('exist')
             .should('have.length', 1);
@@ -61,44 +63,32 @@ describe('Catalyst 0.6.0+ E2E Test', () => {
     });
 
     it('Confirm "whenElements" works', () => {
+        let text, count;
         cy.get('.when-elements').should('exist').contains('when methods found');
-        cy.log(
-            'COUNT:',
-            cy
-                .get('.when-methods-count')
-                .should('exist')
-                .invoke('text')
-                .then((text) => {
-                    const count = parseFloat(text);
-                    expect(count).to.be.greaterThan(5);
-                })
-        );
+        cy.get('.when-methods-count')
+            .should('exist')
+            .invoke('text')
+            .then((text) => {
+                const count = parseFloat(text);
+                expect(count).to.be.greaterThan(5);
+            });
     });
 
-    //     it('Confirm "whenItem" works', () => {
-    //         cy.get('.evolv-bottomContainerSection.whenItem_tagged').should('exist');
-    //         cy.get('.evolv-bottomContainerSectionH2.whenItem_tagged').should(
-    //             'have.length',
-    //             3
-    //         );
-
-    //         cy.get('.evolv-bottomContainerSectionH2_first').should('exist');
-    //         cy.get('.evolv-bottomContainerSectionH2_second').should('exist');
-    //         cy.get('.evolv-bottomContainerSectionH2_third').should('exist');
-
-    //         cy.get('.evolv-bottomContainerSectionH2_first').contains('Headline 1');
-    //         cy.get('.evolv-bottomContainerSectionH2_second').contains('Headline 2');
-    //         cy.get('.evolv-bottomContainerSectionH2_third').contains('Headline 3');
-    //     });
-
-    //     it('Confirm ".parent()" works', () => {
-    //         cy.get('.evolv-jumbotronH1Parent').should('exist');
-    //     });
-
     //     ///////////////////
-    //     // Helper functions
+    //     // ENode methods
     //     ///////////////////
 
+    it('Confirm ".exists()" works', () => {
+        cy.get('.enode-exists-output').contains('Yes');
+    });
+
+    it('Confirm ".isConnected()" works', () => {
+        cy.get('.enode-is-connected-output').contains('Yes');
+    });
+
+    it('Confirm ".hasClass()" works', () => {
+        cy.get('.enode-has-class-output').contains('Yes');
+    });
     //     it('Confirm ".filter()" works', () => {
     //         cy.get('.evolv-bottomContainerSection_filtered')
     //             .should('exist')

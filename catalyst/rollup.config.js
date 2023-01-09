@@ -20,7 +20,7 @@ export default [
         input: 'src/index-local.js',
         output: {
             file: 'serve/catalyst-local.js',
-            // format: 'iife',
+            format: 'iife',
         },
         plugins: [json()],
     },

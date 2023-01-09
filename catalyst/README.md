@@ -411,11 +411,16 @@ rule.whenItem('price').then(price => {
 
 ### .whenItem()
 
-The `whenItem()` method will wait for the selector associated with the specified instrument key and passes the found ENode to a callback. Has two options for how callbacks are applied. `rule.whenDOM().then()` applies a callback to an ENode containing each element found individually. `rule.whenDOM().thenInBulk()` applies a callback to an ENode containing a group of elements if they are discovered at one time. *New in 0.6.0* - Does not allow a the same callback to be applied to the same selector more than once, allowing when methods to be nested without creating duplicate listeners.  If the instrument item has the option `{ type: 'single' }` will return an ENode with the first element of the referenced ENode.
+The `whenItem()` method will wait for the selector associated with the specified instrument key and passes the found ENode to a callback. Has two options for how callbacks are applied.
+
+1. `rule.whenDOM().then()` applies a callback to an ENode containing each element found individually. 
+1. `rule.whenDOM().thenInBulk()` applies a callback to an ENode containing a group of elements if they are discovered at one time.
+
+*New in 0.6.0* - `whenItem` does not allow a the same callback to be applied to the same selector more than once, allowing when methods to be nested without creating duplicate listeners.  If the instrument item has the option `{ type: 'single' }` it will return an ENode with the first element of the referenced ENode.
 
 | Syntax | Description | Notes |
 | :----- | :---------- | :---- |
-| `rule.whenItem(<instrument key>)` | String containing a key to the `instrument.queue` object<br>`rule.whenItem('product')` | |
+| `rule.whenItem(<instrument key>)` | String containing a key defined by `instrument.add()` | |
 | `.then(ENode => callback(<ENode>))` | Executes a callback on each new element found in the ENode | |
 | `.thenInBulk(ENode => callback(<ENode>))` | Executes a callback on the group of elements in the ENode | |
 

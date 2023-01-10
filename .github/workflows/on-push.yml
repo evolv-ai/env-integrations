@@ -1,33 +1,36 @@
+name: Publish Catalyst package
+
 on:
     push:
         branches:
             - main
         paths:
             - 'catalyst/**'
+
 jobs:
-    publish:
-        name: Publish
+    build:
+        name: Build
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout repo
-              uses: actions/checkout@v2
-
-            - name: Setup Node
-              uses: actions/setup-node@v2
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
               with:
                   node-version: '16'
-                  registry-url: 'https://registry.npmjs.org'
-              working-directory: ./catalyst
+            - working-directory: ./catalyst
+            - run: npm install
+            - run: npm run build
 
-            - name: Install dependencies
-              run: npm install
-              working-directory: ./catalyst
-            - name: Build packages
-              run: npm run build
-              working-directory: ./catalyst
-            - name: Publish
+    publish-npm:
+        name: Publish
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: '16'
+                  registry-url: https://registry.npmjs.org/
+            - run: npm publish
               env:
                   NPM_TOKEN: ${{ secrets.CATALYST_NPM_TOKEN }}
-              run: |
-                  npm publish
               working-directory: ./catalyst

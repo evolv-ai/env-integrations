@@ -13,19 +13,9 @@ Some `lit-html` links:
 
 ## Setup in the Evolv Manager
 
-### Add Integration
-Create a new integration and add the latest version of this package (from npm) as a plugin as shown: 
+The setup for this integration does not require any json config.
 
-|       |
-| ----- |
-| <img src="https://user-images.githubusercontent.com/54595/211390267-2a4fdb3e-acd0-49d7-a004-cceb908fd7c2.png" width="400"/> 
-
-### Update Environment
-Add the integration to an Environment and leave json config as default:
-
-|       |
-| ----- |
-| <img src="https://user-images.githubusercontent.com/54595/211392207-cf35527f-b160-471b-9ded-cf923efc446f.png" width="400"/> 
+[Adding an integration to the manager](https://github.com/evolv-ai/env-integrations/blob/main/README.md)
 
 
 ## How to use

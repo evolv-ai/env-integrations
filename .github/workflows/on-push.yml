@@ -16,7 +16,6 @@ jobs:
             - uses: actions/setup-node@v3
               with:
                   node-version: '16'
-              working-directory: ./catalyst
             - run: npm install
               working-directory: ./catalyst
             - run: npm run build
@@ -29,7 +28,6 @@ jobs:
         steps:
             - uses: actions/checkout@v3
             - uses: actions/setup-node@v3
-              working-directory: ./catalyst
               with:
                   node-version: '16'
                   registry-url: https://registry.npmjs.org/

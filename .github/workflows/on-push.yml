@@ -17,13 +17,17 @@ jobs:
               with:
                   node-version: '16'
                   registry-url: 'https://registry.npmjs.org'
+              working-directory: ./catalyst
 
             - name: Install dependencies
               run: npm install
+              working-directory: ./catalyst
             - name: Build packages
               run: npm run build
+              working-directory: ./catalyst
             - name: Publish
               env:
                   NPM_TOKEN: ${{ secrets.CATALYST_NPM_TOKEN }}
               run: |
                   npm publish
+              working-directory: ./catalyst

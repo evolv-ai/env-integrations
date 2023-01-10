@@ -1,4 +1,4 @@
-name: Publish Catalyst package
+name: Publish @evolv-delivery/catalyst
 
 on:
     push:
@@ -8,22 +8,8 @@ on:
             - 'catalyst/**'
 
 jobs:
-    build:
-        name: Build
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
-              with:
-                  node-version: '16'
-            - run: npm install
-              working-directory: ./catalyst
-            - run: npm run build
-              working-directory: ./catalyst
-
     publish-npm:
         name: Publish
-        needs: build
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
@@ -31,7 +17,10 @@ jobs:
               with:
                   node-version: '16'
                   registry-url: https://registry.npmjs.org/
-            - run: npm publish
+            - run: |
+                  npm install
+                  npm run build
+                  npm publish
               env:
                   NPM_TOKEN: ${{ secrets.CATALYST_NPM_TOKEN }}
               working-directory: ./catalyst

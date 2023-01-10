@@ -277,7 +277,7 @@ var pageHeading = $i('page-heading'); // Output: pageHeading.el Array(1) 0: h1.e
 ### rule.track()
 
 Applies a variant-specific attribute to the `body` to allow you define all the variant CSS at the context level. If multiple variants are active simultaneously they will be space-delimited in the attribute. _New in 0.6.0_ - Attribute will be removed with SPA navigation away from the page.
-
+ 
 _New in 0.6.0_ - Also applies a variant-specific class to the `body` element. The class is applied using `instrument.add()` so that it persists even if all classes are deleted from the `body` element or the `body` element is replaced.
 
 **Note:** With 11 or more variants it's easy to misapply styles because `body[evolv-ab_test*='1-1']` matches `<body evolv-ab_text="11-1">` this can solved by using brackets around your variant identifiers. For example: `rule.track('[1-1]')`. This issue does not exist if you reference the new class instead of the attribute.

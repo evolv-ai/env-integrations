@@ -1,5 +1,11 @@
 # analytics
-## How is the config processed?
+
+## Setup in the Evolv Manager
+
+[Adding an integration to the Evolv Manager](https://github.com/evolv-ai/env-integrations/blob/main/README.md)
+
+
+## Setting up the config json
 The config is read top to bottom. If a match is found, it stops. No fall-through, so in the example below if the path of the page starts with `/home/`, nothing will happen, because the statements block is an empty array.
 
 `"omni"` is just a name, nothing is keying off of it.

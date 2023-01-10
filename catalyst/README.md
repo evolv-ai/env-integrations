@@ -417,7 +417,7 @@ rule.whenItem('price').then((price) => {
     display: none;
 }
 ```
- 
+
 ---
 
 ### .whenItem()

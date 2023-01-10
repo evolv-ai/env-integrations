@@ -3,7 +3,7 @@
 
 ## Setup in the Evolv Manager
 
-[Adding an integration to the manager](https://github.com/evolv-ai/env-integrations/blob/main/README.md)
+[Adding an integration to the Evolv Manager](https://github.com/evolv-ai/env-integrations/blob/main/README.md)
 
 ## Emitter Configuration
 

@@ -1,4 +1,5 @@
-# audience
+# Audience
+The audience integration supports populating the Evolv context object with values that are extracted from the browser via several mechanism (`type`).
 
 ## Setup in the Evolv Manager
 
@@ -9,7 +10,9 @@
 The main requirements for the config are objects indexed by a context attribute where the objects contain `type` and `key` (aka `value` - for backward compatibility). The following is a table showing the different types
 
 ### Structure
-
+The top level keys of the json config indicate one of two things and both have object values.
+* The attribute key if the object value contains a `type` field.
+* A top level grouping if the object value does not contain a `type` field. This will results in each field of the value. they will be 
 
 ### Context attribute objects
 | Type       | Key (usage)              | Description                                                                                            |

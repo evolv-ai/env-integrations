@@ -13,7 +13,8 @@ Some `lit-html` links:
 
 ## Setup in the Evolv Manager
 
-[Adding an integration to the manager](https://github.com/evolv-ai/env-integrations/blob/main/README.md)
+[Adding an integration to the Evolv Manager](https://github.com/evolv-ai/env-integrations/blob/main/README.md)
+
 The setup for this integration does not require any json config.
 
 ## How to use

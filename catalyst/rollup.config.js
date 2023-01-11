@@ -10,8 +10,8 @@ export default [
         },
         plugins: [
             babel({
-                plugins: ['@babel/plugin-transform-async-to-generator'],
                 babelHelpers: 'bundled',
+                presets: ['@babel/preset-env'],
             }),
             json(),
         ],

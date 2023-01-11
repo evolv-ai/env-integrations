@@ -41,7 +41,7 @@
     ],
     "license": "ISC",
     "devDependencies": {
-        "@babel/plugin-transform-async-to-generator": "^7.20.7",
+        "@babel/preset-env": "^7.20.2",
         "@rollup/plugin-babel": "^6.0.3",
         "@rollup/plugin-json": "^5.0.1",
         "cypress": "^12.2.0",

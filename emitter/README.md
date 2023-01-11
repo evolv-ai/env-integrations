@@ -1,5 +1,12 @@
 # Emitter
 
+
+## Setup in the Evolv Manager
+
+[Adding an integration to the Evolv Manager](https://github.com/evolv-ai/env-integrations/blob/main/README.md)
+
+## Emitter Configuration
+
 Emitter now supports the following syntax:
 
 ```

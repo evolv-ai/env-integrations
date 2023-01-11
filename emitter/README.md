@@ -17,8 +17,21 @@ The top level key is `pages` that contains an array of page matches that events 
 ### events
 
 #### tag
+The `tag` is a string that rerpesents the event tag value that is sent to Evolv when the requirements within the activate are met.
+
 #### activate
+The `activate`contains an object specifying under what circumstances the event should occur. It contains the following two key value pairs:
+* on - specifies the event type to activate based on
+* selectors - needed to specify the dom elements for any non `page-load` events.
+
 #### monitor
+The `monitor` will be depricated in the future, but it currently requires the following json for non `page-load` events:
+```
+        "monitor": {
+          "type": "observer",
+          "selectors":[]
+        },
+```
 
 
 ### Example

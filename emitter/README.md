@@ -5,50 +5,54 @@
 
 [Adding an integration to the Evolv Manager](https://github.com/evolv-ai/env-integrations/blob/main/README.md)
 
-## Emitter Configuration
 
-Emitter now supports the following syntax:
+## Structure of json config
+The top level key is `pages` that contains an array of page matches that events may occur in. Each of these pages contains `filters` and `events`.
+### filters 
+
+* key - the context/audience attribute that is being matched against
+* value - a regex that satisfies for the key 
+
+
+### events
+
+#### tag
+#### activate
+#### monitor
+
+
+### Example
+The following shows examples of each of the options available.
 
 ```
 {"pages": [
   {
-    "filter": [
+    "filters": [
      {
-      "key": "url": 
-      "value": "/smartphones",
+      "key": "web.url": 
+      "value": "/products",
      },
      {
-      "key": "vz.pageName",
+      "key": "pageName",
       "value": "gridwall"
      }
      ]
     "events": [
+      {    
+        "tag": "gridwall.page-load",
+        "activate": {
+          "on": "pageload",
+        }
+      },
       {
-        "tag": "SPGW.ctr-all",
+        "tag": "gridwall-cta-all",
         "monitor": {
           "type": "observer",
-          "selectors":['#tabFilterWrapper+#gridwall-wrapper','.gnav20-global-nav-list']
+          "selectors":[]
         },
         "activate": {
           "on": "click",
-          "selector": "[class*='Tile-sc'], [href*='bring-your-own-device'], [href*='/promos/global-choice/']"
-        }
-      },
-      { 
-        "tag": "SPGW.ctr-all2",
-        "monitor": {
-          "type": "listener",
-          "selector": "body"
-        },
-        "activate": {
-          "on": "mousedown",
-          "selector": "[class*='Tile-sc'], [href*='bring-your-own-device'], [href*='/promos/global-choice/']"
-        }
-      },
-      {    
-        "tag": "SPGW.page-load",
-        "activate": {
-          "on": "pageload",
+          "selector": "[class*='Tile'], [href*='bring-your-own-device']"
         }
       }
     ]

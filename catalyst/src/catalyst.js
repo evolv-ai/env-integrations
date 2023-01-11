@@ -54,14 +54,11 @@ export function initializeCatalyst() {
     catalyst._intervalPoll = initializeIntervalPoll(catalyst);
 
     // The main mutation observer for all sandboxes
-    debug('global observer: init');
-
     catalyst._globalObserver = {
         observer: new MutationObserver(() => {
             let anySandboxActive = false;
             for (const sandbox of catalyst.sandboxes) {
-                if (sandbox._evolvContext.state.current === 'inactive')
-                    continue;
+                if (sandbox._evolvContext.state === 'inactive') continue;
                 anySandboxActive = true;
                 sandbox.instrument.debouncedProcessQueue();
             }
@@ -84,9 +81,10 @@ export function initializeCatalyst() {
             catalyst._globalObserver.observer.disconnect();
             catalyst._globalObserver.state = 'inactive';
         },
+        state: 'inactive',
     };
 
-    catalyst._globalObserver.connect();
+    // catalyst._globalObserver.connect()
 
     return catalystProxy;
 }

@@ -5,7 +5,7 @@ function initializeEvolvContext(sandbox) {
     const warn = sandbox.warn;
 
     return {
-        state: { current: 'active', previous: 'active' },
+        state: 'active',
         onActivate: [
             window.evolv.catalyst._globalObserver.connect,
             window.evolv.catalyst._intervalPoll.startPolling,
@@ -46,12 +46,9 @@ function initializeEvolvContext(sandbox) {
                                     value
                                 );
 
-                            const previous =
-                                sandbox._evolvContext.state.current;
-                            sandbox._evolvContext.state.current = isActive()
-                                ? 'active'
-                                : 'inactive';
-                            const current = sandbox._evolvContext.state.current;
+                            const previous = sandbox._evolvContext.state;
+                            const current = isActive() ? 'active' : 'inactive';
+                            sandbox._evolvContext.state = current;
 
                             if (
                                 previous === 'inactive' &&
@@ -86,17 +83,18 @@ function initializeEvolvContext(sandbox) {
 
 function initializeTrack(sandbox) {
     const debug = sandbox.debug;
+    const evolvContext = sandbox._evolvContext;
 
     return (variant) => {
-        debug('track:', variant);
+        debug('track:', `'${variant}'`);
 
         // Backward compatibility
         var trackKey = 'evolv-' + sandbox.name;
         var body = sandbox.select(document.body);
 
         const className = `${sandbox.name}-${variant}`;
-        sandbox.whenContext('active').then(() => {
-            debug(`init variant: variant ${variant} active`);
+        const onActivateCallback = () => {
+            debug(`track: '${variant}' active`);
 
             // Backward compatibility
             var tracking = body.attr(trackKey);
@@ -108,13 +106,19 @@ function initializeTrack(sandbox) {
             sandbox.instrument.add(className, () =>
                 sandbox.select(document.body)
             );
-        });
-        sandbox.whenContext('inactive').then(() => {
-            debug(`init variant: variant ${variant} inactive`);
+        };
+
+        const onDeactivateCallback = () => {
+            debug(`track: '${variant}' is inactive`);
 
             // Backward compatibility
             body.el[0].removeAttribute(trackKey);
-        });
+        };
+
+        evolvContext.onActivate.push(onActivateCallback);
+        evolvContext.onDeactivate.push(onDeactivateCallback);
+
+        if (evolvContext.state === 'active') onActivateCallback();
     };
 }
 

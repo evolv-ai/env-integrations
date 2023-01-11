@@ -166,7 +166,9 @@ function initializeSelectInstrument(sandbox) {
         const item = sandbox.instrument.queue[key];
 
         if (!item) {
-            warn(`select instrument: '${key}' not found in instrument queue`);
+            sandbox.warn(
+                `select instrument: '${key}' not found in instrument queue`
+            );
             return $();
         } else if (item.state === 'disconnected') {
             return $();

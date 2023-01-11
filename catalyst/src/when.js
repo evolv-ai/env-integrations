@@ -64,18 +64,18 @@ function initializeWhenContext(sandbox) {
                 }
 
                 debug(
-                    `whenContext: queue callback for '${state}' state, current state: '${sandbox._evolvContext.state.current}'`,
+                    `whenContext: queue callback for '${state}' state, current state: '${sandbox._evolvContext.state}'`,
                     callback
                 );
                 sandbox._evolvContext[queueName].push(newEntry);
                 if (
                     state === 'active' &&
-                    sandbox._evolvContext.state.current === 'active'
+                    sandbox._evolvContext.state === 'active'
                 ) {
                     newEntry();
                 } else if (
                     state === 'inactive' &&
-                    sandbox._evolvContext.state.current === 'inactive'
+                    sandbox._evolvContext.state === 'inactive'
                 ) {
                     newEntry();
                 }

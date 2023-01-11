@@ -30,7 +30,7 @@ setTimeout(() => {
         $('.when-methods .row').append(
             `<div class="when-context col-md-4">
                     <h3>whenContext</h3>
-                    <p>The current context is '${rule._evolvContext.state.current}'</p>
+                    <p>The current context is '${rule._evolvContext.state}'</p>
                 </div>
             </div>`
         );

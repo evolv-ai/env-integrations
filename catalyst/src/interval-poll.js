@@ -41,8 +41,7 @@ function initializeIntervalPoll(catalyst) {
                 let queueTotal = 0;
 
                 for (const sandbox of catalyst.sandboxes) {
-                    if (sandbox._evolvContext.state.current === 'inactive')
-                        continue;
+                    if (sandbox._evolvContext.state === 'inactive') continue;
                     anySandboxActive = true;
 
                     processQueue(sandbox);

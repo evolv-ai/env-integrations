@@ -1,6 +1,6 @@
 import { version } from '../package.json';
 import { initializeLogs } from './logs';
-import { $, select, selectAll } from './enode';
+import { select, selectAll } from './enode';
 import { initializeSelectInstrument, initializeInstrument } from './instrument';
 import { initializeEvolvContext, initializeTrack } from './evolv-context';
 import { initializeSandboxIntervalPoll } from './interval-poll';
@@ -55,7 +55,7 @@ function initializeSandbox(name) {
         sandbox.track = initializeTrack(sandbox);
     }
 
-    // Backwards compatibility
+    // Backward compatibility
     sandbox.reactivate = () => {};
 
     return sandbox;

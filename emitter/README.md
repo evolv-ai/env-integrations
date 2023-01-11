@@ -62,13 +62,13 @@ The following shows examples of each of the options available.
       },
       {
         "tag": "gridwall-cta-all",
-        "monitor": {
-          "type": "observer",
-          "selectors":[]
-        },
         "activate": {
           "on": "click",
           "selector": "[class*='Tile'], [href*='bring-your-own-device']"
+        },
+        "monitor": {
+          "type": "observer",
+          "selectors":[]
         }
       }
     ]

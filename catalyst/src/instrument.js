@@ -103,9 +103,6 @@ function initializeInstrument(sandbox) {
                 { key, select, options }
             );
             return;
-        } else if (instrument.queue.hasOwnProperty(key)) {
-            debug(`add instrument: queue item '${key}' already exists`);
-            return;
         }
 
         debug('add instrument:', key, select, options);
@@ -145,14 +142,30 @@ function initializeInstrument(sandbox) {
         debug('remove instrument:', key);
         const queue = instrument.queue;
         const item = queue[key];
+        if (!item) {
+            warn(`remove instrument: instrument key '${key}' not found`);
+            return;
+        }
         item.enode.removeClass(item.className);
         delete queue[key];
+    };
+
+    instrument.removeClass = (key) => {
+        debug('remove instrument class:', key);
+        const queue = instrument.queue;
+        const item = queue[key];
+        if (!item) {
+            warn(`remove instrument class: instrument key '${key}' not found`);
+            return;
+        }
+        item.enode.removeClass(item.className);
+        item.className = null;
     };
 
     instrument.deinstrument = () => {
         debug('deinstrument: removing classes and clearing queues');
         for (const key in instrument.queue) {
-            instrument.remove(key);
+            instrument.removeClass(key);
         }
         instrument._onMutate = [];
         sandbox.whenDOM.reset();

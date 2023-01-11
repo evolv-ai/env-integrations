@@ -28,7 +28,7 @@ The top level keys of the json config indicate one of two things and both have o
 ### Other attribute options
 
 #### page
-If a `page` is specified, it's value represents a regex on the current url that if specified, the attribute will only be evaluated upon the `page` matching.
+If a `page` is specified, it's value represents a regex on the current url that if specified, the attribute will only be evaluated upon the `page` matching. This helps to focus page specific attributes that may be slow in retrieval.
 
 #### map
 The `map` is represented as an array of objects that allows the value of the attribute to be transformed. Those mappings have

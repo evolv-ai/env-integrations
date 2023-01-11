@@ -53,7 +53,48 @@ The config is read top to bottom. If a match is found, it stops. No fall-through
 The following shows examples of each of the type and options available.
 
 ```
-{
 
+{
+    "ctas": {
+        "placeOrder": {
+            "page": "sales/digital/expressCheckout",
+            "type": "dom",
+            "value": "button[aria-label*='Place order']",
+            "poll": {
+                "interval": 100,
+                "duration": 5000
+            }
+        }
+    },
+    "omni": {
+        "visitorId": {
+            "type": "expression",
+            "value": "window._satellite.getVisitorId()._fields.MCMID"
+        }
+    },
+    "recognizedUser": {
+        "type": "cookie",
+        "key": "recogme",
+        "default": false,
+        "map": [
+            {
+                "result": true,
+                "when": ".+"
+            },
+            {
+                "default": false
+            }
+        ]
+    },
+    "campaign": {
+        "source": {
+            "type": "query",
+            "value": "utm_source"
+        },
+        "medium": {
+            "type": "query",
+            "value": "utm_medium"
+        }
+    }    
 }
 ```

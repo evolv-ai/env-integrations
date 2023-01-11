@@ -8,13 +8,16 @@
 
 ## Structure of json config
 The top level key is `pages` that contains an array of page matches that events may occur in. Each of these pages contains `filters` and `events`.
+
 ### filters 
+The `filters` contains an array of conditionals. Each of these conditionals must be met on a page before the given events are monitor. The conditionals are based on the Evolv audience/context and will be reevaluated when those values are updated. 
 
 * key - the context/audience attribute that is being matched against
 * value - a regex that satisfies for the key 
 
 
 ### events
+The `events` contains an array containing all possible events that may occur on a given page. Each object in the array needs to contain `tag`, `activate`, and a optional `monitor`.
 
 #### tag
 The `tag` is a string that rerpesents the event tag value that is sent to Evolv when the requirements within the activate are met.

@@ -9,7 +9,7 @@ The audience integration supports populating the Evolv context object with value
 ## Setting up the config json
 The main requirements for the config are objects indexed by a context attribute where the objects contain `type` and `key` (aka `value` - for backward compatibility). 
 
-### Structure
+### Top Level Structure
 The top level keys of the json config indicate one of two things and both have object values.
 * The attribute key (to use in context) if the object value contains a `type` field.
 * A top level grouping if the object value does not contain a `type` field. This will results in each field of the value.

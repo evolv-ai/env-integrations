@@ -35,7 +35,9 @@ function toMultiNodeValue(select, context) {
             var template = context.createElement('template');
             template.innerHTML = select.trim();
             return Array.from(template.content.childNodes);
-        } else if (select[0] === '/') {
+        } else if (select[0] === '/' || select.slice(0, 2) === './') {
+            if (context !== document && select[0] !== '.')
+                select = '.' + select;
             var snapshot = document.evaluate(
                 select,
                 context,
@@ -113,7 +115,7 @@ ENode.prototype.contains = function (text) {
     if (text instanceof RegExp) {
         return new ENode(
             el.filter(function (e) {
-                return regex.test(e.textContent);
+                return text.test(e.textContent);
             })
         );
     } else {

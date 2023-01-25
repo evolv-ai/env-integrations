@@ -103,8 +103,10 @@ function initializeTrack(sandbox) {
                 body.attr({ [trackKey]: tracking });
             }
 
-            sandbox.instrument.add(className, () =>
-                sandbox.select(document.body)
+            sandbox.instrument.add(
+                className,
+                () => sandbox.select(document.body),
+                { type: 'single' }
             );
         };
 

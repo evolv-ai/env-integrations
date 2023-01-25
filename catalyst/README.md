@@ -7,10 +7,10 @@ A library to streamline writing Evolv AI experiments
 The goals for this framework are to provide the following:
 
 1. Maintain classes and references to elements that persist through mutations.
-1. Handle idemponency.
 1. Sandbox experiments to prevent namespace collisions.
-1. Queue functions to run in response to SPA changes or mutations.
-1. Experiment specific setTimeout and setInterval calls that handle SPA navigation automatically.
+1. Handle idempotency.
+1. Improve performance by sharing a single mutation observer and interval poll between experiments.
+1. Handle handle SPA navigation setup and teardown automatically.
 1. Simplify coding and support declarative where possible.
 1. Allow simple experiments to remain simple and support more complex tests (model view rendering)
 1. Simplify things like Mutation Observer.

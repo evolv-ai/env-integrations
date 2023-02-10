@@ -1,6 +1,7 @@
 function toSingleNodeValue(select, context) {
     context = context || document;
     let element = null;
+    if (!select) return [];
     if (typeof select === 'string') {
         if (select[0] === '<') {
             var template = document.createElement('template');
@@ -21,9 +22,7 @@ function toSingleNodeValue(select, context) {
     } else if (select instanceof Element) element = select;
     else if (select.constructor === ENode) element = select.el[0];
     else if (Array.isArray(select)) element = select[0];
-
-    if (element) return [element];
-    else return [];
+    return [element];
 }
 
 function toMultiNodeValue(select, context) {
@@ -128,15 +127,11 @@ ENode.prototype.contains = function (text) {
 };
 
 //navigation
-ENode.prototype.find = function (sel) {
-    var el = this.el;
-    return new ENode(
-        el
-            .map(function (e) {
-                return Array.prototype.slice.call(toMultiNodeValue(sel, e));
-            })
-            .flat(2)
-    );
+ENode.prototype.find = function find(sel) {
+  const { el } = this;
+  return new ENode([
+    ...new Set(el.map((e) => Array.from(toMultiNodeValue(sel, e))).flat(2)),
+  ]);
 };
 ENode.prototype.closest = function (sel) {
     var el = this.el;
@@ -263,9 +258,8 @@ ENode.prototype.insertAfter = function (item) {
     return this;
 };
 ENode.prototype.wrap = function (item) {
-    return this.el.forEach(function (e) {
-        new ENode(e).wrapAll(item);
-    });
+    const el = this.el;
+    return new ENode(el.map((element) => new ENode(element).wrapAll(item).firstDOM()));
 };
 ENode.prototype.wrapAll = function (item) {
     if (typeof item === 'string') {
@@ -350,12 +344,12 @@ ENode.prototype.attr = function (attributes) {
 };
 
 // constructs
-ENode.prototype.each = function (fnc) {
-    this.el.forEach(function (e) {
-        var node = new ENode(e);
-        fnc.apply(null, [node]);
-    });
-    return this;
+ENode.prototype.each = function each(callback) {
+  this.el.forEach((node, index, list) => {
+    const enode = new ENode(node);
+    callback.apply(null, [enode, index, list]);
+  });
+  return this;
 };
 
 ENode.prototype.watch = function (options) {

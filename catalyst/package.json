@@ -1,52 +1,52 @@
 {
-    "name": "@evolv-delivery/catalyst",
-    "version": "0.6.5",
-    "description": "Provides a rendering SDK for client-side experiments",
-    "main": "dist/index.js",
-    "files": [
-        "dist",
-        "README.md",
-        "LICENSE"
-    ],
-    "type": "module",
-    "scripts": {
-        "build": "rm -rf dist && rollup -c",
-        "watch:rollup": "rm -rf dist && rollup -c --watch",
-        "serve:catalyst": "http-server serve -p 3333 --cors --silent",
-        "serve:sandbox": "http-server cypress/sandbox -p 3334 --silent",
-        "stop": "lsof -ti tcp:3333 -i tcp:3334 | xargs kill",
-        "start": "npm-run-all -p watch:* serve:*",
-        "test:cypress": "npx wait-on http://localhost:3333 && npx wait-on http://localhost:3334 && cypress run --spec './cypress/e2e/catalyst-test*.cy.js'; npm run stop",
-        "test": "npm-run-all -s build -p serve:* test:cypress"
-    },
-    "keywords": [
-        "render",
-        "UI"
-    ],
-    "prettier": {
-        "tabWidth": 4,
-        "singleQuote": true
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/evolv-ai/env-integrations.git"
-    },
-    "homepage": "https://github.com/evolv-ai/env-integrations/catalyst",
-    "bugs": {
-        "url": "https://github.com/evolv-ai/env-integrations/issues"
-    },
-    "author": "richardcowin",
-    "contributors": [
-        "Charles Robertson <charles.robertson@evolv.ai> (charlesrobertson.io)"
-    ],
-    "license": "ISC",
-    "devDependencies": {
-        "@babel/preset-env": "^7.20.2",
-        "@rollup/plugin-babel": "^6.0.3",
-        "@rollup/plugin-json": "^5.0.1",
-        "cypress": "^12.2.0",
-        "http-server": "^14.1.1",
-        "npm-run-all": "^4.1.5",
-        "rollup": "^3.2.3"
-    }
+  "name": "@evolv-delivery/catalyst",
+  "version": "0.6.6",
+  "description": "Provides a rendering SDK for client-side experiments",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "rm -rf dist && rollup -c",
+    "watch:rollup": "rm -rf dist && rollup -c --watch",
+    "serve:catalyst": "http-server serve -p 3333 --cors --silent",
+    "serve:sandbox": "http-server cypress/sandbox -p 3334 --silent",
+    "stop": "lsof -ti tcp:3333 -i tcp:3334 | xargs kill",
+    "start": "npm-run-all -p watch:* serve:*",
+    "test:cypress": "npx wait-on http://localhost:3333 && npx wait-on http://localhost:3334 && cypress run --spec './cypress/e2e/catalyst-test*.cy.js'; npm run stop",
+    "test": "npm-run-all -s build -p serve:* test:cypress"
+  },
+  "keywords": [
+    "render",
+    "UI"
+  ],
+  "prettier": {
+    "tabWidth": 4,
+    "singleQuote": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evolv-ai/env-integrations.git"
+  },
+  "homepage": "https://github.com/evolv-ai/env-integrations/catalyst",
+  "bugs": {
+    "url": "https://github.com/evolv-ai/env-integrations/issues"
+  },
+  "author": "richardcowin",
+  "contributors": [
+    "Charles Robertson <charles.robertson@evolv.ai> (charlesrobertson.io)"
+  ],
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/preset-env": "^7.20.2",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-json": "^5.0.1",
+    "cypress": "^12.2.0",
+    "http-server": "^14.1.1",
+    "npm-run-all": "^4.1.5",
+    "rollup": "^3.2.3"
+  }
 }

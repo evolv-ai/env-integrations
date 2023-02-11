@@ -213,6 +213,104 @@ function initializeENode(sandbox) {
             .filter((node) => node),
         );
       }
+
+      /**
+       * Manipulating class
+       */
+
+      addClass(classString) {
+        this.el.forEach((node) =>
+          node.classList.add(...classString.split(' ')),
+        );
+        return this;
+      }
+
+      removeClass(classString) {
+        this.el.forEach((node) =>
+          node.classList.remove(...classString.split(' ')),
+        );
+        return this;
+      }
+
+      /**
+       * Insertion
+       */
+
+      append(select) {
+        const [node] = this.el;
+        if (!node) return;
+
+        const items = toNodeArray(select);
+        items.forEach((itemNode) => node.append(itemNode));
+
+        return this;
+      }
+
+      prepend(select) {
+        const [node] = this.el;
+        if (!node) return;
+
+        const items = toNodeArray(select);
+
+        for (let i = items.length - 1; i >= 0; i--) {
+          node.prepend(items[i]);
+        }
+
+        return this;
+      }
+
+      beforeMe(select) {
+        if (typeof item === 'string') {
+          item = new ENode(select);
+        }
+        item.insertBefore(this);
+        return this;
+      }
+      afterMe(item) {
+        if (typeof item === 'string') {
+          item = new ENode(item);
+        }
+        item.insertAfter(this);
+        return this;
+      }
+      insertBefore(item) {
+        const [node] = this.el;
+        if (!node) return this;
+        if (typeof item === 'string') item = document.querySelectorAll(item);
+        else if (item.constructor === ENode) item = item.el[0];
+        if (!item) return this;
+        item.insertAdjacentElement('beforebegin', node);
+        return this;
+      }
+      insertAfter(item) {
+        const [node] = this.el;
+        if (!node) return this;
+        if (typeof item === 'string') item = document.querySelectorAll(item);
+        else if (item.constructor === ENode) item = item.el[0];
+        if (!item) return this;
+        item.insertAdjacentElement('afterend', node);
+        return this;
+      }
+      wrap(item) {
+        const el = this.el;
+        return new ENode(
+          el.map((element) => new ENode(element).wrapAll(item).firstDOM()),
+        );
+      }
+      wrapAll(item) {
+        if (typeof item === 'string') {
+          item = new ENode(item);
+        }
+        var wrapper = item.firstDom();
+        while (wrapper.children.length) {
+          wrapper = wrapper.firstElementChild;
+        }
+        var innerItem = new ENode(wrapper);
+
+        this.first().beforeMe(item);
+        innerItem.append(this);
+        return this;
+      }
     }
   };
 }

@@ -23,10 +23,6 @@
     "render",
     "UI"
   ],
-  "prettier": {
-    "tabWidth": 4,
-    "singleQuote": true
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/evolv-ai/env-integrations.git"
@@ -41,8 +37,6 @@
   ],
   "license": "ISC",
   "devDependencies": {
-    "@babel/preset-env": "^7.20.2",
-    "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-json": "^5.0.1",
     "cypress": "^12.2.0",
     "http-server": "^14.1.1",

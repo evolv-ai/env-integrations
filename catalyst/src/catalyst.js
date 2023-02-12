@@ -1,7 +1,7 @@
 import initializeSandbox from './sandbox.js';
 import { initializeIntervalPoll } from './interval-poll.js';
 
-export function initializeCatalyst() {
+function initializeCatalyst() {
   const catalyst = initializeSandbox('catalyst');
   const { debug } = catalyst;
 
@@ -86,7 +86,7 @@ export function initializeCatalyst() {
   return catalystProxy;
 }
 
-export function processConfig(config) {
+function processConfig(config) {
   function pageMatch(page) {
     if (!page) return false;
 
@@ -109,3 +109,5 @@ export function processConfig(config) {
 
   return true;
 }
+
+export { initializeCatalyst, processConfig };

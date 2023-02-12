@@ -1,21 +1,20 @@
-import { $, ENode } from './enode';
-
+/* eslint-disable no-bitwise */
 function hash(string) {
-  let hash = 0;
+  let hashValue = 0;
   const increment = Math.trunc(string.length / 512) || 1;
 
   for (let i = 0; i < string.length; i += increment) {
-    let chr = string.charCodeAt(i);
-    hash = (hash << 5) - hash + chr;
+    const chr = string.charCodeAt(i);
+    hashValue = (hashValue << 5) - hashValue + chr;
   }
 
-  hash &= 0xffff;
+  hashValue &= 0xffff;
 
-  return hash;
+  return hashValue;
 }
 
 function initializeWhenContext(sandbox) {
-  const debug = sandbox.debug;
+  const { debug, warn } = sandbox;
 
   return (state) => {
     let queueName;
@@ -28,7 +27,9 @@ function initializeWhenContext(sandbox) {
           );
         },
       };
-    } else if (state === 'active' || undefined) {
+    }
+
+    if (state === 'active' || undefined) {
       queueName = 'onActivate';
     } else {
       queueName = 'onDeactivate';
@@ -80,8 +81,8 @@ function initializeWhenContext(sandbox) {
 }
 
 function initializeWhenMutate(sandbox) {
-  const debug = sandbox.debug;
-
+  const { debug } = sandbox;
+  /* eslint-disable-next-line */
   return () => {
     return {
       then: (callback) => {
@@ -113,14 +114,14 @@ function initializeWhenMutate(sandbox) {
 }
 
 function initializeWhenItem(sandbox) {
-  const debug = sandbox.debug;
-  const warn = sandbox.warn;
+  const { debug, warn } = sandbox;
 
   return (key, options) => {
     const item = sandbox.instrument.queue[key];
     const logPrefix =
       options && options.logPrefix ? options.logPrefix : 'whenItem';
-    let queueName, action;
+    let queueName;
+    let action;
     if (options && options.disconnect) {
       queueName = 'onDisconnect';
       action = 'disconnect';
@@ -209,8 +210,7 @@ function initializeWhenItem(sandbox) {
 function initializeWhenDOM(sandbox) {
   const counts = {};
   const history = [];
-  const debug = sandbox.debug;
-  const warn = sandbox.warn;
+  const { $, debug, warn } = sandbox;
 
   const whenDOM = (select, options) => {
     const logPrefix =
@@ -218,7 +218,9 @@ function initializeWhenDOM(sandbox) {
     const keyPrefix =
       options && options.keyPrefix ? options.keyPrefix : 'when-dom-';
     const type = options && options.type ? options.type : 'multi';
-    let selectFunc, count, key, foundPrevious;
+    let selectFunc;
+    let key;
+    let foundPrevious;
     const previous = history.find((item) => item.select === select);
     const whenItemOptions = { logPrefix };
     if (options && options.hash) whenItemOptions.hash = options.hash;
@@ -234,7 +236,10 @@ function initializeWhenDOM(sandbox) {
 
       // Accept string or enode
       if (typeof select === 'string') selectFunc = () => $(select);
-      else if (typeof select === 'object' && select.constructor === ENode)
+      else if (
+        typeof select === 'object' &&
+        select.constructor.name === 'ENode'
+      )
         selectFunc = () => select;
       else {
         warn(
@@ -245,14 +250,14 @@ function initializeWhenDOM(sandbox) {
         };
       }
 
-      count = counts[keyPrefix]++;
-      key = keyPrefix + count;
+      counts[keyPrefix] += 1;
+      key = `${keyPrefix}${counts[keyPrefix]}`;
 
       history.push({
-        select: select,
-        selectFunc: selectFunc,
-        keyPrefix: keyPrefix,
-        key: key,
+        select,
+        selectFunc,
+        keyPrefix,
+        key,
       });
     }
 
@@ -261,7 +266,7 @@ function initializeWhenDOM(sandbox) {
         if (!foundPrevious)
           sandbox.instrument.add(key, selectFunc, {
             asClass: null,
-            type: type,
+            type,
           });
         sandbox.whenItem(key, whenItemOptions).then(callback);
       },
@@ -269,7 +274,7 @@ function initializeWhenDOM(sandbox) {
         if (!foundPrevious)
           sandbox.instrument.add(key, selectFunc, {
             asClass: null,
-            type: type,
+            type,
           });
         sandbox.whenItem(key, whenItemOptions).thenInBulk(callback);
       },
@@ -280,13 +285,9 @@ function initializeWhenDOM(sandbox) {
 
   whenDOM.counts = counts;
   whenDOM.history = history;
-  whenDOM.reset = function () {
+  whenDOM.reset = function reset() {
     debug('whenDOM: reset selector history');
-
-    for (const key in this.counts) {
-      delete this.counts[key];
-    }
-
+    Object.keys(this.counts).forEach((key) => delete this.counts[key]);
     this.history.length = 0;
   };
 
@@ -294,6 +295,7 @@ function initializeWhenDOM(sandbox) {
 }
 
 function initializeWhenElement(sandbox) {
+  /* eslint-disable-next-line */
   return (select) => {
     return {
       then: (callback) => {
@@ -311,6 +313,7 @@ function initializeWhenElement(sandbox) {
 }
 
 function initializeWhenElements(sandbox) {
+  /* eslint-disable-next-line */
   return (select) => {
     return {
       then: (callback) => {
@@ -327,8 +330,7 @@ function initializeWhenElements(sandbox) {
 }
 
 function initializeWaitUntil(sandbox) {
-  const debug = sandbox.debug;
-  const warn = sandbox.warn;
+  const { debug, warn } = sandbox;
 
   return (condition, timeout) => {
     if (typeof condition !== 'function') {
@@ -343,10 +345,10 @@ function initializeWaitUntil(sandbox) {
     });
     return {
       then: (callback) => {
-        const queue = sandbox._intervalPoll.queue;
+        const { queue } = sandbox._intervalPoll;
 
         const newEntry = {
-          condition: condition,
+          condition,
           callback: () => callback(condition()),
           timeout: timeout || null,
           startTime: performance.now(),

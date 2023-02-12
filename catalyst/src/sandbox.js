@@ -1,13 +1,13 @@
 import { version } from '../package.json';
-import { initializeLogs } from './logs.js';
-import { initializeENode } from './enode2.js';
+import initializeLogs from './logs.js';
+import initializeENode from './enode.js';
 import {
   initializeSelectInstrument,
   initializeInstrument,
 } from './instrument.js';
 import { initializeEvolvContext, initializeTrack } from './evolv-context.js';
 import { initializeSandboxIntervalPoll } from './interval-poll.js';
-import { initializeStore } from './store.js';
+import initializeStore from './store.js';
 import {
   initializeWhenContext,
   initializeWhenMutate,
@@ -22,12 +22,16 @@ function initializeSandbox(name) {
   const sandbox = {};
   sandbox.name = name;
 
-  initializeLogs(sandbox);
+  const logs = initializeLogs(sandbox);
+  const { logLevel } = logs;
+  sandbox.log = logs.log;
+  sandbox.warn = logs.warn;
+  sandbox.debug = logs.debug;
   const { log, debug } = sandbox;
 
   if (name === 'catalyst') {
     log(`init catalyst version ${version}`);
-    log(`log level: ${sandbox.logs}`);
+    log(`log level: ${logLevel}`);
     sandbox.version = version;
   } else {
     debug(`init context sandbox: ${name}`);
@@ -35,10 +39,10 @@ function initializeSandbox(name) {
       window.evolv.catalyst._globalObserver.connect();
   }
 
-  const enode = initializeENode(sandbox);
-  sandbox.$ = enode.selectAll;
-  sandbox.select = enode.select;
-  sandbox.selectAll = enode.selectAll;
+  const ENode = initializeENode(sandbox);
+  sandbox.select = (select, context) => new ENode(select, context, true);
+  sandbox.selectAll = (select, context) => new ENode(select, context, false);
+  sandbox.$ = sandbox.selectAll;
 
   if (sandbox.name !== 'catalyst') {
     sandbox.selectInstrument = initializeSelectInstrument(sandbox);

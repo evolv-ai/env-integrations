@@ -70,6 +70,7 @@ function initializeCatalyst() {
         childList: true,
         attributes: true,
         subtree: true,
+        characterData: true,
       });
       catalyst._globalObserver.state = 'active';
     },

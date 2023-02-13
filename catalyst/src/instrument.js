@@ -46,15 +46,24 @@ function initializeInstrument(sandbox) {
       item.enode = newEnode;
       if (className) item.enode.addClass(className);
       item.state = 'connected';
-      debug('process instrument: connect', `'${key}'`, item);
+      debug(`process instrument: connect '${key}'`);
       item.onConnect.forEach((callback) => callback());
       didItemChange = true;
     } else if (wasConnected && !isConnected) {
       item.enode = newEnode;
       item.state = 'disconnected';
-      debug('process instrument: disconnect', `'${key}'`, item);
+      debug('process instrument: disconnect', `'${key}'`);
       item.onDisconnect.forEach((callback) => callback());
       didItemChange = true;
+    }
+
+    if (item.onChange.length > 0) {
+      item.enode.el.forEach((node, index) => {
+        const previous = item.html[index];
+        item.html[index] = node.outerHTML;
+        if (item.html[index] !== previous)
+          item.onChange.forEach((callback) => callback($(node)));
+      });
     }
   }
 
@@ -68,18 +77,15 @@ function initializeInstrument(sandbox) {
 
     Object.keys(instrument.queue).forEach((key) => processQueueItem(key));
 
-    debug(
-      'process instrument: complete',
-      `${(performance.now() - then).toFixed(2)}ms`,
-      processCount,
-    );
-
     isProcessing = false;
 
     // Covers scenario where mutations are missed during long process
     if (didItemChange) {
-      debug('process instrument: item changed, reprocessing');
-      instrument.processQueue();
+      debug(
+        'process instrument: item changed',
+        `${(performance.now() - then).toFixed(2)}ms`,
+        processCount,
+      );
     }
 
     instrument._onMutate.forEach((callback) => callback());
@@ -104,9 +110,11 @@ function initializeInstrument(sandbox) {
       select,
       onConnect: options.onConnect ? options.onConnect : [],
       onDisconnect: options.onDisconnect ? options.onDisconnect : [],
+      onChange: [],
       type: options.type === 'single' ? 'single' : 'multi',
       enode: $(),
       state: 'disconnected',
+      html: [],
     };
 
     if (Object.prototype.hasOwnProperty.call(options, 'asClass'))

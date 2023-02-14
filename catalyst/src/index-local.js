@@ -1,3 +1,3 @@
-import { processConfig } from './catalyst';
+import { processConfig } from './catalyst.js';
 
 processConfig();

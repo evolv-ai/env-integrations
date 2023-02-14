@@ -1,410 +1,440 @@
-function toSingleNodeValue(select, context) {
-    context = context || document;
-    let element = null;
+function initializeENode(sandbox) {
+  const { warn } = sandbox;
+
+  function makeElements(HTMLString, typeSingle = false) {
+    const template = document.createElement('template');
+    try {
+      template.innerHTML = HTMLString;
+    } catch {
+      warn('create elements: invalid HTML string', HTMLString);
+      return [];
+    }
+    const array = Array.from(template.content.childNodes);
+    if (typeSingle) return [array[0]];
+    return array;
+  }
+
+  function evaluateSingle(XPathString, contextElement) {
+    const relativeXPathString =
+      XPathString[0] !== '.' ? `.${XPathString}` : XPathString;
+    let result;
+    try {
+      result = document.evaluate(
+        relativeXPathString,
+        contextElement,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null,
+      ).singleNodeValue;
+    } catch {
+      warn('evaluate single: invalid XPath selector', relativeXPathString);
+    }
+    return [result];
+  }
+
+  function evaluateMultiple(XPathString, contextElement) {
+    const relativeXPathString =
+      XPathString[0] !== '.' ? `.${XPathString}` : XPathString;
+    let result;
+    try {
+      result = document.evaluate(
+        relativeXPathString,
+        contextElement,
+        null,
+        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+        null,
+      );
+    } catch {
+      warn(
+        `evaluate multiple: ${relativeXPathString} is not a valid XPath expression`,
+      );
+      return [];
+    }
+    const length = result.snapshotLength;
+    const array = new Array(length);
+    for (let i = 0; i < length; i += 1) {
+      array[i] = result.snapshotItem(i);
+    }
+    return array;
+  }
+
+  function querySingle(select, contextElement) {
+    let result;
+    try {
+      result = [contextElement.querySelector(select)];
+    } catch {
+      warn(`query single: ${select} is not a valid selector`);
+      return [];
+    }
+    return result;
+  }
+
+  function queryMultiple(select, contextElement) {
+    let result;
+    try {
+      result = contextElement.querySelectorAll(select);
+    } catch {
+      warn(`query multiple: ${select} is not a valid selector`);
+      return [];
+    }
+    return Array.from(result);
+  }
+
+  function handleArrayLike(select, typeSingle) {
+    const array = Array.from(select);
+    return typeSingle ? [array[0]] : array;
+  }
+
+  function toNodeArray(select, context = document, typeSingle = false) {
     if (!select) return [];
-    if (typeof select === 'string') {
-        if (select[0] === '<') {
-            var template = document.createElement('template');
-            template.innerHTML = select.trim();
-            element = template.content.firstChild;
-        } else if (select[0] === '/') {
-            var firstNode = document.evaluate(
-                select,
-                context,
-                null,
-                XPathResult.FIRST_ORDERED_NODE_TYPE,
-                null
-            ).singleNodeValue;
-            element = firstNode;
-        } else {
-            element = context.querySelector(select);
-        }
-    } else if (select instanceof Element) element = select;
-    else if (select.constructor === ENode) element = select.el[0];
-    else if (Array.isArray(select)) element = select[0];
-    return [element];
-}
+    if (select instanceof Element) return [select];
 
-function toMultiNodeValue(select, context) {
-    context = context || document;
-    if (!select) {
-        return [];
-    } else if (typeof select === 'string') {
-        if (select[0] === '<') {
-            var template = context.createElement('template');
-            template.innerHTML = select.trim();
-            return Array.from(template.content.childNodes);
-        } else if (select[0] === '/' || select.slice(0, 2) === './') {
-            if (context !== document && select[0] !== '.')
-                select = '.' + select;
-            var snapshot = document.evaluate(
-                select,
-                context,
-                null,
-                XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-                null
-            );
-            var length = snapshot.snapshotLength;
-            var el = new Array(length);
-            for (var i = 0; i < length; i++) {
-                el[i] = snapshot.snapshotItem(i);
-            }
-            return el;
-        } else {
-            return Array.from(context.querySelectorAll(select));
-        }
-    } else if (select instanceof Element) return [select];
-    else if (select.constructor === ENode) return select.el;
-    else if (Array.isArray(select)) return select;
-    else return [];
-}
+    if (typeSingle) {
+      if (typeof select === 'string') {
+        if (select[0] === '<') return makeElements(select, true);
+        if (select[0] === '/' || select.slice(0, 2) === './')
+          return evaluateSingle(select, context);
+        return querySingle(select, context);
+      }
+      if (select.constructor.name === 'ENode') return [select.el[0]];
+      if (select.length > 0) handleArrayLike(select, true);
+    } else {
+      if (typeof select === 'string') {
+        if (select[0] === '<') return makeElements(select, false);
+        if (select[0] === '/' || select.slice(0, 2) === './')
+          return evaluateMultiple(select, context);
+        return queryMultiple(select, context);
+      }
+      if (select.constructor.name === 'ENode') return select.el;
+      if (Object.prototype.hasOwnProperty.call(select, 'length'))
+        return handleArrayLike(select, false);
+    }
+    warn('to node array: input is of invalid type:', select);
+    return [];
+  }
 
-const ENode = function (select, context, toNodeValueFunc) {
-    context = context || document;
-    toNodeValueFunc = toNodeValueFunc || toMultiNodeValue;
-    var el = toNodeValueFunc(select, context);
-    this.el = Array.prototype.slice.call(el);
-    this.length = this.el.length;
-};
+  return class ENode {
+    constructor(select, context, type) {
+      const array = toNodeArray(select, context, type);
+      const { length } = array;
+      this.array = array;
+      this.el = this.array;
+      this.length = length;
+      for (let i = 0; i < length; i += 1) {
+        this[i] = this.array[i];
+      }
+    }
 
-// Checks
-ENode.prototype.exists = function () {
-    return this.length > 0 && this.el[0] !== null;
-};
+    /**
+     * Tests
+     */
 
-// Tests if all enodes are connected
-ENode.prototype.isConnected = function () {
-    return this.exists() && this.el.findIndex((e) => !e.isConnected) === -1;
-};
+    exists() {
+      return this.el.length > 0;
+    }
 
-// Tests if all enodes have the indicated class
-ENode.prototype.hasClass = function (className) {
-    return (
+    // Tests if all elements are connected
+    isConnected() {
+      return (
+        this.exists() && this.el.findIndex((node) => !node.isConnected) === -1
+      );
+    }
+
+    // Tests if all elements have the indicated class
+    hasClass(className) {
+      return (
         this.exists() &&
-        this.el.findIndex((e) => !e.classList.contains(className)) === -1
-    );
-};
-
-ENode.prototype.isEqualTo = function (enode) {
-    if (enode.constructor !== ENode) {
-        return false;
-    } else if (this.length !== enode.length) {
-        return false;
-    } else {
-        for (let i = 0; i < this.length; i++) {
-            if (this.el[i] !== enode.el[i]) return false;
-        }
+        this.el.findIndex((node) => !node.classList.contains(className)) === -1
+      );
     }
-    return true;
-};
 
-// Filters
-ENode.prototype.filter = function (sel) {
-    var el = this.el;
-    if (!sel) return this;
-    return new ENode(
-        el.filter(function (e) {
-            return e.matches(sel);
-        })
-    );
-};
-ENode.prototype.contains = function (text) {
-    var el = this.el;
-
-    if (text instanceof RegExp) {
-        return new ENode(
-            el.filter(function (e) {
-                return text.test(e.textContent);
-            })
-        );
-    } else {
-        return new ENode(
-            el.filter(function (e) {
-                return e.textContent.includes(text);
-            })
-        );
+    // Tests if enodes are identical
+    isEqualTo(enode) {
+      if (enode.constructor !== ENode) return false;
+      if (this.length !== enode.length) return false;
+      for (let i = 0; i < this.length; i += 1) {
+        if (this.el[i] !== enode.el[i]) return false;
+      }
+      return true;
     }
-};
 
-//navigation
-ENode.prototype.find = function find(sel) {
-  const { el } = this;
-  return new ENode([
-    ...new Set(el.map((e) => Array.from(toMultiNodeValue(sel, e))).flat(2)),
-  ]);
-};
-ENode.prototype.closest = function (sel) {
-    var el = this.el;
-    return new ENode(
-        el.map(function (e) {
-            return e.closest(sel);
-        })
-    );
-};
-ENode.prototype.parent = function () {
-    var el = this.el;
-    var parents = el.map(function (e) {
-        return e.parentNode;
-    });
-    parents = parents.filter(function (item, pos) {
-        return (
-            parents.indexOf(item) == pos &&
-            item !== null &&
-            item.nodeName !== '#document-fragment'
-        );
-    });
-    return new ENode(parents);
-};
-ENode.prototype.children = function (sel) {
-    var el = this.el;
-    return new ENode(
-        el.reduce(function (a, b) {
-            return a.concat(Array.prototype.slice.call(b.children));
-        }, [])
-    ).filter(sel);
-};
-ENode.prototype.next = function () {
-    return new ENode(
+    /**
+     * Filters
+     */
+
+    // Returns all elements that match the selector
+    filter(selector) {
+      const { el } = this;
+      if (!selector) return this;
+      return new ENode(el.filter((node) => node.matches(selector)));
+    }
+
+    // Returns all elements containing selected text or matching the regular expression
+    contains(text) {
+      const { el } = this;
+
+      if (text instanceof RegExp) {
+        return new ENode(el.filter((node) => text.test(node.textContent)));
+      }
+      return new ENode(el.filter((node) => node.textContent.includes(text)));
+    }
+
+    /**
+     * Navigation
+     */
+
+    find(select) {
+      return new ENode([
+        ...new Set(this.el.map((node) => toNodeArray(select, node)).flat(2)),
+      ]);
+    }
+
+    closest(selector) {
+      return new ENode(this.el.map((node) => node.closest(selector)));
+    }
+
+    parent() {
+      return new ENode([...new Set(this.el.map((node) => node.parentElement))]);
+    }
+
+    children(selector) {
+      return new ENode(
+        this.el.reduce(
+          (accumulator, current) =>
+            accumulator.concat(Array.from(current.children)),
+          [],
+        ),
+      ).filter(selector);
+    }
+
+    next() {
+      return new ENode(
+        this.el.map((node) => node.nextElementSibling).filter((node) => node),
+      );
+    }
+
+    prev() {
+      return new ENode(
         this.el
-            .map(function (e) {
-                return e.nextElementSibling;
-            })
-            .filter((e) => e)
-    );
-};
-ENode.prototype.prev = function () {
-    return new ENode(
-        this.el
-            .map(function (e) {
-                return e.previousElementSibling || [];
-            })
-            .filter((e) => e)
-    );
-};
-
-//manipulating class
-ENode.prototype.addClass = function (classString) {
-    this.el.forEach(function (e) {
-        classString.split(' ').forEach(function (className) {
-            e.classList.add(className);
-        });
-    });
-    return this;
-};
-ENode.prototype.removeClass = function (className) {
-    function removeTheClass(e) {
-        e.classList.remove(className);
-    }
-    this.el.forEach(removeTheClass);
-    return this;
-};
-
-//repositioning and insertion
-ENode.prototype.append = function (item) {
-    var node = this.el[0];
-    if (!node) return;
-
-    var items = toMultiNodeValue(item);
-    items.forEach(function (e) {
-        node.append(e);
-    });
-
-    return this;
-};
-
-ENode.prototype.prepend = function (item) {
-    var node = this.el[0];
-    if (!node) return;
-
-    var items = toMultiNodeValue(item);
-
-    for (let i = items.length - 1; i >= 0; i--) {
-        node.prepend(items[i]);
+          .map((node) => node.previousElementSibling)
+          .filter((node) => node),
+      );
     }
 
-    return this;
-};
+    /**
+     * Manipulating class
+     */
 
-ENode.prototype.beforeMe = function (item) {
-    if (typeof item === 'string') {
-        item = new ENode(item);
+    addClass(classString) {
+      this.el.forEach((node) => node.classList.add(...classString.split(' ')));
+      return this;
     }
-    item.insertBefore(this);
-    return this;
-};
-ENode.prototype.afterMe = function (item) {
-    if (typeof item === 'string') {
-        item = new ENode(item);
+
+    removeClass(classString) {
+      this.el.forEach((node) =>
+        node.classList.remove(...classString.split(' ')),
+      );
+      return this;
     }
-    item.insertAfter(this);
-    return this;
-};
-ENode.prototype.insertBefore = function (item) {
-    var node = this.el[0];
-    if (!node) return this;
-    if (typeof item === 'string') item = document.querySelectorAll(item);
-    else if (item.constructor === ENode) item = item.el[0];
-    if (!item) return this;
-    item.insertAdjacentElement('beforebegin', node);
-    return this;
-};
-ENode.prototype.insertAfter = function (item) {
-    var node = this.el[0];
-    if (!node) return this;
-    if (typeof item === 'string') item = document.querySelectorAll(item);
-    else if (item.constructor === ENode) item = item.el[0];
-    if (!item) return this;
-    item.insertAdjacentElement('afterend', node);
-    return this;
-};
-ENode.prototype.wrap = function (item) {
-    const el = this.el;
-    return new ENode(el.map((element) => new ENode(element).wrapAll(item).firstDOM()));
-};
-ENode.prototype.wrapAll = function (item) {
-    if (typeof item === 'string') {
-        item = new ENode(item);
+
+    /**
+     * Insertion
+     */
+
+    append(source) {
+      const [targetNode] = this.el;
+      if (!targetNode) return this;
+      const sourceENode = new ENode(source);
+      sourceENode.el.forEach((sourceNode) => targetNode.append(sourceNode));
+      return this;
     }
-    var wrapper = item.firstDom();
-    while (wrapper.children.length) {
+
+    prepend(source) {
+      const [targetNode] = this.el;
+      if (!targetNode) return this;
+      const sourceENode = new ENode(source);
+      sourceENode.el.reverse().forEach((sourceNode) => {
+        targetNode.prepend(sourceNode);
+      });
+      return this;
+    }
+
+    beforeMe(items) {
+      const enode = new ENode(items);
+      enode.insertBefore(this);
+      return this;
+    }
+
+    afterMe(items) {
+      const enode = new ENode(items);
+      enode.insertAfter(this);
+      return this;
+    }
+
+    insertBefore(items) {
+      const [node] = this.el;
+      if (!node) return this;
+      items.el.forEach((itemNode) =>
+        itemNode.insertAdjacentElement('beforebegin', node),
+      );
+      return this;
+    }
+
+    insertAfter(items) {
+      const [node] = this.el;
+      if (!node) return this;
+      items.el
+        .reverse()
+        .forEach((itemNode) =>
+          itemNode.insertAdjacentElement('afterend', node),
+        );
+      return this;
+    }
+
+    wrap(item) {
+      const { el } = this;
+      return new ENode(
+        el.map((element) => new ENode(element).wrapAll(item).firstDOM()),
+      );
+    }
+
+    wrapAll(item) {
+      const enode = new ENode(item);
+      let wrapper = enode.el[0];
+      while (wrapper.children.length) {
         wrapper = wrapper.firstElementChild;
+      }
+      const innerItem = new ENode(wrapper);
+
+      this.first().beforeMe(enode);
+      innerItem.append(this);
+      return this;
     }
-    var innerItem = new ENode(wrapper);
 
-    this.first().beforeMe(item);
-    innerItem.append(this);
-    return this;
-};
+    /**
+     * Idempotency
+     */
 
-//
-ENode.prototype.markOnce = function (attr) {
-    var results = this.el.filter(function (e) {
-        return !e.getAttribute(attr);
-    });
-    results.forEach(function (e) {
-        e.setAttribute(attr, true);
-    });
-    return new ENode(results);
-};
-
-//listener
-ENode.prototype.on = function (tag, fnc) {
-    this.el.forEach(function (e) {
-        tag.split(' ').forEach(function (eventTag) {
-            e.addEventListener(eventTag, fnc);
-        });
-    });
-    return this;
-};
-
-//content
-ENode.prototype.html = function (str) {
-    if (!str)
-        return this.el
-            .map(function (e) {
-                return e.innerHTML;
-            })
-            .join();
-
-    this.el.forEach(function (e) {
-        e.innerHTML = str;
-    });
-    return this;
-};
-ENode.prototype.text = function (str) {
-    if (!str)
-        return this.el
-            .map(function (e) {
-                return e.textContent;
-            })
-            .join(' ');
-
-    this.el.forEach(function (e) {
-        e.textContent = str;
-    });
-    return this;
-};
-ENode.prototype.attr = function (attributes) {
-    if (typeof attributes === 'string') {
-        var prop = attributes;
-        return this.el
-            .map(function (e) {
-                return e.getAttribute(prop);
-            })
-            .join(' ');
-    } else {
-        this.el.forEach(function (e) {
-            var keys = Object.keys(attributes);
-            keys.forEach(function (key) {
-                e.setAttribute(key, attributes[key]);
-            });
-        });
-        return this;
+    markOnce(attr) {
+      const results = this.el.filter((node) => !node.getAttribute(attr));
+      results.forEach((node) => node.setAttribute(attr, true));
+      return new ENode(results);
     }
-};
 
-// constructs
-ENode.prototype.each = function each(callback) {
-  this.el.forEach((node, index, list) => {
-    const enode = new ENode(node);
-    callback.apply(null, [enode, index, list]);
-  });
-  return this;
-};
+    /**
+     * Events
+     */
 
-ENode.prototype.watch = function (options) {
-    var defaultConfig = {
+    on(eventTags, callback) {
+      this.el.forEach((node) =>
+        eventTags
+          .split(' ')
+          .forEach((eventTag) => node.addEventListener(eventTag, callback)),
+      );
+      return this;
+    }
+
+    /**
+     * Content
+     */
+
+    html(string) {
+      if (!string) return this.el.map((node) => node.innerHTML).join();
+
+      this.el.forEach((node) => {
+        const newNode = node;
+        newNode.innerHTML = string;
+      });
+      return this;
+    }
+
+    text(string) {
+      if (!string) return this.el.map((node) => node.textContent).join(' ');
+
+      this.el.forEach((node) => {
+        const newNode = node;
+        newNode.textContent = string;
+      });
+      return this;
+    }
+
+    attr(attributes) {
+      if (typeof attributes === 'string') {
+        const prop = attributes;
+        return this.el.map((node) => node.getAttribute(prop)).join(' ');
+      }
+
+      this.el.forEach((node) => {
+        const keys = Object.keys(attributes);
+        keys.forEach((key) => node.setAttribute(key, attributes[key]));
+      });
+
+      return this;
+    }
+
+    /**
+     * Constructs
+     */
+
+    each(callback) {
+      this.el.forEach((node, index, list) => {
+        const enode = new ENode(node);
+        callback.apply(null, [enode, index, list]);
+      });
+      return this;
+    }
+
+    watch(options = {}) {
+      const defaultConfig = {
         attributes: false,
         childList: true,
         characterData: false,
         subtree: true,
-    };
-    var config = Object.assign({}, defaultConfig, options || {});
-    var cb;
-    var observer = new MutationObserver(function (mutations) {
-        if (cb) cb(mutations);
-    });
-    this.el.forEach(function (e) {
-        observer.observe(e, config);
-    });
-    return {
-        then: function (fnc) {
-            cb = fnc;
+      };
+      const config = { ...defaultConfig, ...options };
+      let callbackA;
+      const observer = new MutationObserver((mutations) => {
+        if (callbackA) callbackA(mutations);
+      });
+      this.el.forEach((node) => observer.observe(node, config));
+
+      return {
+        then: (callbackB) => {
+          callbackA = callbackB;
         },
-    };
-};
+      };
+    }
 
-//getting first and last elements
-ENode.prototype.firstDOM = function () {
-    return this.el[0];
-};
-// Deprecated
-ENode.prototype.firstDom = function () {
-    return this.el[0];
-};
-ENode.prototype.lastDOM = function () {
-    return this.el.slice(-1)[0];
-};
-ENode.prototype.lastDom = function () {
-    return this.el.slice(-1)[0];
-};
-ENode.prototype.first = function () {
-    return new ENode(this.firstDom());
-};
-ENode.prototype.last = function () {
-    return new ENode(this.lastDom());
-};
+    /**
+     * Isolating elements
+     */
 
-var $ = (select, context) => {
-    return new ENode(select, context);
-};
+    firstDOM() {
+      return this.el[0];
+    }
 
-var select = (select, context) => {
-    return new ENode(select, context, toSingleNodeValue);
-};
+    // Deprecated
+    firstDom() {
+      return this.el[0];
+    }
 
-var selectAll = (select, context) => {
-    return new ENode(select, context, toMultiNodeValue);
-};
+    lastDOM() {
+      return this.el.slice(-1)[0];
+    }
 
-export { $, ENode, select, selectAll };
+    // Deprecated
+    lastDom() {
+      return this.el.slice(-1)[0];
+    }
+
+    first() {
+      return new ENode(this.firstDom());
+    }
+
+    last() {
+      return new ENode(this.lastDom());
+    }
+  };
+}
+
+export default initializeENode;

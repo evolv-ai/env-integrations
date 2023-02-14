@@ -1,6 +1,6 @@
 {
   "name": "@evolv-delivery/catalyst",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "description": "Provides a rendering SDK for client-side experiments",
   "main": "dist/index.js",
   "files": [
@@ -23,10 +23,6 @@
     "render",
     "UI"
   ],
-  "prettier": {
-    "tabWidth": 4,
-    "singleQuote": true
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/evolv-ai/env-integrations.git"
@@ -41,10 +37,12 @@
   ],
   "license": "ISC",
   "devDependencies": {
-    "@babel/preset-env": "^7.20.2",
-    "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-json": "^5.0.1",
     "cypress": "^12.2.0",
+    "eslint": "^8.32.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-import": "^2.27.5",
     "http-server": "^14.1.1",
     "npm-run-all": "^4.1.5",
     "rollup": "^3.2.3"

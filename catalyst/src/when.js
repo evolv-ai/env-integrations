@@ -127,7 +127,6 @@ function initializeWhenChange(sandbox) {
       then: (callback) => {
         const newEntry = (enode) => {
           debug(`whenChange: '${key}'`, `fire on change:`, callback);
-          debug({ enode });
           callback(enode);
         };
         newEntry.hash = hash(callback.toString());

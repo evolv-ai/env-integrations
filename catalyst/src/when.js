@@ -114,19 +114,20 @@ function initializeWhenMutate(sandbox) {
 }
 
 function initializeWhenChange(sandbox) {
-  const { debug } = sandbox;
+  const { debug, warn } = sandbox;
   /* eslint-disable-next-line */
   return (key) => {
     const item = sandbox.instrument.queue[key];
+    if (!item) {
+      warn(`whenChange: '${key}' not found in instrument queue`);
+      return { then: () => {} };
+    }
 
     return {
       then: (callback) => {
         const newEntry = (enode) => {
-          // const enode =
-          //   item.type === 'single' ? item.enode.first() : item.enode;
-
           debug(`whenChange: '${key}'`, `fire on change:`, callback);
-
+          debug({ enode });
           callback(enode);
         };
         newEntry.hash = hash(callback.toString());

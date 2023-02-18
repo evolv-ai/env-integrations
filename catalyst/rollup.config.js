@@ -17,4 +17,12 @@ export default [
     },
     plugins: [json()],
   },
+  {
+    input: 'src/index-local.js',
+    output: {
+      file: 'dist/index-local.js',
+      format: 'iife',
+    },
+    plugins: [json()],
+  },
 ];

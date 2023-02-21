@@ -113,6 +113,139 @@ function initializeWhenMutate(sandbox) {
   };
 }
 
+function initializeWhenItem(sandbox) {
+  const { debug, warn } = sandbox;
+
+  return (key, options) => {
+    const item = sandbox.instrument.queue[key];
+    const logPrefix =
+      options && options.logPrefix ? options.logPrefix : 'whenItem';
+
+    if (!item) {
+      warn(`${logPrefix}: instrument item '${key}' not defined`);
+      return {
+        then: () => null,
+      };
+    }
+
+    const thenFunc = (callback, isInBulk) => {
+      debug(`${logPrefix}: '${key}' add on-connect callback`, {
+        callback,
+      });
+
+      let newEntry;
+      const index = item.onConnect.length + item.onDisconnect.length + 1;
+
+      if (!isInBulk) {
+        newEntry = () => {
+          const enode =
+            item.type === 'single' ? item.enode.first() : item.enode;
+
+          debug(`${logPrefix}: '${key}'`, `fire on on connect:`, callback);
+
+          enode
+            .markOnce(`evolv-${key}-${index}`)
+            .each((enodeItem) => callback(enodeItem));
+        };
+      } else {
+        newEntry = () => {
+          const enode =
+            item.type === 'single' ? item.enode.first() : item.enode;
+
+          debug(`${logPrefix}: '${key}'`, `fire in bulk on connect:`, callback);
+
+          callback(enode.markOnce(`evolv-${key}-${index}`));
+        };
+      }
+
+      newEntry.hash =
+        options && options.hash ? options.hash : hash(callback.toString());
+
+      if (
+        item.onConnect.findIndex((entry) => entry.hash === newEntry.hash) !== -1
+      ) {
+        debug(
+          `${logPrefix}: duplicate on-connect callback not assigned to item '${key}':`,
+          callback,
+        );
+        return;
+      }
+
+      item.onConnect.push(newEntry);
+
+      if (sandbox.instrument.queue[key].enode.isConnected()) newEntry();
+    };
+
+    function thenInBulkFunc(callback) {
+      thenFunc(callback, true);
+    }
+
+    return {
+      then: thenFunc,
+      thenInBulk: thenInBulkFunc,
+      // Deprecated
+      reactivateOnChange: () => {},
+    };
+  };
+}
+
+function initializeWhenRemove(sandbox) {
+  const { debug, warn } = sandbox;
+
+  return (key) => {
+    const item = sandbox.instrument.queue[key];
+
+    if (!item) {
+      warn(`whenRemove: instrument item '${key}' not defined`);
+      return {
+        then: () => null,
+      };
+    }
+
+    return {
+      then: (callback) => {
+        debug(`whenRemove: '${key}' add on-disconnect callback`, {
+          callback,
+        });
+
+        const index = item.onConnect.length + item.onDisconnect.length + 1;
+
+        const newEntry = () => {
+          const enode =
+            item.type === 'single' ? item.enode.first() : item.enode;
+
+          debug(`whenRemove: '${key}'`, `fire on disconnect:`, callback);
+
+          let disconnectedItems = 0;
+          enode.each((enodeItem) => {
+            if (enodeItem.el[0]?.isConnected) return;
+            enodeItem.markOnce(`evolv-${key}-${index}`);
+            callback(enodeItem);
+            disconnectedItems += 1;
+          });
+          if (!disconnectedItems) callback();
+        };
+
+        newEntry.hash = hash(callback.toString());
+
+        if (
+          item.onDisconnect.findIndex(
+            (entry) => entry.hash === newEntry.hash,
+          ) !== -1
+        ) {
+          debug(
+            `whenRemove: duplicate on-disconnect callback not assigned to item '${key}':`,
+            callback,
+          );
+          return;
+        }
+
+        item.onDisconnect.push(newEntry);
+      },
+    };
+  };
+}
+
 function initializeWhenChange(sandbox) {
   const { debug, warn } = sandbox;
   /* eslint-disable-next-line */
@@ -149,100 +282,6 @@ function initializeWhenChange(sandbox) {
           item.html[index] = node.outerHTML;
         });
       },
-    };
-  };
-}
-
-function initializeWhenItem(sandbox) {
-  const { debug, warn } = sandbox;
-
-  return (key, options) => {
-    const item = sandbox.instrument.queue[key];
-    const logPrefix =
-      options && options.logPrefix ? options.logPrefix : 'whenItem';
-    let queueName;
-    let action;
-    if (options && options.disconnect) {
-      queueName = 'onDisconnect';
-      action = 'disconnect';
-    } else {
-      queueName = 'onConnect';
-      action = 'connect';
-    }
-
-    if (!item) {
-      warn(`${logPrefix}: instrument item '${key}' not defined`);
-      return {
-        then: () => null,
-      };
-    }
-
-    const thenFunc = (callback, isInBulk) => {
-      debug(`${logPrefix}: '${key}' add on-${action} callback`, {
-        callback,
-      });
-
-      let newEntry;
-      const index = item[queueName].length + 1;
-
-      if (!isInBulk) {
-        newEntry = () => {
-          const enode =
-            item.type === 'single' ? item.enode.first() : item.enode;
-
-          debug(`${logPrefix}: '${key}'`, `fire on ${action}:`, callback);
-
-          enode
-            .markOnce(`evolv-${key}-${index}`)
-            .each((enodeItem) => callback(enodeItem));
-        };
-      } else {
-        newEntry = () => {
-          const enode =
-            item.type === 'single' ? item.enode.first() : item.enode;
-
-          debug(
-            `${logPrefix}: '${key}'`,
-            `fire in bulk on ${action}:`,
-            callback,
-          );
-
-          callback(enode.markOnce(`evolv-${key}-${index}`));
-        };
-      }
-
-      newEntry.hash =
-        options && options.hash ? options.hash : hash(callback.toString());
-
-      if (
-        item[queueName].findIndex((entry) => entry.hash === newEntry.hash) !==
-        -1
-      ) {
-        debug(
-          `${logPrefix}: duplicate on-${action} callback not assigned to item '${key}':`,
-          callback,
-        );
-        return;
-      }
-
-      item[queueName].push(newEntry);
-
-      if (
-        queueName === 'onConnect' &&
-        sandbox.instrument.queue[key].enode.isConnected()
-      )
-        newEntry();
-    };
-
-    function thenInBulkFunc(callback) {
-      thenFunc(callback, true);
-    }
-
-    return {
-      then: thenFunc,
-      thenInBulk: thenInBulkFunc,
-      // Deprecated
-      reactivateOnChange: () => {},
     };
   };
 }
@@ -406,9 +445,10 @@ function initializeWaitUntil(sandbox) {
 export {
   initializeWhenContext,
   initializeWhenMutate,
-  initializeWhenChange,
   initializeWhenDOM,
   initializeWhenItem,
+  initializeWhenRemove,
+  initializeWhenChange,
   initializeWhenElement,
   initializeWhenElements,
   initializeWaitUntil,

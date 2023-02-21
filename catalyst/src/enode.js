@@ -4,12 +4,12 @@ function initializeENode(sandbox) {
   function makeElements(HTMLString, typeSingle = false) {
     const template = document.createElement('template');
     try {
-      template.innerHTML = HTMLString;
+      template.innerHTML = HTMLString.trim();
     } catch {
       warn('create elements: invalid HTML string', HTMLString);
       return [];
     }
-    const array = Array.from(template.content.childNodes);
+    const array = Array.from(template.content.children);
     if (typeSingle) return [array[0]];
     return array;
   }
@@ -27,7 +27,9 @@ function initializeENode(sandbox) {
         null,
       ).singleNodeValue;
     } catch {
-      warn('evaluate single: invalid XPath selector', relativeXPathString);
+      warn(
+        `evaluate single: '${relativeXPathString}' is not a valid XPath expression`,
+      );
     }
     return [result];
   }
@@ -46,7 +48,7 @@ function initializeENode(sandbox) {
       );
     } catch {
       warn(
-        `evaluate multiple: ${relativeXPathString} is not a valid XPath expression`,
+        `evaluate multiple: '${relativeXPathString}' is not a valid XPath expression`,
       );
       return [];
     }
@@ -61,10 +63,11 @@ function initializeENode(sandbox) {
   function querySingle(select, contextElement) {
     let result;
     try {
-      result = [contextElement.querySelector(select)];
+      const query = contextElement.querySelector(select);
+      result = query ? [query] : [];
     } catch {
-      warn(`query single: ${select} is not a valid selector`);
-      return [];
+      warn(`query single: '${select}' is not a valid selector`);
+      result = [];
     }
     return result;
   }
@@ -74,7 +77,7 @@ function initializeENode(sandbox) {
     try {
       result = contextElement.querySelectorAll(select);
     } catch {
-      warn(`query multiple: ${select} is not a valid selector`);
+      warn(`query multiple: '${select}' is not a valid selector`);
       return [];
     }
     return Array.from(result);
@@ -194,7 +197,11 @@ function initializeENode(sandbox) {
     }
 
     parent() {
-      return new ENode([...new Set(this.el.map((node) => node.parentElement))]);
+      return new ENode([
+        ...new Set(
+          this.el.map((node) => node.parentElement).filter((node) => node),
+        ),
+      ]);
     }
 
     children(selector) {

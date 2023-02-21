@@ -13,6 +13,7 @@ import {
   initializeWhenMutate,
   initializeWhenDOM,
   initializeWhenItem,
+  initializeWhenRemove,
   initializeWhenChange,
   initializeWhenElement,
   initializeWhenElements,
@@ -57,6 +58,7 @@ function initializeSandbox(name) {
     sandbox.whenMutate = initializeWhenMutate(sandbox);
     sandbox.whenDOM = initializeWhenDOM(sandbox);
     sandbox.whenItem = initializeWhenItem(sandbox);
+    sandbox.whenRemove = initializeWhenRemove(sandbox);
     sandbox.whenChange = initializeWhenChange(sandbox);
     sandbox.whenElement = initializeWhenElement(sandbox);
     sandbox.whenElements = initializeWhenElements(sandbox);

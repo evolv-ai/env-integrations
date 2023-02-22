@@ -233,6 +233,9 @@ function initializeENode(sandbox) {
      */
 
     addClass(classString) {
+      if (typeof classString !== 'string') {
+        warn(`add class: invalid argument '${classString}', requires string`);
+      }
       this.el.forEach((node) => node.classList.add(...classString.split(' ')));
       return this;
     }

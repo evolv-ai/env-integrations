@@ -107,7 +107,8 @@ function initializeTrack(sandbox) {
     evolvContext.onReactivate.push(onReactivateCallback);
     evolvContext.onDeactivate.push(onDeactivateCallback);
 
-    if (evolvContext.state === 'active') onReactivateCallback();
+    if (evolvContext.state === 'default' || evolvContext.state === 'active')
+      onReactivateCallback();
   };
 }
 

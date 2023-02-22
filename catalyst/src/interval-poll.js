@@ -82,13 +82,13 @@ function initializeIntervalPoll(catalyst) {
 }
 
 function initializeSandboxIntervalPoll(sandbox) {
-  const intervalPoll = sandbox._intervalPoll;
+  const queue = [];
   return {
-    queue: [],
+    queue,
     reset: () => {
-      if (intervalPoll.queue.length > 0) {
+      if (queue > 0) {
         sandbox.debug('interval poll: clear queue');
-        intervalPoll.queue = [];
+        queue.length = 0;
       }
     },
   };

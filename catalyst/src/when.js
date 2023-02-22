@@ -30,7 +30,7 @@ function initializeWhenContext(sandbox) {
     }
 
     if (state === 'active' || undefined) {
-      queueName = 'onActivate';
+      queueName = 'onReactivate';
     } else {
       queueName = 'onDeactivate';
     }

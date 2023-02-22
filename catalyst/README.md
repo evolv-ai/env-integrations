@@ -344,7 +344,7 @@ _New in 0.6.0_ - Listens for `evolv.client.getActiveKeys` and fires a callback w
 
 | Syntax                                       | Description                                                                                                                           | Notes |
 | :------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ | ----- |
-| `rule.whenContext(<state>).then(<callback>)` | `<state>`: String containing `active` or `inactive`<br>`<callback>`: Callback to be added to the `onActivate` or `onDeactivate` queue |       |
+| `rule.whenContext(<state>).then(<callback>)` | `<state>`: String containing `active` or `inactive`<br>`<callback>`: Callback to be added to the `onReactivate` or `onDeactivate` queue |       |
 
 Example:
 

@@ -1,9 +1,10 @@
 function initializeEvolvContext(sandbox) {
   const { debug, warn } = sandbox;
+  let hasBeenActive = false;
 
   return {
-    state: 'active',
-    onActivate: [
+    state: 'default',
+    onReactivate: [
       window.evolv.catalyst._globalObserver.connect,
       window.evolv.catalyst._intervalPoll.startPolling,
     ],
@@ -39,9 +40,18 @@ function initializeEvolvContext(sandbox) {
             const current = isActive() ? 'active' : 'inactive';
             sandbox._evolvContext.state = current;
 
-            if (previous === 'inactive' && current === 'active') {
+            if (previous === 'default') {
+              debug(
+                `active key listener: initialize context '${sandbox.name}', current state is '${current}'`,
+              );
+              if (current === 'active') hasBeenActive = true;
+            } else if (previous === 'inactive' && current === 'active') {
               debug(`active key listener: activate context '${sandbox.name}'`);
-              evolvContext.onActivate.forEach((callback) => callback());
+              if (hasBeenActive)
+                sandbox._evolvContext.onReactivate.forEach((callback) =>
+                  callback(),
+                );
+              hasBeenActive = true;
             } else if (previous === 'active' && current === 'inactive') {
               debug(
                 `active key listener: deactivate context '${sandbox.name}'`,
@@ -72,7 +82,7 @@ function initializeTrack(sandbox) {
     const body = sandbox.select(document.body);
 
     const className = `${sandbox.name}-${variant}`;
-    const onActivateCallback = () => {
+    const onReactivateCallback = () => {
       debug(`track: '${variant}' active`);
 
       // Backward compatibility
@@ -94,10 +104,10 @@ function initializeTrack(sandbox) {
       body.el[0].removeAttribute(trackKey);
     };
 
-    evolvContext.onActivate.push(onActivateCallback);
+    evolvContext.onReactivate.push(onReactivateCallback);
     evolvContext.onDeactivate.push(onDeactivateCallback);
 
-    if (evolvContext.state === 'active') onActivateCallback();
+    if (evolvContext.state === 'active') onReactivateCallback();
   };
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@evolv-delivery/catalyst",
-  "version": "0.6.9",
+  "version": "0.6.10",
   "description": "Provides a rendering SDK for client-side experiments",
   "main": "dist/index.js",
   "files": [

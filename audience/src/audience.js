@@ -11,7 +11,7 @@ function refreshAudience(){
 
 function getValue(obj){
   var key = obj.key || obj.value;
-  var source = obj.type;
+  var source = obj.source;
 
   switch(source){
     case 'expression': return adapters.getExpressionValue(key);
@@ -26,8 +26,13 @@ function getValue(obj){
   return null;
 }
 
-function convertValue(val){
-  return val.toString();
+function convertValue(val, type){
+  switch(type){
+    case 'float': return parseFloat(val);
+    case 'int': return parseInt(val);
+    case 'boolean': return /^true$/i.test(val);
+    default: return val.toString();
+  }
 }
 
 
@@ -98,7 +103,11 @@ function addAudience(topKey, key, obj){
         var pattern = new RegExp(mapOption.when);
         return pattern.test(val);
       });
-      if (results) return getValue(results);
+      if (results){
+        return getValue(results);
+      } else {
+        return obj.default;
+      }
     } else {
       var results = map.filter(function(mapOption){
           if (!mapOption.when) {
@@ -116,10 +125,10 @@ function addAudience(topKey, key, obj){
   }
   
   function bindAudienceValue(val, inc){
-    var newVal = convertValue(val);
+    var newVal = convertValue(val, (!obj.map ?obj.type : undefined));
     if (obj.map){
         newVal = applyMap(newVal, obj.map, obj.match);
-        if (!newVal) return;
+        if (!newVal && (!obj.type || obj.type === 'string')) return;
     }
 
     var audienceContext = topKey ? audience[topKey] : audience;
@@ -194,7 +203,7 @@ export function processAudience(json){
       var namespace = json[topKey];
       if (typeof namespace !== 'object') return;
 
-      if (!namespace.type) {
+      if (!namespace.source) {
         var variables = Object.keys(namespace);
         if (!audience[topKey]) audience[topKey] = {};
         variables.forEach(function(name){

@@ -7,7 +7,7 @@ The audience integration supports populating the Evolv context object with value
 
 
 ## Setting up the config json
-The main requirements for the config are objects indexed by a context attribute where the objects contain `type` and `key` (aka `value` - for backward compatibility). 
+The main requirements for the config are objects indexed by a context attribute where the objects contain `source` and `key`. 
 
 ### Top Level Structure
 The top level keys of the json config indicate one of two things and both have object values.
@@ -17,7 +17,7 @@ The top level keys of the json config indicate one of two things and both have o
 ### Context attribute objects
 The following is a table showing the different types for the attributes:
 
-| Type       | Key (usage)              | Description                                                                                            |
+| Source     | Key (usage)              | Description                                                                                            |
 | ---------- | ------------------------ | ------------------------------------------------------------------------------------------------------ |
 | cookie     | cookie name              | Return value of cookie                                                                                 |
 | dom        | css selector             | Returns `found` if dom element exists on page                                                          |
@@ -31,6 +31,13 @@ The following is a table showing the different types for the attributes:
 
 #### page
 If a `page` is specified, it's value represents a regex on the current url that if specified, the attribute will only be evaluated upon the `page` matching. This helps to focus page specific attributes that may be slow in retrieval.
+
+#### type
+If a `type` attribute is specified, it's value represents the type of the value of the attribute. By default, the type is assumed to be string. The following are the types available:
+* boolean
+* float
+* int
+* string
 
 #### map
 The `map` is represented as an array of objects that allows the value of the attribute to be transformed. Those mappings have
@@ -60,7 +67,7 @@ The following shows examples of each of the type and options available.
     "ctas": {
         "placeOrder": {
             "page": "sales/digital/expressCheckout",
-            "type": "dom",
+            "source": "dom",
             "value": "button[aria-label*='Place order']",
             "poll": {
                 "interval": 100,
@@ -70,32 +77,30 @@ The following shows examples of each of the type and options available.
     },
     "omni": {
         "visitorId": {
-            "type": "expression",
+            "source": "expression",
             "value": "window._satellite.getVisitorId()._fields.MCMID"
         }
     },
     "recognizedUser": {
-        "type": "cookie",
+        "source": "cookie",
         "key": "recogme",
+        "type": "boolean",
         "default": false,
         "map": [
             {
                 "result": true,
                 "when": ".+"
-            },
-            {
-                "default": false
             }
         ]
     },
     "campaign": {
         "source": {
-            "type": "query",
-            "value": "utm_source"
+            "source": "query",
+            "key": "utm_source"
         },
         "medium": {
-            "type": "query",
-            "value": "utm_medium"
+            "source": "query",
+            "key": "utm_medium"
         }
     }    
 }

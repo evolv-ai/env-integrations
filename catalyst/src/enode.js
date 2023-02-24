@@ -30,8 +30,9 @@ function initializeENode(sandbox) {
       warn(
         `evaluate single: '${relativeXPathString}' is not a valid XPath expression`,
       );
+      return [];
     }
-    return [result];
+    return result ? [result] : [];
   }
 
   function evaluateMultiple(XPathString, contextElement) {

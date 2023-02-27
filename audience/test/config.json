@@ -1,93 +1,20 @@
 {
-    "source2": {
-        "source": "query",
-        "key": "source",
-        "map": [
-            {
-                "result": "ECAT0000000AH800P",
-                "when": "ECAT0000000AH800P"
-            },
-            {
-                "result": "ECAT0000000A6H00P",
-                "when": "ECAT0000000A6H00P"
-            },
-            {
-                "result": "ECAT0000000A7H00P",
-                "when": "ECAT0000000A7H00P"
-            },
-            {
-                "result": "ECAT2500000E3400P",
-                "when": "ECAT2500000E3400P"
-            },
-            {
-                "result": "ECAT2500000E3600P",
-                "when": "ECAT2500000E3600P"
-            },
-            {
-                "result": "ECAT2500000E3500P",
-                "when": "ECAT2500000E3500P"
-            }
-        ]
-    },
-    "staged2": {
-        "vanityUrl": {
-            "source": "query",
-            "key": "source",
-            "type": "boolean",
-            "default": false,
-            "storage": {
-                "type": "session",
-                "key": "vanity-url",
-                "resolve-with": "cached",
-                "resolve-with": "new",
-                "resolve-with": "union"
-            },
-            "map": [
-                {
-                    "result": true,
-                    "when": "ED0000DHWV000000U"
-                }
-            ]
-        },
-        "neustar": {
-            "source": "cookie",
-            "key": "NeustarSegment"
-        },
-        "affinity": {
-            "source": "cookie",
-            "key": "NeustarSegment",
+    "test": {    
+        "landingTag": {
+            "source": "expression",
+            "key": "location.pathname",
             "default": "none",
+            "storage": {
+              "type": "session",
+              "key": "landingTag",
+              "resolveWith": "cached"
+            },
             "map": [
-                {
-                    "result": "satellite",
-                    "when": "(44953390|45096854|45159930|45159944|45159945|45159949|45205367|45130590|45117868)"
-                },
-                {
-                    "result": "stream",
-                    "when": "(45581578|44896118|44953384|45101491|45101497|45101498|45101564|45102821|45117955|45117956|45117957|45117958|45117974|45118237|45120844|45130589|45143494|45143496|45159823|45159824|45159825|45159826|45159828|45159830|45159831|45159832|45159833|45159915|45159919|45159920|45262676|45143419|45159928)"
-                }
+              {
+                "result": "products",
+                "when": "/products/"
+              }
             ]
-        },
-        "recogme": {
-            "source": "cookie",
-            "key": "recogme"
-        },
-        "recognizedUser": {
-            "source": "cookie",
-            "key": "recogme",
-            "type": "boolean",
-            "default": false,
-            "map": [
-                {
-                    "result": true,
-                    "when": ".+"
-                }
-            ]
-        },
-        "distribution": {
-            "source": "extension",
-            "key": "distribution",
-            "type": "int"
         }
     }
 }

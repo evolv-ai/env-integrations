@@ -37,7 +37,7 @@ function waitFor(check, invoke, poll){
 }
 
 waitFor(
-  () => window.evolv, 
+  () => window.evolv && window.evolv.context, 
   ()=> processAudience(data),
   {duration: 900000, interval:20}
 )

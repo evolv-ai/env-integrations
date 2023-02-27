@@ -28,6 +28,8 @@ function marshalValue(valueType, value){
 }
 
 function unmarshalValue(valueType, value){
+    if (value === null) return null;
+
     switch(valueType){
         case 'float': return parseFloat(value);
         case 'int': return parseInt(value);
@@ -42,7 +44,7 @@ function getKey(storage){
 }
 
 function getStore(storage){
-    return Storage(storage.type || 'default');
+    return Storage[storage.type || 'default'];
 }
 
 function setStoreValue(storage, valueType, value){
@@ -53,7 +55,8 @@ function getStoreValue(storage, valueType){
     return unmarshalValue(valueType, getStore(storage).getItem(getKey(storage)));
 }
 
-function resolveStoreValue(resolveWith, valueType, value, storeValue){
+function resolveStoreValue(storage, valueType, value, storeValue){
+    let resolveWith = storage.resolveWith
     if (valueType === 'array'){
         switch(resolveWith) {
             case 'cached': return storeValue;
@@ -80,7 +83,7 @@ export function resolveValue(value, obj){
     const storage = obj.storage;
     const valueType = obj.type || 'string';
 
-    if (!validateStorage()){
+    if (!validateStorage(storage)){
         return value;
     }
 

@@ -1,12 +1,9 @@
 
 //example:
 // "storage": {
-//     "type": "session", 
-//     "type": "local", 
+//     "type": "(session|local)", 
 //     "key": "my-key",
-//     "resolve-with": "cached",
-//     "resolve_with": "new",
-//     "resolveWith": "union"
+//     "resolveWith": "(new|cached|union)"
 // },
 
 const storePrefix = 'evolv:';
@@ -56,7 +53,10 @@ function getStoreValue(storage, valueType){
 }
 
 function resolveStoreValue(storage, valueType, value, storeValue){
-    let resolveWith = storage.resolveWith
+    if (storeValue === null) return value;
+
+    let resolveWith = storage.resolveWith;
+
     if (valueType === 'array'){
         switch(resolveWith) {
             case 'cached': return storeValue;
@@ -76,7 +76,7 @@ function validateStorage(storage){
         console.warn('No key for storage', storage);
         return false;
     }
-    return true
+    return true;
 }
 
 export function resolveValue(value, obj){

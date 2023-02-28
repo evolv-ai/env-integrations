@@ -26,7 +26,7 @@ function getActiveValue(source, key){
 
 function getValue(obj){
   var value = getActiveValue(obj.source, obj.key);
-
+  
   return obj.storage 
        ? resolveValue(value, obj) 
        : value;
@@ -46,7 +46,7 @@ function addAudience(topKey, key, obj){
 
   function applyMap(val, map, match='first'){
     function getValue(option) {
-      return option.default || option.result
+      return option.default || option.result;
     }
     var fallback;
     if (match === 'first'){
@@ -170,7 +170,7 @@ export function processAudience(json){
             processAttribute(name, namespace[name], topKey)
         });
       } else {
-        processAttribute(topKey, namespace, null)
+        processAttribute(topKey, namespace, null);
       }
     });
     refreshAudience();

@@ -26,7 +26,10 @@ function getActiveValue(source, key){
 
 function getValue(obj){
   var value = getActiveValue(obj.source, obj.key);
-  return resolveValue(value, obj);
+
+  return obj.storage 
+       ? resolveValue(value, obj) 
+       : value;
 }
 
 function convertValue(val, type){

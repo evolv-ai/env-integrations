@@ -1,0 +1,20 @@
+{
+    "test": {    
+        "landingTag": {
+            "source": "expression",
+            "key": "location.pathname",
+            "default": "none",
+            "storage": {
+              "type": "session",
+              "key": "landingTag",
+              "resolveWith": "cached"
+            },
+            "map": [
+              {
+                "result": "products",
+                "when": "/products/"
+              }
+            ]
+        }
+    }
+}

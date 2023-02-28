@@ -2,7 +2,7 @@
 //nuf said
 ////////////////////////////////////////////////
 import {processAudience} from '../src/audience.js'
-import data from './dtv.json'
+import data from './config.json'
 
 function loadScript(path){
   var scriptNode = document.createElement('script');
@@ -37,7 +37,7 @@ function waitFor(check, invoke, poll){
 }
 
 waitFor(
-  () => window.evolv, 
+  () => window.evolv && window.evolv.context, 
   ()=> processAudience(data),
   {duration: 900000, interval:20}
 )

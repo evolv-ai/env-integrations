@@ -11,8 +11,8 @@ The main requirements for the config are objects indexed by a context attribute 
 
 ### Top Level Structure
 The top level keys of the json config indicate one of two things and both have object values.
-* The attribute key (to use in context) if the object value contains a `type` field.
-* A top level grouping if the object value does not contain a `type` field. This will results in each field of the value.
+* The attribute key (to use in context) if the object value contains a `source` and `key` field that have string values.
+* A top level grouping if the object does not contain a `source` and `key` field. This will results in each attribute of the object representing a context attribute.
 
 ### Context attribute objects
 The following is a table showing the different types for the attributes:
@@ -38,6 +38,7 @@ If a `type` attribute is specified, it's value represents the type of the value 
 * float
 * int
 * string
+* array
 
 #### map
 The `map` is represented as an array of objects that allows the value of the attribute to be transformed. Those mappings have
@@ -46,6 +47,11 @@ one of 3 json keys:
 * result - the new value to be bound to the attribute when conditional is met
 * default - `default` can be used as result as the last map value. There should be no `when` value for `default`.
 
+#### storage
+The `storage` is an object indicating that the value should be cached with the following options:
+* key - a required key that indicates the key to store and retrieve from storage (The integration will prefix this key with `evolv:` )
+* type - `(local|session)` indicating localStorage or sessionStorage (defaults to `session`)
+* resolveWith - `(new|cached|union)` indicates how to resolve which value to use when there is both a new value and a cached value. (defaults to `new`)
 
 #### spa
 If the `spa` value is set to `true`, the attribute will be reevaluated upon any spa based navigation.
@@ -102,6 +108,24 @@ The following shows examples of each of the type and options available.
             "source": "query",
             "key": "utm_medium"
         }
-    }    
+    },
+    "page": {
+            "landingTag": {
+                "source": "expression",
+                "key": "location.pathname",
+                "default": "none",
+                "storage": {
+                    "type": "session",
+                    "key": "landingTag",
+                    "resolveWith": "cached"
+                },
+                "map": [
+                {
+                    "result": "products",
+                    "when": "/products/"
+                }
+                ]
+            }
+    }
 }
 ```

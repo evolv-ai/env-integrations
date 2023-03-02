@@ -74,7 +74,7 @@ The following shows examples of each of the type and options available.
         "placeOrder": {
             "page": "sales/digital/expressCheckout",
             "source": "dom",
-            "value": "button[aria-label*='Place order']",
+            "key": "button[aria-label*='Place order']",
             "poll": {
                 "interval": 100,
                 "duration": 5000
@@ -84,7 +84,7 @@ The following shows examples of each of the type and options available.
     "omni": {
         "visitorId": {
             "source": "expression",
-            "value": "window._satellite.getVisitorId()._fields.MCMID"
+            "key": "window._satellite.getVisitorId()._fields.MCMID"
         }
     },
     "recognizedUser": {

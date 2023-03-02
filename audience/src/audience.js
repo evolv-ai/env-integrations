@@ -112,7 +112,9 @@ function addAudience(topKey, key, obj){
     }
 
     if (!obj.poll){
-      if (obj.hasOwnProperty('default')) bindAudienceValue(obj.default);
+      if (obj.default !== null && obj.default !== undefined){
+        bindAudienceValue(obj.default);
+      }
       return;
     } else {
       var pollingCount = 0;

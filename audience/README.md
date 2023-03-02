@@ -1,5 +1,5 @@
 # Audience
-The audience integration supports populating the Evolv context object with values that are extracted from the browser via several mechanism (`type`).
+The audience integration supports populating the Evolv context object with values that are extracted from the browser via several mechanisms.
 
 ## Setup in the Evolv Manager
 

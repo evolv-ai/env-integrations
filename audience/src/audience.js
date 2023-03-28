@@ -13,13 +13,15 @@ function refreshAudience(){
 
 function getActiveValue(source, key){
   switch(source){
-    case 'expression': return adapters.getExpressionValue(key);
-    case 'fetch':      return adapters.getFetchValue(key);
-    case 'dom':        return adapters.getDomValue(key);
-    case 'jqdom':      return adapters.getJqDomValue(key);
-    case 'cookie':     return adapters.getCookieValue(key);
-    case 'query':      return adapters.getQueryValue(key);
-    case 'extension':  return adapters.getExtensionValue(key);
+    case 'expression':     return adapters.getExpressionValue(key);
+    case 'fetch':          return adapters.getFetchValue(key);
+    case 'dom':            return adapters.getDomValue(key);
+    case 'jqdom':          return adapters.getJqDomValue(key);
+    case 'cookie':         return adapters.getCookieValue(key);
+    case 'localStorage':   return adapters.getLocalStorageValue(key);
+    case 'sessionStorage': return adapters.getSessionStorageValue(key);
+    case 'query':          return adapters.getQueryValue(key);
+    case 'extension':      return adapters.getExtensionValue(key);
   }
   return null;
 }

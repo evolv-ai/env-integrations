@@ -112,31 +112,34 @@ function addAudience(topKey, key, obj){
     }
 
     if (!obj.poll){
-      bindAudienceValue(obj.default || '');
-      return;
-    }
-    var pollingCount = 0;
-    var foundValue = false;
-    var poll = setInterval(function(){
-      try{
-        var val = getValue(obj);
-        pollingCount++;
-        
-        if (val){
-          foundValue = true;
-          bindAudienceValue(val);
-          refreshAudience();
-          clearInterval(poll);
-        }
-      } catch(e){console.info('audience not processed', obj);}
-    }, obj.poll.interval || 50);
-    setTimeout(function(){ 
-      clearInterval(poll);
-      if (!foundValue && obj.default) {
-        bindAudienceValue(obj.default || '');
-        refreshAudience();
+      if (obj.default !== null && obj.default !== undefined){
+        bindAudienceValue(obj.default);
       }
-    },obj.poll.duration || 250);
+      return;
+    } else {
+      var pollingCount = 0;
+      var foundValue = false;
+      var poll = setInterval(function(){
+        try{
+          var val = getValue(obj);
+          pollingCount++;
+          
+          if (val){
+            foundValue = true;
+            bindAudienceValue(val);
+            refreshAudience();
+            clearInterval(poll);
+          }
+        } catch(e){console.info('audience not processed', obj);}
+      }, obj.poll.interval || 50);
+      setTimeout(function(){ 
+        clearInterval(poll);
+        if (!foundValue && obj.default) {
+          bindAudienceValue(obj.default || '');
+          refreshAudience();
+        }
+      },obj.poll.duration || 250);
+    }
   } catch(e){
     console.warn('Unable to add audience for', topKey, key, obj, e);
   }

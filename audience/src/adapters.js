@@ -117,9 +117,17 @@ export const adapters = {
 
     return cookie.split('=')[1];
   },
+  getLocalStorageValue: function(name) {
+    return localStorage.getItem(name);
+  },
+  getSessionStorageValue: function(name) {
+    return sessionStorage.getItem(name);
+  },
+  //#todo switch found to boolean
   getDomValue: function(sel) {
     return document.querySelector(sel)  && 'found';
   },
+  //#todo switch found to boolean
   getJqDomValue: function(sel) {
     return window.$ && ($(sel).length > 0)  && 'found';
   },

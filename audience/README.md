@@ -17,15 +17,18 @@ The top level keys of the json config indicate one of two things and both have o
 ### Context attribute objects
 The following is a table showing the different types for the attributes:
 
-| Source     | Key (usage)              | Description                                                                                            |
-| ---------- | ------------------------ | ------------------------------------------------------------------------------------------------------ |
-| cookie     | cookie name              | Return value of cookie                                                                                 |
-| dom        | css selector             | Returns `found` if dom element exists on page                                                          |
-| expression | js expression            | The experssion usually                                                                                 |
-| extension  | name of extension        | Currenty only one extension `distribution`: tracks a random value between 0-100 that persists for user |
-| fetch      | url                      | This also includes additional data                                                                     |
-| jqdom      | jqery selector           | Returns `found` if dom element exists on page                                                          |
-| query      | name of query parameter  | The value of the query parameter within th url                                                         |
+| Source         | Key (usage)              | Description                                                                                            |
+| ----------     | ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| query          | name of query parameter  | The value of the query parameter within th url                                                         |
+| expression     | js expression            | The experssion usually                                                                                 |
+| cookie         | cookie name              | Return value of cookie                                                                                 |
+| localStorage   | localStorage key         | Return value of localStorage key                                                                       |
+| sessionStorage | sessionStorage key       | Return value of sessionStorage key                                                                     |
+| dom            | css selector             | Returns `found` if dom element exists on page                                                          |
+| jqdom          | jqery selector           | Returns `found` if dom element exists on page                                                          |
+| extension      | name of extension        | Currenty only one extension `distribution`: tracks a random value between 0-100 that persists for user |
+| fetch          | url                      | This also includes additional data                                                                     |
+
 
 ### Other attribute options
 
@@ -89,7 +92,7 @@ The following shows examples of each of the type and options available.
     },
     "recognizedUser": {
         "source": "cookie",
-        "key": "recogme",
+        "key": "user",
         "type": "boolean",
         "default": false,
         "map": [

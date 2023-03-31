@@ -82,10 +82,14 @@ function addAudience(topKey, key, obj){
   }
   
   function bindAudienceValue(val, inc){
-    var newVal = convertValue(val, (!obj.map ?obj.type : undefined));
-    if (obj.map){
-        newVal = applyMap(newVal, obj.map, obj.match);
+    let newVal;
+    if (obj.default === val){
+        newVal = val;
+    } else if (obj.map){
+        newVal = applyMap(val, obj.map, obj.match);
         if (!newVal && (!obj.type || obj.type === 'string')) return;
+    } else {
+        newVal = convertValue(val, obj.type);
     }
 
     var audienceContext = topKey ? audience[topKey] : audience;
@@ -98,6 +102,8 @@ function addAudience(topKey, key, obj){
     }
     return true;
   }
+
+  /// starting to process
   try{
     var val = getValue(obj);
     if (val){

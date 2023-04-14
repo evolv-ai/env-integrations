@@ -65,7 +65,6 @@ const tokenType = {
       try {
         return operator(result, baseToken, tokens, fnc.param)
       } catch(e){
-        console.warn('context error: unable to process operator', operatorToken)
         return undefined;
       }
     }

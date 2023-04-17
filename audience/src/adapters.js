@@ -1,17 +1,26 @@
-var MacroSet = {
-  map: function(array){
-    return function(tokens){
-      return array.map(function(n){return adapters.getExpressionValue(tokens, n)});
-    }
+
+var OperatorSet = {
+  //array operators
+  join: function(context, token, tokens, delimeter){
+    var array = context[token];
+    if (!array) return undefined;
+    
+    var delim = delimeter || '|'
+    return array
+      .map(n=>adapters.getExpressionValue(tokens, n))
+      .filter(x=>x)
+      .join(delim);
+  },
+  sum: function(context, token, tokens){
+    var array = context[token];
+    if (!array) return undefined;
+
+    return array.reduce((a,n)=>
+      a + (adapters.getExpressionValue(tokens, n) || 0),
+      0
+    );
   }
 };
-function bindMacro(macro, data){
-  var fnc = MacroSet[macro];
-  if (!fnc){
-    return function(){ console.info('Warning: ', macro, ' not a valid macro');};
-  }
-  return fnc(data);
-}
 
 function tokenizeExp(exp){
   return Array.isArray(exp) ? exp : exp.split('.');
@@ -28,6 +37,64 @@ function initDistribution(){
   return parseInt(distribution)
 };
 
+//future usage
+// function initDistribution(){
+//   return Math.floor(Math.random()*100);
+// };
+
+function extractFunctionParameter(token){
+  var openPos = token.indexOf('(');
+  if (openPos <= 0) return {name: token};
+
+  var closingPos = token.indexOf(')');
+  var param = token.slice(openPos+1, closingPos);
+  var name = token.slice(0,openPos);
+  return {name, param}
+}
+
+const tokenType = {
+  operator: { //may only handle one level of array processing
+    is: function(token, tokens){
+      return token.indexOf(':') > 0;
+    },
+    process: function(token, result, tokens){
+      var [baseToken, operatorToken] = token.split(':');
+      var fnc = extractFunctionParameter(operatorToken);
+      var operator = OperatorSet[fnc.name];//worry about parens later
+
+      try {
+        return operator(result, baseToken, tokens, fnc.param)
+      } catch(e){
+        return undefined;
+      }
+    }
+  },
+  fnc: {
+    is: function(token, tokens){
+      return token.indexOf('(') > 0;
+    },
+    process: function(token, result, tokens){
+      var openPos = token.indexOf('(');
+      if (openPos <= 0) return undefined;
+      
+      try {
+        var closingPos = token.indexOf(')');
+        var param = token.slice(openPos+1, closingPos);
+        token = token.slice(0,openPos);
+        var fnc = result[token];
+    
+        if (typeof fnc === 'function'){
+          return fnc.apply(result, [param]);
+        } else {
+          return undefined;
+        }
+      }
+      catch(e){
+        return undefined;
+      }
+    }
+  }
+};
 
 export const adapters = {
   getExpressionValue(exp, context){
@@ -39,29 +106,13 @@ export const adapters = {
     while(tokens.length > 0 && result){
       var token = tokens[0];
       tokens = tokens.slice(1);
-      var openPos = token.indexOf('(');
-      if (openPos > 0){
-        try{
-          var closingPos = token.indexOf(')');
-          var param = token.slice(openPos+1, closingPos);
-          token = token.slice(0,openPos);
-          var fnc = result[token];
 
-          if (typeof fnc === 'function'){
-            result = fnc.apply(result, [param]);
-          } else if (token[0] === '@'){
-            var macro = bindMacro(token.slice(1), result);
-            result = macro(param)
-          }
-          else
-            result = undefined;
-        }
-        catch(e){}
+      if (tokenType.operator.is(token, tokens)) {
+        result = tokenType.operator.process(token, result, tokens);
+        tokens = [];
+      } else if (tokenType.fnc.is(token, tokens)) {
+        result = tokenType.fnc.process(token, result, tokens);
       } else {
-        if (!result[token] && tokens.length > 0){ //try flattened object index
-          token = token + '.' + tokens[0];
-          tokens = tokens.slice(1);
-        }
         result = result[token];
       }
     }

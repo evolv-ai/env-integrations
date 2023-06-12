@@ -2,16 +2,7 @@
     "contextBase": "behaviors",
     "behaviors": {
         "returnVisitor":{
-            "inactiveMinutes": 3,
-            "focus": {
-                "stream": [
-                    "/stream/"
-                ],
-                "sattelite": [
-                    "/satellite/"
-                ]
-            }
-
+            "inactiveMinutes": 1
         }
     }
 }

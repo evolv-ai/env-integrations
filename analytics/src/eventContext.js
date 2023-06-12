@@ -43,6 +43,10 @@ EventContext.prototype.extractValue = function(macroValue){
     return this.buildMap(macroValue);
   }
 
+  if (typeof macroValue !== 'string') {
+    return macroValue;
+  }
+
   if (this.isLocalVar(macroValue)){
     return this.localVars[macroValue];
   } else {

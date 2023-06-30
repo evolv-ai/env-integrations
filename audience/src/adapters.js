@@ -168,11 +168,19 @@ export const adapters = {
 
     return cookie.split('=')[1];
   },
-  getLocalStorageValue: function(name) {
-    return localStorage.getItem(name);
+  getLocalStorageValue: function(name, obj) {
+    let results = localStorage.getItem(name);
+
+    return obj.jsonPath
+         ? adapters.getExpressionValue(obj.jsonPath, JSON.parse(results))
+         : results;
   },
-  getSessionStorageValue: function(name) {
-    return sessionStorage.getItem(name);
+  getSessionStorageValue: function(name, obj) {
+    let results =  sessionStorage.getItem(name);
+    
+    return obj.jsonPath
+         ? adapters.getExpressionValue(obj.jsonPath, JSON.parse(results))
+         : results;
   },
   //#todo switch found to boolean
   getDomValue: function(sel) {

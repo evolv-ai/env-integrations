@@ -61,15 +61,16 @@ function refreshAudience(){
   } catch(e){console.info('evolv context not available');}
 }
 
-function getActiveValue(source, key){
+function getActiveValue(obj){
+  let {source, key} = obj
   switch(source){
     case 'expression':     return adapters.getExpressionValue(key);
     case 'fetch':          return adapters.getFetchValue(key);
     case 'dom':            return adapters.getDomValue(key);
     case 'jqdom':          return adapters.getJqDomValue(key);
     case 'cookie':         return adapters.getCookieValue(key);
-    case 'localStorage':   return adapters.getLocalStorageValue(key);
-    case 'sessionStorage': return adapters.getSessionStorageValue(key);
+    case 'localStorage':   return adapters.getLocalStorageValue(key, obj);
+    case 'sessionStorage': return adapters.getSessionStorageValue(key, obj);
     case 'query':          return adapters.getQueryValue(key);
     case 'extension':      return adapters.getExtensionValue(key);
   }
@@ -77,7 +78,7 @@ function getActiveValue(source, key){
 }
 
 function getValue(obj){
-  var value = getActiveValue(obj.source, obj.key);
+  var value = getActiveValue(obj);
   
   return obj.storage 
        ? resolveValue(value, obj) 

@@ -6,7 +6,7 @@ The Metrics integration supports populating the Evolv context object with values
 [Adding an integration to the Evolv Manager](https://github.com/evolv-ai/env-integrations/blob/main/README.md)
 
 ## Config concepts
-The config support the creation of metrics through inheritance and conditions.
+The config supports the creation of metrics through inheritance and conditions.
 
 ### Inheritance
 Inheritance is the idea of passing down common information (defined as attributes) to decendents of the current metric. The decendents can override the inerited attributes (and this is needed if you want to use Conditions). The mechanism of a metric passing inherited values is through the use of tge `apply` attribute. When `apply` is present. The current metric is classified as an Abstract Metirc.
@@ -35,8 +35,6 @@ Each metric can contain the following attributes:
 ### Abstract Metrics
 If a metric has an `apply` attribute, then it is an abstract metric and it's attributes are only to provide interited values to the metrics in it's `apply` section. An abstract metric is nevery applied to the page directly.
 
-### Sub-Metrics
-
 
 ### Top level Defaults
 Since the apply key will be at the top level, the top level should be thought as an abstract metric. It contains the following attributes that can be overriden at the default or inherited metrics
@@ -56,6 +54,9 @@ All metrics will be refreshed and reapplied when a `history.pushstate` is invoke
 The main requirements for the config are objects indexed by a context attribute where the objects contain `source` and `key`. 
 
 ### when
+The `when` attribute contains a regular expression as a string and the parent metric's value must pass the regular expression before the current metric or any of its decendents are applied.
+
+### action
 There are two values that are valid to bind to an `action` field. The default is `bind` and specifies that the goal of the metric is to bind a value to an attribute in the context. The alternative value for `action` is `event` that indicates that the metric is intended to be recorded as an event.
 
 ### source & key
@@ -74,8 +75,6 @@ The following is a table showing the different sources that can be associated wi
 | fetch          | url                      | This also includes additional data                                                                     |
 
 
-### action
-
 ### type
 If a `type` attribute is specified, it's value represents the type of the value of the attribute. By default, the type is assumed to be string. The following are the types available:
 * boolean
@@ -85,15 +84,15 @@ If a `type` attribute is specified, it's value represents the type of the value 
 * string
 * array
 
-#### when
-
 #### apply
+The `apply` attribute is the mechanism to specify all decendent metrics that will inherit the current Abstract metric's attributes.
 
 #### map
 The `map` is represented as an array of objects that allows the value of the attribute to be transformed. Those mappings have
 one of 2 json keys:
 * when - a regex for testing the attribute value against
 * value - the new value to be bound to the attribute when conditional is met
+
 
 #### storage
 The `storage` is an object indicating that the value should be cached with the following options:
@@ -107,18 +106,23 @@ If a value is not imediately available when the integration is processed, a poll
 #### default
 This allows a value to be specified that will be added to the context imediately if the attribute is not available yet. It will be overriden if the `poll` is set and the value becomes available.
 
-The config is read top to bottom. If a match is found, it stops. No fall-through, so in the example below if the path of the page starts with `/home/`, nothing will happen, because the statements block is an empty array.
 
 
 ## Diagnosing
-When diagnosing on a website page, you can type `window.evolv.applied_metrics` to see the fully relized metrics that are applied to the current page. This does not mean that they have captured data yet. In
+When diagnosing on a website page, you can type `window.evolv.applied_metrics` to see the fully relized metrics that are applied to the current page. This does not mean that they have captured data yet. 
 
 
 ## Cookbook Examples
+
+
+
+
+
+### Sample
+
 The following shows examples of each of the type and options available.
 
 ```
-
 
 {
     "apply": [

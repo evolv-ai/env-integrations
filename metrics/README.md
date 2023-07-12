@@ -5,22 +5,61 @@ The Metrics integration supports populating the Evolv context object with values
 
 [Adding an integration to the Evolv Manager](https://github.com/evolv-ai/env-integrations/blob/main/README.md)
 
+## Config concepts
+The config support the creation of metrics through inheritance and conditions.
 
-## Setting up the config json
+### Inheritance
+Inheritance is the idea of passing down common information (defined as attributes) to decendents of the current metric. The decendents can override the inerited attributes (and this is needed if you want to use Conditions). The mechanism of a metric passing inherited values is through the use of tge `apply` attribute. When `apply` is present. The current metric is classified as an Abstract Metirc.
+
+### Conditions
+If a metric and all of its decendents should only be applied when a condition is met, you can use the `when` attribute. This allows you to specify a regex that will need to match the parent metric before the current metric and it's decendents are applied.
+
+## The config organization
+The intent of the configuration json is to capture all metrics that will be captured as audience values or events. Each of these is referenced as a metric. 
+
+### Metrics
+Each metric can contain the following attributes:
+
+* when - is used to specify that the metric (or sub-metrics) have to meet the condition before they are to be applied
+* source - specifies where to get the audience attribute or event critera
+* key - specifies where to get the value in the source 
+* action - is either `event` or `bind` (default for binding value to audience)
+* type - is used when action is `bind` to convert the type to
+* apply - indicates that the current metric is abstract and its content should be passed to the metrics in the `apply` array
+* value - Specifies an explicit value when using action `bind`
+* storage - specifies that the value of a `bind` action should be cached for reference on downline pages
+* map - specifies value options the the value extracted needs further mapping
+* default - specifies the value to bind to a metric when it is unable to find the value indicated by `key`
+* poll - allows the system to wait for some period of time and coninue trying to extract a value
+
+### Abstract Metrics
+If a metric has an `apply` attribute, then it is an abstract metric and it's attributes are only to provide interited values to the metrics in it's `apply` section. An abstract metric is nevery applied to the page directly.
+
+### Sub-Metrics
+
+
+### Top level Defaults
+Since the apply key will be at the top level, the top level should be thought as an abstract metric. It contains the following attributes that can be overriden at the default or inherited metrics
+
+```
+"source": "expression",
+"key": "window.location.pathname",
+
+```
+
+
+### SPA
+All metrics will be refreshed and reapplied when a `history.pushstate` is invoked if it is indicated in the Evolv snippet.
+
+
+## Metric attributes
 The main requirements for the config are objects indexed by a context attribute where the objects contain `source` and `key`. 
 
-### Model
+### when
+There are two values that are valid to bind to an `action` field. The default is `bind` and specifies that the goal of the metric is to bind a value to an attribute in the context. The alternative value for `action` is `event` that indicates that the metric is intended to be recorded as an event.
 
-
-
-### Top Level Structure
-apply
-The top level keys of the json config indicate one of two things and both have object values.
-* The attribute key (to use in context) if the object value contains a `source` and `key` field that have string values.
-* A top level grouping if the object does not contain a `source` and `key` field. This will results in each attribute of the object representing a context attribute.
-
-### Context attribute objects
-The following is a table showing the different types for the attributes:
+### source & key
+The following is a table showing the different sources that can be associated with a metric:
 
 | Source         | Key (usage)              | Description                                                                                            |
 | ----------     | ------------------------ | ------------------------------------------------------------------------------------------------------ |
@@ -35,34 +74,32 @@ The following is a table showing the different types for the attributes:
 | fetch          | url                      | This also includes additional data                                                                     |
 
 
-### Other  options
+### action
 
-#### type
+### type
 If a `type` attribute is specified, it's value represents the type of the value of the attribute. By default, the type is assumed to be string. The following are the types available:
-* event
 * boolean
 * float
 * int
+* number
 * string
 * array
 
 #### when
 
 #### apply
-The `apply` is represented as an array of objects that allows the value of the attribute to be transformed. Those mappings have
-one of 3 json keys:
+
+#### map
+The `map` is represented as an array of objects that allows the value of the attribute to be transformed. Those mappings have
+one of 2 json keys:
 * when - a regex for testing the attribute value against
-* result - the new value to be bound to the attribute when conditional is met
-* default - `default` can be used as result as the last map value. There should be no `when` value for `default`.
+* value - the new value to be bound to the attribute when conditional is met
 
 #### storage
 The `storage` is an object indicating that the value should be cached with the following options:
 * key - a required key that indicates the key to store and retrieve from storage (The integration will prefix this key with `evolv:` )
 * type - `(local|session)` indicating localStorage or sessionStorage (defaults to `session`)
 * resolveWith - `(new|cached|union)` indicates how to resolve which value to use when there is both a new value and a cached value. (defaults to `new`)
-
-#### spa
-If the `spa` value is set to `true`, the attribute will be reevaluated upon any spa based navigation.
 
 #### poll
 If a value is not imediately available when the integration is processed, a poll can be specified to periodically reevaluate the attribute until it is detected or poll duration expires.
@@ -72,7 +109,12 @@ This allows a value to be specified that will be added to the context imediately
 
 The config is read top to bottom. If a match is found, it stops. No fall-through, so in the example below if the path of the page starts with `/home/`, nothing will happen, because the statements block is an empty array.
 
-### Example
+
+## Diagnosing
+When diagnosing on a website page, you can type `window.evolv.applied_metrics` to see the fully relized metrics that are applied to the current page. This does not mean that they have captured data yet. In
+
+
+## Cookbook Examples
 The following shows examples of each of the type and options available.
 
 ```

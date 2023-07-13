@@ -9,7 +9,7 @@ The Metrics integration supports populating the Evolv context object with values
 The config supports the creation of metrics through inheritance and conditions.
 
 ### Inheritance
-Inheritance is the idea of passing down common information (defined as attributes) to decendents of the current metric. The decendents can override the inerited attributes (and this is needed if you want to use Conditions). The mechanism of a metric passing inherited values is through the use of tge `apply` attribute. When `apply` is present. The current metric is classified as an Abstract Metirc.
+Inheritance is the idea of passing down common information (defined as attributes) to decendents of the current metric. The decendents can override the inerited attributes (and this is needed if you want to use Conditions). The mechanism of a metric passing inherited values is through the use of the `apply` attribute. When `apply` is present. The current metric is classified as an Abstract Metric.
 
 ### Conditions
 If a metric and all of its decendents should only be applied when a condition is met, you can use the `when` attribute. This allows you to specify a regex that will need to match the parent metric before the current metric and it's decendents are applied.
@@ -123,49 +123,117 @@ When diagnosing on a website page, you can type `window.evolv.applied_metrics` t
 The following shows examples of each of the type and options available.
 
 ```
-
 {
     "apply": [
-        {
-            "tag": "ctas.placeOrder",
-            "when": "sales/digital/expressCheckout",
+        { 
+            "when": "^(/?)($|\\?|#)",
+
             "source": "dom",
-            "key": "button[aria-label*='Place order']"
+            "on": "click",
+            "apply": [
+              {
+                "action": "event",
+                "comment": "all home page events",
+                "apply": [
+                    {"tag": "hp.apply-tab.click", "key": "#menu-main-menu a[href^=\"/apply\"]"},
+                    {"tag": "hp.apply-now-gn.click", "key": "#menu-main-menu a[href^=\"/apply\"]"},
+                    {"tag": "hp.apply-now-andrea.click", "key": "#menu-main-menu a[href^=\"/apply\"]"},
+                    {"tag": "hp.apply-now-eric.click", "key": "#menu-main-menu a[href^=\"/apply\"]"},
+                    {"tag": "hp.apply-now-angelic.click", "key": "#menu-main-menu a[href^=\"/apply\"]"},
+                    {"tag": "hp.lets-start.click", "key": "#menu-main-menu a[href^=\"/apply\"]"},
+                    {"comment": "Learn More"},
+                    {"tag": "hp.learn-more-l4.click", "key": "a.button[href^=\"/howitworks\"]"},
+                    {"tag": "hp.learn-about-us-l6.click", "key": "a.button[href*=\"/aboutus\"]"},
+                    {"tag": "hp.learn-more-l8.click", "key": "a.button[href*=\"/top-faqs\"]"},
+                    {"comment": "Arrows"},
+                    {"tag": "hp.arrows-l1.click", "key": ".testimonial-banner-slider-wrap a.slick-arrow"},
+                    {"tag": "hp.arrows-l5.click", "key": ".testimonial-slider-wrap a.slick-arrow"},
+                    {"tag": "hp.arros-l7.click", "key": ".recent-posts-slider-wrap a.slick-arrow"}
+                ]
+              }
+            ]
         },
         {
-            "tag": "omni.visitorId",
+            "when": "apply/",
+            "source": "dom",
+            "apply": [
+                {
+                    "tag": "progression.value",
+                    "type": "number",
+                    "apply":[
+                        {"value": 0.48, "key": "form select.gfield_select", "on": "change"},
+                        {"value": 0.49, "key": "form .gform_next_button", "on": "click"},
+                        {"value": 0.92, "key": "form li:nth-child(-n + 6) input.medium", "on": "change"},
+                        {"value": 1,    "key": "form .gform_button", "on": "click"}
+                    ]
+                },
+                {
+                    "tag": "progression.any",
+                    "action": "event",
+                    "apply":[
+                        {"key": "form select.gfield_select", "on": "change"},
+                        {"key": "form .gform_next_button", "on": "click"},
+                        {"key": "form li:nth-child(-n + 6) input.medium", "on": "change"},
+                        {"key": "form .gform_button", "on": "click"}
+                    ]
+                }
+            ]
+        },
+        {
             "source": "expression",
-            "key": "window._satellite.getVisitorId()._fields.MCMID"
-        },
-        {
-            "tag": "recognizedUser",
-            "source": "cookie",
-            "key": "user",
-            "type": "boolean",
-            "default": false,
-            "map": [
-                {"result": true, "when": ".+"}
+            "type": "string",
+            "apply": [
+                {   
+                    "tag": "referrer.searchEngine",
+                    "key": "document.referrer",
+                    "map": [
+                        {"when": "google.com",     "value": "google"},
+                        {"when": "bing.com",       "value": "bing"},
+                        {"when": "search.yahoo",   "value": "yahoo"},
+                        {"when": "yandex.com",     "value": "yandex"},
+                        {"when": "duckduckgo.com", "value": "duckduckgo"}
+                    ]
+                },
+                {
+                    "tag": "referrer.social",
+                    "key": "document.referrer",
+                    "map": [
+                        {"when": "facebook.com", "value": "facebook"},
+                        {"when": "youtube.com",   "value": "youtube"},
+                        {"when": "whatsapp.com",  "value": "whatsapp"},
+                        {"when": "instagram.com", "value": "instagram"},
+                        {"when": "tiktoc.com",    "value": "tiktok"},
+                        {"when": "snapchat.com",  "value": "snapchat"}
+                    ]
+                },
+                {    
+                    "tag": "referrer.direct",
+                    "key": "document.referrer",
+                    "type": "boolean",
+                    "default": true,
+                    "map": [
+                        { "when": "nationaldebtrelief", "value": true},
+                        { "when": ".+", "value": false }
+                    ]
+                }
             ]
         },
         {
             "source": "query",
+            "type": "string",
             "apply": [
-                {"key": "utm_source", "tag": "campaign.source"},
-                {"key": "utm_medium", "tag": "campaign.medium"}
-            ]
-        },
-        {
-            "tag": "page.landingTag",
-            "source": "expression",
-            "key": "location.pathname",
-            "default": "none",
-            "storage": {
-                "type": "session",
-                "key": "landingTag",
-                "resolveWith": "cached"
-            },
-            "map": [
-                {"result": "products", "when": "/products/"} 
+                { "tag": "campaign.source", "key": "utm_source"},
+                { "tag": "campaign.name", "key": "utm_campaign"},
+                { "tag": "campaign.medium", "key": "utm_medium"},
+                { "tag": "campaign.term", "key": "utm_term"},
+
+                {"tag": "partner.src", "key": "src"},
+                {"tag": "partner.affPath", "key": "aff_sub4"},
+                
+                {
+                    "tag": "segment", "key": "segment",
+                    "storage": { "type": "session", "key": "segment","resolveWith": "cached"}
+                } 
             ]
         }
     ]

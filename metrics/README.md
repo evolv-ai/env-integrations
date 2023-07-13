@@ -205,16 +205,6 @@ The following shows examples of each of the type and options available.
                         {"when": "tiktoc.com",    "value": "tiktok"},
                         {"when": "snapchat.com",  "value": "snapchat"}
                     ]
-                },
-                {    
-                    "tag": "referrer.direct",
-                    "key": "document.referrer",
-                    "type": "boolean",
-                    "default": true,
-                    "map": [
-                        { "when": "nationaldebtrelief", "value": true},
-                        { "when": ".+", "value": false }
-                    ]
                 }
             ]
         },

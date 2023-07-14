@@ -1,0 +1,38 @@
+{
+  "name": "@evolv-delivery/metrics",
+  "version": "0.3.3",
+  "description": "Allows Metrics (audience attributes and events) to be populated from datalayer, cookie, fetch, dom ",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rollup --config rollup.config.js",
+    "watch": "rollup --config rollup.config.js --watch",
+    "dev": "pushd dist; python3 -m http.server 8000; popd",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "audience",
+    "events",
+    "metrics",
+    "context",
+    "DSL"
+  ],
+  "author": "richardcowin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evolv-ai/env-integrations.git"
+  },
+  "homepage": "https://github.com/evolv-ai/env-integrations/",
+  "bugs": {
+    "url": "https://github.com/evolv-ai/env-integrations/issues"
+  },
+  "devDependencies": {
+    "@rollup/plugin-json": "^4.1.0"
+  },
+  "license": "ISC"
+}

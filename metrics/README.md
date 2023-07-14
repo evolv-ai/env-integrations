@@ -9,7 +9,7 @@ The Metrics integration supports populating the Evolv context object with values
 The config supports the creation of metrics through inheritance and conditions.
 
 ### Inheritance
-Inheritance is the idea of passing down common information (defined as attributes) to decendents of the current metric. The decendents can override the inerited attributes (and this is needed if you want to use Conditions). The mechanism of a metric passing inherited values is through the use of the `apply` attribute. When `apply` is present. The current metric is classified as an Abstract Metric.
+Inheritance is the idea of passing down common information (defined as attributes) to decendents of the current metric. The decendents can override the inerited attributes (and this is needed if you want to use Conditions). The mechanism of a metric passing inherited values is through the use of the `apply` attribute. When `apply` is present, the current metric is classified as an Abstract Metric.
 
 ### Conditions
 If a metric and all of its decendents should only be applied when a condition is met, you can use the `when` attribute. This allows you to specify a regex that will need to match the parent metric before the current metric and it's decendents are applied.
@@ -23,17 +23,17 @@ Each metric can contain the following attributes:
 * when - is used to specify that the metric (or sub-metrics) have to meet the condition before they are to be applied
 * source - specifies where to get the audience attribute or event critera
 * key - specifies where to get the value in the source 
-* action - is either `event` or `bind` (default for binding value to audience)
+* action - is either `event` or `bind`  (`bind` is used if `action` is not specified)
 * type - is used when action is `bind` to convert the type to
 * apply - indicates that the current metric is abstract and its content should be passed to the metrics in the `apply` array
 * value - Specifies an explicit value when using action `bind`
 * storage - specifies that the value of a `bind` action should be cached for reference on downline pages
-* map - specifies value options the the value extracted needs further mapping
+* map - specifies value options the value extracted needs further mapping
 * default - specifies the value to bind to a metric when it is unable to find the value indicated by `key`
 * poll - allows the system to wait for some period of time and coninue trying to extract a value
 
 ### Abstract Metrics
-If a metric has an `apply` attribute, then it is an abstract metric and it's attributes are only to provide interited values to the metrics in it's `apply` section. An abstract metric is nevery applied to the page directly.
+If a metric has an `apply` attribute, then it is an abstract metric and it's attributes are only to provide interited values to the metrics in it's `apply` section. An abstract metric is never applied to the page directly.
 
 
 ### Top level Defaults
@@ -57,26 +57,25 @@ The main requirements for the config are objects indexed by a context attribute 
 The `when` attribute contains a regular expression as a string and the parent metric's value must pass the regular expression before the current metric or any of its decendents are applied.
 
 ### action
-There are two values that are valid to bind to an `action` field. The default is `bind` and specifies that the goal of the metric is to bind a value to an attribute in the context. The alternative value for `action` is `event` that indicates that the metric is intended to be recorded as an event.
+There are two values that are valid for an `action` field. The default is `bind` and specifies that the goal of the metric is to bind a value to an attribute in the context. The alternative value for `action` is `event` that indicates that the metric is intended to be recorded as an event.
 
 ### source & key
 The following is a table showing the different sources that can be associated with a metric:
 
 | Source         | Key (usage)              | Description                                                                                            |
 | ----------     | ------------------------ | ------------------------------------------------------------------------------------------------------ |
-| query          | name of query parameter  | The value of the query parameter within th url                                                         |
-| expression     | js expression            | The experssion usually                                                                                 |
-| cookie         | cookie name              | Return value of cookie                                                                                 |
-| localStorage   | localStorage key         | Return value of localStorage key                                                                       |
-| sessionStorage | sessionStorage key       | Return value of sessionStorage key                                                                     |
-| dom            | css selector             | Returns `found` if dom element exists on page                                                          |
-| jqdom          | jquery selector          | Returns `found` if dom element exists on page                                                          |
+| query          | name of query parameter  | The value of the query parameter within the url          |
+| expression     | js expression            | An expression                                            |
+| cookie         | cookie name              | Return value of cookie                                   |
+| localStorage   | localStorage key         | Return value of localStorage key                         |
+| sessionStorage | sessionStorage key       | Return value of sessionStorage key                       |
+| dom            | css selector             | Returns `found` if dom element exists on page            |
+| jqdom          | jquery selector          | Returns `found` if dom element exists on page            |
 | extension      | name of extension        | Currenty only one extension `distribution`: tracks a random value between 0-100 that persists for user |
-| fetch          | url                      | This also includes additional data                                                                     |
 
 
 ### type
-If a `type` attribute is specified, it's value represents the type of the value of the attribute. By default, the type is assumed to be string. The following are the types available:
+If a `type` attribute is specified, its value represents the type of the value of the attribute. By default, the type is assumed to be string. The following are the types available:
 * boolean
 * float
 * int
@@ -88,8 +87,7 @@ If a `type` attribute is specified, it's value represents the type of the value 
 The `apply` attribute is the mechanism to specify all decendent metrics that will inherit the current Abstract metric's attributes.
 
 #### map
-The `map` is represented as an array of objects that allows the value of the attribute to be transformed. Those mappings have
-one of 2 json keys:
+The `map` is represented as an array of objects that allows the value of the attribute to be transformed. Those mappings each have 2 json keys:
 * when - a regex for testing the attribute value against
 * value - the new value to be bound to the attribute when conditional is met
 
@@ -98,14 +96,13 @@ one of 2 json keys:
 The `storage` is an object indicating that the value should be cached with the following options:
 * key - a required key that indicates the key to store and retrieve from storage (The integration will prefix this key with `evolv:` )
 * type - `(local|session)` indicating localStorage or sessionStorage (defaults to `session`)
-* resolveWith - `(new|cached|union)` indicates how to resolve which value to use when there is both a new value and a cached value. (defaults to `new`)
+* resolveWith - `(new|cached|union)` indicates what to resolve when there are both a new value and a cached value.
 
 #### poll
 If a value is not imediately available when the integration is processed, a poll can be specified to periodically reevaluate the attribute until it is detected or poll duration expires.
 
 #### default
 This allows a value to be specified that will be added to the context imediately if the attribute is not available yet. It will be overriden if the `poll` is set and the value becomes available.
-
 
 
 ## Diagnosing

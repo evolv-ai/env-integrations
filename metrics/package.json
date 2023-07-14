@@ -1,6 +1,6 @@
 {
   "name": "@evolv-delivery/metrics",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Allows Metrics (audience attributes and events) to be populated from datalayer, cookie, fetch, dom ",
   "main": "dist/index.js",
   "files": [

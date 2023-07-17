@@ -1,8 +1,10 @@
 # Emitter
 
+## Deprecated
+This package is being deprected and is no longer supported. Please use https://www.npmjs.com/package/@evolv-delivery/metrics for any event processing.
+
 
 ## Setup in the Evolv Manager
-
 [Adding an integration to the Evolv Manager](https://github.com/evolv-ai/env-integrations/blob/main/README.md)
 
 

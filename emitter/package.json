@@ -1,7 +1,7 @@
 {
   "name": "@evolv-delivery/emitter",
-  "version": "0.6.4",
-  "description": "Provides mechanism to generate events outside of an experiment",
+  "version": "0.1.0",
+  "description": "(Deprecated) Provides mechanism to generate events outside of an experiment ",
   "main": "dist/index.js",
   "files": [
     "dist",

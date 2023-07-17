@@ -10,8 +10,8 @@ Here is a list of each npm package:
 | audience      | https://www.npmjs.com/package/@evolv-delivery/audience       | An integration to populate audience context via json                  | 
 | behavioral    | https://www.npmjs.com/package/@evolv-delivery/behavioral     | Extendable intgration fo user tracking.                               |
 | catalyst      | https://www.npmjs.com/package/@evolv-delivery/catalyst       | A rendering framework - alternative to mutate                         |
-| emitter       | https://www.npmjs.com/package/@evolv-delivery/emitter        |                                                                       |
 | lit-harness   | https://www.npmjs.com/package/@evolv-delivery/lit-harness    |                                                                       |
+| metrics       | https://www.npmjs.com/package/@evolv-delivery/metrics        | Populate audience, events, and supports funnel progression via json   |
 | spa-nvigation | https://www.npmjs.com/package/@evolv-delivery/spa-navigation |                                                                       |
 
 

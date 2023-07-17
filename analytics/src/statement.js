@@ -23,7 +23,7 @@ function setExpression(exp, values, append, context){
 function invokeExpression(exp, args, init){
   var tokens = tokenizeExp(exp);
   var fncKey = tokens.pop();
-  var obj = getExpression(tokens);
+  var obj = getExpression(tokens, true);
   if (typeof obj[fncKey] !== 'function'){
       console.warn('Evolv: Is not proper emit function', obj, fncKey)
       return;
@@ -41,7 +41,7 @@ function invokeExpression(exp, args, init){
 }
 
 //
-export function getExpression(exp){
+export function getExpression(exp, onlyObj){
   var tokens = tokenizeExp(exp);
   var result = window;
 
@@ -63,7 +63,7 @@ export function getExpression(exp){
           catch(e){}
       } else {
           var newResult = result[token];
-          if (typeof newResult === 'function' && tokens.length === 0){
+          if (typeof newResult === 'function' && tokens.length === 0 && !onlyObj){
             result = newResult.bind(result);
           } else {
             result = newResult;

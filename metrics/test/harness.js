@@ -1,8 +1,8 @@
 
 //nuf said
 ////////////////////////////////////////////////
-import {processAudience} from '../src/audience.js';
-import data from './test.json';
+import {processConfig} from '../src/metrics.js';
+import data from './ndr.json';
 // import data from './dtv.json';
 
 function loadScript(path){
@@ -39,6 +39,6 @@ function waitFor(check, invoke, poll){
 
 waitFor(
   () => window.evolv && window.evolv.context && window.evolv.collect, 
-  ()=> processAudience(data),
+  ()=> processConfig(data),
   {duration: 900000, interval:20}
 )

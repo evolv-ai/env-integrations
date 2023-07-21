@@ -1,8 +1,10 @@
 # Metrics
-The Metrics integration supports populating the Evolv context object with values that are extracted from the browser via several mechanisms.
+The Metrics integration allows metrics (audience attributes and events) to be populated/emitted from dom, query parameters, datalayer, cookie, local storage, and session storage.
+
+## Why
+The goal of the Metrics integration is to support a robust set of metrics that can be used to specify full funnel progression across experiments.
 
 ## Setup in the Evolv Manager
-
 [Adding an integration to the Evolv Manager](https://github.com/evolv-ai/env-integrations/blob/main/README.md)
 
 ## Config concepts
@@ -12,7 +14,9 @@ The config supports the creation of metrics through inheritance and conditions.
 Inheritance is the idea of passing down common information (defined as attributes) to decendents of the current metric. The decendents can override the inerited attributes (and this is needed if you want to use Conditions). The mechanism of a metric passing inherited values is through the use of the `apply` attribute. When `apply` is present, the current metric is classified as an Abstract Metric.
 
 ### Conditions
-If a metric and all of its decendents should only be applied when a condition is met, you can use the `when` attribute. This allows you to specify a regex that will need to match the parent metric before the current metric and it's decendents are applied.
+If a metric and all of its decendents should only be applied when a condition is met, you can use the `when` attribute.
+If the value is a `string`, it will be treated as a regex that will need to match the parent metric before the current metric and it's decendents are applied.
+If the value is an `object`, it must contain an `operator` and a `value` that will be used to validate that the parent metric satisfies before the current metric and its scendents are applied. The options for `operator` current are for numeric and can be one of `"<"`, `">"`, `"<="`, or `">="`.
 
 ## The config organization
 The intent of the configuration json is to capture all metrics that will be captured as audience values or events. Each of these is referenced as a metric. 
@@ -91,6 +95,8 @@ The `map` is represented as an array of objects that allows the value of the att
 * when - a regex for testing the attribute value against
 * value - the new value to be bound to the attribute when conditional is met
 
+#### extract
+The `extract` attribute provides a way of extracting values from the metric. This currently supports extracting values from dom elements. Current attributes include `attribute` (for the dom element attribute to extract) and `parse` (a regexp that will be used to cull the attribute for the desired conversion).
 
 #### storage
 The `storage` is an object indicating that the value should be cached with the following options:

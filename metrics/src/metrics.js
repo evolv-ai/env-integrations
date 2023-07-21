@@ -1,5 +1,5 @@
-import { adapters } from './adapters.js';
-import { resolveValue } from './storage.js';
+import { applyMap, convertValue, getValue } from './values.js';
+import { checkWhen } from './when.js';
 
 let audience = {};
 
@@ -36,75 +36,6 @@ initSpaListener();
 
 //audience code
 
-function getActiveValue(source, key){
-  switch(source){
-    case 'expression':     return adapters.getExpressionValue(key);
-    case 'fetch':          return adapters.getFetchValue(key);
-    case 'dom':            return adapters.getDomValue(key);
-    case 'jqdom':          return adapters.getJqDomValue(key);
-    case 'cookie':         return adapters.getCookieValue(key);
-    case 'localStorage':   return adapters.getLocalStorageValue(key);
-    case 'sessionStorage': return adapters.getSessionStorageValue(key);
-    case 'query':          return adapters.getQueryValue(key);
-    case 'extension':      return adapters.getExtensionValue(key);
-  }
-  return null;
-}
-
-function extractNumber(val){
-  return typeof val === 'string'
-       ? val.replace(/[^0-9\.]/g, '')
-       : val
-}
-
-function convertValue(val, type){
-  switch(type){
-    case 'float': return parseFloat(extractNumber(val));
-    case 'int': return parseInt(extractNumber(val));
-    case 'number': return Number(extractNumber(val));
-    case 'boolean': return /^true$/i.test(val);
-    case 'array': return val; //hope the response was in array format - can support tranformations later
-    default: return val.toString();
-  }
-}
-
-function applyMap(val, metric){
-  let {map, match = 'first'} = metric;
-
-  function getValue(option) {
-    return option.default || option.value;
-  }
-  var fallback;
-  if (match === 'first'){
-    var results = map.find(function(mapOption){
-      if (!mapOption.when) {
-        return mapOption.default || mapOption.value;
-      }
-      
-      var pattern = new RegExp(mapOption.when);
-      return pattern.test(val);
-    });
-    if (results){
-      return getValue(results);
-    } else {
-      return metric.default;
-    }
-  } else {
-    var results = map.filter(function(mapOption){
-        if (!mapOption.when) {
-          fallback = mapOption;
-          return null;
-        }
-        
-        var pattern = new RegExp(mapOption.when);
-        return pattern.test(val);
-    });
-    if (results.length === 0 && fallback) return getValue(fallback)
-    if (results.length === 1) return getValue(results[0]);
-    return null;
-  }
-}
-
 function bindAudienceValue(tag, val, metric){
   const audienceContext = window.evolv.context;
   let newVal;
@@ -124,22 +55,6 @@ function bindAudienceValue(tag, val, metric){
   return true;
 }
 
-function getValue(metric,target){
-  var val = getActiveValue(metric.source, metric.key);
-  
-  let {extract, value} = metric;
-  if (extract){
-    var extracted = target[extract.attribute];
-    val = extracted.match(new RegExp(extract.parse))[0];
-  }
-
-  if (value) val = value;
-
-  return metric.storage 
-       ? resolveValue(val, metric) 
-       : val;
-}
-
 function supportPolling(metric){
   return metric.poll
       && metric.source !== 'dom'
@@ -150,10 +65,10 @@ let pollingQueue = [];
 
 function removePoll(poll){
   clearInterval(poll);
-  pollingQueue.filter(p=> p!==poll)
+  pollingQueue = pollingQueue.filter(p=> p!==poll);
 }
 function clearPoll(){
-  pollingQueue.forEach(p=>clearInterval(p))
+  pollingQueue.forEach(p=>clearInterval(p));
   pollingQueue = [];
 }
 function addPoll(poll){
@@ -243,9 +158,11 @@ function genUniqueName(tag){
 
 function connectEvent(tag, metric){
   if (metric.on) {
-    getMutate(metric).listen(metric.on, ()=>
-      evolv.client.emit(tag)
-    );
+    getMutate(metric).listen(metric.on, (e)=> {
+      if (!metric.when || checkWhen(metric.when, metric, e.target)) {
+        evolv.client.emit(tag)
+      }
+    });
   } else if (metric.source === 'dom'){
     getMutate(metric).customEffect(once(()=>
       evolv.client.emit(tag)
@@ -261,21 +178,17 @@ function isComplete(metric){
       && !!metric.tag && typeof metric.tag === 'string';
 }
 
-function checkWhen(when, context){
-  var val = getValue(context);
-  return (new RegExp(when).test(val))
-}
-
 function processMetric(metric, context){
   let {comment, when, apply, ...baseMetric} = metric;
-  let mergedMetric = {...context, ...baseMetric}
+  let mergedMetric = {...context, ...baseMetric, when}
 
   if (!apply && (baseMetric !== {})) window.evolv.applied_metrics.push(mergedMetric);
 
   //check conditionals
-  if (when && !checkWhen(when, context)){
+  if (when && !context.on && !checkWhen(when, context)){
     return;
   }
+
 
   if (apply){
     return processApplyList(apply, mergedMetric)//handle map conditions
@@ -293,15 +206,13 @@ function processMetric(metric, context){
   // }
 }
 
-
-
 function processApplyList(applyList, context){
   if (!Array.isArray(applyList)) return console.warn('Evolv Audience warning: Apply list is not array', applyList);
 
   applyList.forEach(metric => processMetric(metric, context));
 }
 
-export function processAudience(json){
+export function processConfig(json){
   try{
     initialize();
 
@@ -314,4 +225,3 @@ export function processAudience(json){
     console.warn('Evolv Audience error: Unable to process config', e);
   }
 }
-

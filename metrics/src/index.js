@@ -1,3 +1,3 @@
-import { processAudience } from './audience.js'
+import { processConfig } from './metrics.js'
 
-module.exports = processAudience;
+module.exports = processConfig;

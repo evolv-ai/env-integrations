@@ -168,7 +168,8 @@ function connectEvent(tag, metric){
       evolv.client.emit(tag)
     ));
   } else {
-    evolv.client.emit(tag)
+    //wait for ga to fully initialize
+    setTimeout(()=> evolv.client.emit(tag), 50);
   }
 }
 

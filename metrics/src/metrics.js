@@ -1,3 +1,4 @@
+import { instrumentSpaEvent } from './spa.js';
 import { applyMap, convertValue, getValue } from './values.js';
 import { checkWhen } from './when.js';
 
@@ -28,8 +29,10 @@ function initSpaListener(){
     processMetric(cachedconfig, DefaultContext);
     window.evolv.applied_metrics = [];
   }
-  window.addEventListener('popstate', eventHandler);
-  window.addEventListener('stateupdate_evolv', eventHandler);
+
+  const SpaTag = 'evolv_metrics_spaChange';
+  instrumentSpaEvent(SpaTag);
+  window.addEventListener(SpaTag, eventHandler);
 }
 
 initSpaListener();
@@ -75,11 +78,20 @@ function addPoll(poll){
   pollingQueue.push(poll);
 }
 
+
 let mutateQueue = [];
+let collectCache = {};
+
 function getMutate(metric){
-  let colName = genUniqueName(metric.tag);
-  var col = collect(metric.key, colName);
-  var mut = mutate(colName);
+  let collectName = collectCache[metric.tag];
+
+  if (!collectName){
+    collectName = genUniqueName(metric.tag);
+    collectCache[metric.tag] = collectName
+    collect(metric.key, collectName);
+  }
+
+  var mut = mutate(collectName);
   mutateQueue.push(mut)
   return mut;
 }
@@ -164,9 +176,12 @@ function connectEvent(tag, metric){
       }
     });
   } else if (metric.source === 'dom'){
-    getMutate(metric).customEffect(once(()=>
-      evolv.client.emit(tag)
-    ));
+    getMutate(metric).customMutation((state, el)=>{
+      console.info('reevaluating mutation for', tag, metric, el);
+      if (!metric.when || checkWhen(metric.when, metric, el)) {
+        evolv.client.emit(tag);
+      }
+    });
   } else {
     //wait for ga to fully initialize
     setTimeout(()=> evolv.client.emit(tag), 50);
@@ -186,8 +201,13 @@ function processMetric(metric, context){
   if (!apply && (baseMetric !== {})) window.evolv.applied_metrics.push(mergedMetric);
 
   //check conditionals
-  if (when && !context.on && !checkWhen(when, context)){
-    return;
+  if (when && !context.on && (context.source !== 'dom') && !checkWhen(when, context)){
+  // if (when && !context.on && !checkWhen(when, context)){
+      return;
+  }
+
+  if (context.source === 'dom' && !when){
+    mergedMetric = {...mergedMetric, when: context.when};
   }
 
 
@@ -198,13 +218,11 @@ function processMetric(metric, context){
     return console.info('Found comment', comment)
   }
 
-  // if (!when || checkWhen(when, context)) {
-    if (mergedMetric.action === "event"){
-      connectEvent(mergedMetric.tag, mergedMetric);
-    } else{    
-      addAudience(mergedMetric.tag, mergedMetric);
-    }
-  // }
+  if (mergedMetric.action === "event"){
+    connectEvent(mergedMetric.tag, mergedMetric);
+  } else{    
+    addAudience(mergedMetric.tag, mergedMetric);
+  }
 }
 
 function processApplyList(applyList, context){

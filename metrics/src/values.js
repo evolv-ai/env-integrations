@@ -78,7 +78,10 @@ export function applyMap(val, metric){
     let {extract, value} = metric;
     if (extract){
       var extracted = target[extract.attribute];
-      val = extracted.match(new RegExp(extract.parse))[0];
+
+      val = extract.parse 
+          ? extracted.match(new RegExp(extract.parse))[0]
+          : extracted;
     }
   
     if (value) val = value;

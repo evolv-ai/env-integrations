@@ -11,6 +11,12 @@ var OperatorSet = {
       .filter(x=>x)
       .join(delim);
   },
+  at: function(context, token, tokens, index){
+    var array = context[token];
+    if (!array) return null;
+    
+    return adapters.getExpressionValue(tokens, array.at(index));
+  },
   sum: function(context, token, tokens){
     var array = context[token];
     if (!array) return undefined;

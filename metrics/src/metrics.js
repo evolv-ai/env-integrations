@@ -5,7 +5,7 @@ import { checkWhen } from './when.js';
 let audience = {};
 
 function genName(){
-  return `aud-int-${new Date().getTime()}`;
+  return `metrics-${new Date().getTime()}`;
 }
 
 const DefaultContext = {"source": "expression", "key": "location.pathname"};
@@ -83,11 +83,11 @@ let mutateQueue = [];
 let collectCache = {};
 
 function getMutate(metric){
-  let collectName = collectCache[metric.tag];
+  let collectName = collectCache[metric.key];
 
   if (!collectName){
     collectName = genUniqueName(metric.tag);
-    collectCache[metric.tag] = collectName
+    collectCache[metric.key] = collectName
     collect(metric.key, collectName);
   }
 
@@ -168,20 +168,36 @@ function genUniqueName(tag){
   return `${tag}-${inc++}`
 }
 
-function connectEvent(tag, metric){
+function connectAbstractMetric(apply, metric){
   if (metric.on) {
-    getMutate(metric).listen(metric.on, (e)=> {
-      if (!metric.when || checkWhen(metric.when, metric, e.target)) {
-        evolv.client.emit(tag)
-      }
-    });
+    getMutate(metric).listen(metric.on, once((e)=> 
+        processApplyList(apply, {...metric, value: getValue(metric, e)})
+    ));
   } else if (metric.source === 'dom'){
-    getMutate(metric).customMutation((state, el)=>{
-      console.info('reevaluating mutation for', tag, metric, el);
-      if (!metric.when || checkWhen(metric.when, metric, el)) {
+    getMutate(metric).customEffect(once((state, el)=> 
+        processApplyList(apply, {...metric, value: getValue(metric,el)})
+        
+    ));
+  } else {
+    // evaluate 
+    //todo: fixme for polling parents
+    // setTimeout(()=> evolv.client.emit(tag), 50);
+  }
+}
+
+function connectEvent(tag, metric, context){
+  if (metric.on) {
+    getMutate(metric).listen(metric.on, once((e)=> {
+      if (!metric.when || checkWhen(metric.when, context, e.target)){
         evolv.client.emit(tag);
       }
-    });
+    }))
+  } else if (metric.source === 'dom'){
+    getMutate(metric).customEffect(once((state, el)=>{
+      if (!metric.when || checkWhen(metric.when, context, el.target)){
+        evolv.client.emit(tag);
+      }
+    }));
   } else {
     //wait for ga to fully initialize
     setTimeout(()=> evolv.client.emit(tag), 50);
@@ -195,31 +211,39 @@ function isComplete(metric){
 }
 
 function processMetric(metric, context){
+  
   let {comment, when, apply, ...baseMetric} = metric;
-  let mergedMetric = {...context, ...baseMetric, when}
-
-  if (!apply && (baseMetric !== {})) window.evolv.applied_metrics.push(mergedMetric);
+  let mergedMetric = {...context, ...baseMetric}
 
   //check conditionals
-  if (when && !context.on && (context.source !== 'dom') && !checkWhen(when, context)){
-  // if (when && !context.on && !checkWhen(when, context)){
+  if (when && (context.source != 'dom') && !checkWhen(when, context)){
       return;
   }
 
-  if (context.source === 'dom' && !when){
-    mergedMetric = {...mergedMetric, when: context.when};
+  if (context.source === 'dom' || (!apply && (baseMetric !== {}))){
+    window.evolv.applied_metrics.push({...mergedMetric, apply});
+  }
+
+  if (context.source === 'dom'){
+    //is this right?
+    mergedMetric = {...mergedMetric, when: (when || context.when)};
   }
 
 
   if (apply){
-    return processApplyList(apply, mergedMetric)//handle map conditions
+    //changed mergedMetric
+    if (context.source === 'dom' && when){
+      return connectAbstractMetric(apply, mergedMetric);
+    } else {
+      return processApplyList(apply, mergedMetric)//handle map conditions
+    }
   } else if (!isComplete(mergedMetric))  {
     if (!comment) return console.warn('Evolv Audience - Metric was incomplete: ', mergedMetric);
     return console.info('Found comment', comment)
   }
 
   if (mergedMetric.action === "event"){
-    connectEvent(mergedMetric.tag, mergedMetric);
+    connectEvent(mergedMetric.tag, mergedMetric, context);
   } else{    
     addAudience(mergedMetric.tag, mergedMetric);
   }

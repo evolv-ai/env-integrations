@@ -2,8 +2,7 @@
 //nuf said
 ////////////////////////////////////////////////
 import {processConfig} from '../src/metrics.js';
-import data from './a&e.json';
-// import data from './dtv.json';
+import data from './test.json';
 
 function loadScript(path){
   var scriptNode = document.createElement('script');

@@ -26,8 +26,8 @@ function initSpaListener(){
     clearPoll();
     mutateQueue.forEach(m=>m.revert())
     mutateQueue = [];
-    processMetric(cachedconfig, DefaultContext);
     window.evolv.applied_metrics = [];
+    processMetric(cachedconfig, DefaultContext);
   }
 
   const SpaTag = 'evolv_metrics_spaChange';
@@ -174,10 +174,9 @@ function connectAbstractMetric(apply, metric){
         processApplyList(apply, {...metric, value: getValue(metric, e)})
     ));
   } else if (metric.source === 'dom'){
-    getMutate(metric).customEffect(once((state, el)=> 
-        processApplyList(apply, {...metric, value: getValue(metric,el)})
-        
-    ));
+    getMutate(metric).customMutation((state, el)=> 
+        processApplyList(apply, {...metric, value: getValue(metric,el)})   
+    )
   } else {
     // evaluate 
     //todo: fixme for polling parents
@@ -185,17 +184,31 @@ function connectAbstractMetric(apply, metric){
   }
 }
 
+//Don't fire the same event more than once during EventInterval ms.
+let eventTimestamp = {};
+const EventInterval = 500;
+
+function emitEvent(tag){
+  var lastTime = eventTimestamp[tag];
+  var newTimeStamp = new Date().getTime();
+
+  if (lastTime && (lastTime > newTimeStamp-EventInterval)) return;
+  
+  evolv.client.emit(tag);
+  eventTimestamp[tag] = newTimeStamp;
+}
+
 function connectEvent(tag, metric, context){
   if (metric.on) {
     getMutate(metric).listen(metric.on, once((e)=> {
       if (!metric.when || checkWhen(metric.when, context, e.target)){
-        evolv.client.emit(tag);
+        emitEvent(tag);
       }
     }))
   } else if (metric.source === 'dom'){
-    getMutate(metric).customEffect(once((state, el)=>{
+    getMutate(metric).customMutation(once((state, el)=>{
       if (!metric.when || checkWhen(metric.when, context, el.target)){
-        evolv.client.emit(tag);
+        emitEvent(tag);
       }
     }));
   } else {

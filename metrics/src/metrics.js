@@ -18,7 +18,8 @@ function initialize(){
   var scope = window.evolv.collect.scope(genName());
   collect = scope.collect;
   mutate = scope.mutate;
-  window.evolv.applied_metrics = window.evolv.applied_metrics || [];
+  window.evolv.metrics = window.evolv.metrics || {executed: [], evaluating: []};
+  
 }
 
 function initSpaListener(){
@@ -26,7 +27,7 @@ function initSpaListener(){
     clearPoll();
     mutateQueue.forEach(m=>m.revert())
     mutateQueue = [];
-    window.evolv.applied_metrics = [];
+    window.evolv.metrics = {executed: [], evaluating: []};
     processMetric(cachedconfig, DefaultContext);
   }
 
@@ -54,6 +55,7 @@ function bindAudienceValue(tag, val, metric){
   if (audienceContext.get(tag) ===  newVal) return false;
 
   audienceContext.set(tag, newVal);
+  window.evolv.metrics.executed.push({tag, bind: metric, value: newVal})
 
   return true;
 }
@@ -178,9 +180,7 @@ function connectAbstractMetric(apply, metric){
         processApplyList(apply, {...metric, value: getValue(metric,el)})   
     )
   } else {
-    // evaluate 
-    //todo: fixme for polling parents
-    // setTimeout(()=> evolv.client.emit(tag), 50);
+
   }
 }
 
@@ -188,13 +188,15 @@ function connectAbstractMetric(apply, metric){
 let eventTimestamp = {};
 const EventInterval = 500;
 
-function emitEvent(tag){
+function emitEvent(tag, metric){
   var lastTime = eventTimestamp[tag];
   var newTimeStamp = new Date().getTime();
 
   if (lastTime && (lastTime > newTimeStamp-EventInterval)) return;
   
   evolv.client.emit(tag);
+  window.evolv.metrics.executed.push({tag, event: metric})
+
   eventTimestamp[tag] = newTimeStamp;
 }
 
@@ -202,18 +204,18 @@ function connectEvent(tag, metric, context){
   if (metric.on) {
     getMutate(metric).listen(metric.on, once((e)=> {
       if (!metric.when || checkWhen(metric.when, context, e.target)){
-        emitEvent(tag);
+        emitEvent(tag, metric);
       }
     }))
   } else if (metric.source === 'dom'){
     getMutate(metric).customMutation(once((state, el)=>{
       if (!metric.when || checkWhen(metric.when, context, el.target)){
-        emitEvent(tag);
+        emitEvent(tag, metric);
       }
     }));
   } else {
-    //wait for ga to fully initialize
-    setTimeout(()=> evolv.client.emit(tag), 50);
+    //wait for analytics integrations to fully initialize
+    setTimeout(()=> emitEvent(tag, metric), 50);
   }
 }
 
@@ -234,14 +236,13 @@ function processMetric(metric, context){
   }
 
   if (context.source === 'dom' || (!apply && (baseMetric !== {}))){
-    window.evolv.applied_metrics.push({...mergedMetric, apply});
+    window.evolv.metrics.evaluating.push({...mergedMetric, apply});
   }
 
   if (context.source === 'dom'){
     //is this right?
     mergedMetric = {...mergedMetric, when: (when || context.when)};
   }
-
 
   if (apply){
     //changed mergedMetric

@@ -81,8 +81,8 @@ The following is a table showing the different sources that can be associated wi
 ### type
 If a `type` attribute is specified, its value represents the type of the value of the attribute. By default, the type is assumed to be string. The following are the types available:
 * boolean
-* float
-* int
+* float - depricated (use number)
+* int - depricated (use number)
 * number
 * string
 * array
@@ -102,7 +102,10 @@ The `extract` attribute provides a way of extracting values from the metric. Thi
 The `storage` is an object indicating that the value should be cached with the following options:
 * key - a required key that indicates the key to store and retrieve from storage (The integration will prefix this key with `evolv:` )
 * type - `(local|session)` indicating localStorage or sessionStorage (defaults to `session`)
-* resolveWith - `(new|cached|union)` indicates what to resolve when there are both a new value and a cached value.
+* resolveWith - What to resolve with when there are both a value and a cached value. Options are: 
+    * `(new|cached)` for type of string
+    * `(new|cached|sum|min|max)` for type of number
+    * `(new|cached|union)` for type of array
 
 #### poll
 If a value is not imediately available when the integration is processed, a poll can be specified to periodically reevaluate the attribute until it is detected or poll duration expires.
@@ -112,7 +115,7 @@ This allows a value to be specified that will be added to the context imediately
 
 
 ## Diagnosing
-When diagnosing on a website page, you can type `window.evolv.applied_metrics` to see the fully relized metrics that are applied to the current page. This does not mean that they have captured data yet. 
+When diagnosing on a website page, you can type `window.evolv.metrics` to see a list of metrics already `executed` on the page and the metrics that are `evaluating` on the page.
 
 
 ## Cookbook Examples

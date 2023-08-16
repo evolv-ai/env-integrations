@@ -19,7 +19,6 @@ function initialize(){
   collect = scope.collect;
   mutate = scope.mutate;
   window.evolv.metrics = window.evolv.metrics || {executed: [], evaluating: []};
-  
 }
 
 function initSpaListener(){
@@ -98,13 +97,34 @@ function getMutate(metric){
   return mut;
 }
 
+const ExtendedEvents = {
+  'iframe:focus': (metric, fnc)  =>
+    getMutate(metric).customMutation((state, el)=> 
+      window.addEventListener('blur', function (e) {
+        if (document.activeElement == el) {
+          fnc(el);
+        }
+      })
+    )
+}
+
+function listenForDOM(metric, fnc){
+  if (metric.on){
+    if (ExtendedEvents[metric.on ]){
+      ExtendedEvents[metric.on](metric,fnc)
+    } else {
+      getMutate(metric).listen(metric.on, fnc);
+    }
+  } else {
+    getMutate(metric).customMutation((state, el)=> fnc(el));
+  }
+}
+
+
 function addAudience(tag, metric, target){
   try {
-    if (metric.on){
-      let {on, ...reducedMetric} = metric
-      getMutate(metric).listen(on, e=>
-        addAudience(tag, reducedMetric, e.target)
-      );
+    if (metric.source === 'dom' && !target){
+      listenForDOM(metric, e=>addAudience(tag, metric, e.target));
       return;
     }
 
@@ -171,16 +191,12 @@ function genUniqueName(tag){
 }
 
 function connectAbstractMetric(apply, metric){
-  if (metric.on) {
-    getMutate(metric).listen(metric.on, once((e)=> 
-        processApplyList(apply, {...metric, value: getValue(metric, e)})
+  if (metric.source === 'dom') {
+    listenForDOM(metric, once(el => 
+      processApplyList(apply, {...metric, value: getValue(metric, el)})
     ));
-  } else if (metric.source === 'dom'){
-    getMutate(metric).customMutation((state, el)=> 
-        processApplyList(apply, {...metric, value: getValue(metric,el)})   
-    )
   } else {
-
+    // todo: handle any poll driven abstract metrics
   }
 }
 
@@ -201,18 +217,12 @@ function emitEvent(tag, metric){
 }
 
 function connectEvent(tag, metric, context){
-  if (metric.on) {
-    getMutate(metric).listen(metric.on, once((e)=> {
+  if (metric.source === 'dom') {
+    listenForDOM(metric, e=> {
       if (!metric.when || checkWhen(metric.when, context, e.target)){
         emitEvent(tag, metric);
       }
-    }))
-  } else if (metric.source === 'dom'){
-    getMutate(metric).customMutation(once((state, el)=>{
-      if (!metric.when || checkWhen(metric.when, context, el.target)){
-        emitEvent(tag, metric);
-      }
-    }));
+    });
   } else {
     //wait for analytics integrations to fully initialize
     setTimeout(()=> emitEvent(tag, metric), 50);

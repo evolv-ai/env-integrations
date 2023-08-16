@@ -55,13 +55,16 @@ All metrics will be refreshed and reapplied when a `history.pushstate` is invoke
 
 
 ## Metric attributes
-The main requirements for the config are objects indexed by a context attribute where the objects contain `source` and `key`. 
+The main requirements for concrete metrics, are objects that contain contain `tag`, `source` and `key`. 
 
 ### when
 The `when` attribute contains a regular expression as a string and the parent metric's value must pass the regular expression before the current metric or any of its decendents are applied.
 
 ### action
 There are two values that are valid for an `action` field. The default is `bind` and specifies that the goal of the metric is to bind a value to an attribute in the context. The alternative value for `action` is `event` that indicates that the metric is intended to be recorded as an event.
+
+### tag
+The `tag` attribute specifies the identifier of the metric (the same tag can be used multiple times in the config). For `event` actions, the tag is used as the event identifier. For `bind` actions, the tag is used as the audience attribute to bind a value to.
 
 ### source & key
 The following is a table showing the different sources that can be associated with a metric:
@@ -87,18 +90,23 @@ If a `type` attribute is specified, its value represents the type of the value o
 * string
 * array
 
-#### apply
+### apply
 The `apply` attribute is the mechanism to specify all decendent metrics that will inherit the current Abstract metric's attributes.
 
-#### map
+### map
 The `map` is represented as an array of objects that allows the value of the attribute to be transformed. Those mappings each have 2 json keys:
 * when - a regex for testing the attribute value against
 * value - the new value to be bound to the attribute when conditional is met
 
-#### extract
+### on
+The `on` attribute provides a way of listening to a specific `dom` events before processing the metric. This currently supports listening to dom elements. If the `source` is `dom` and there is no event to listen to, then the metric will apply as soon as the element is available in the dom. 
+
+In addition to the standard dom element events, there is also a special `iframe:focus` event to observe iframe engagement.
+
+### extract
 The `extract` attribute provides a way of extracting values from the metric. This currently supports extracting values from dom elements. Current attributes include `attribute` (for the dom element attribute to extract) and `parse` (a regexp that will be used to cull the attribute for the desired conversion).
 
-#### storage
+### storage
 The `storage` is an object indicating that the value should be cached with the following options:
 * key - a required key that indicates the key to store and retrieve from storage (The integration will prefix this key with `evolv:` )
 * type - `(local|session)` indicating localStorage or sessionStorage (defaults to `session`)
@@ -107,10 +115,10 @@ The `storage` is an object indicating that the value should be cached with the f
     * `(new|cached|sum|min|max)` for type of number
     * `(new|cached|union)` for type of array
 
-#### poll
+### poll
 If a value is not imediately available when the integration is processed, a poll can be specified to periodically reevaluate the attribute until it is detected or poll duration expires.
 
-#### default
+### default
 This allows a value to be specified that will be added to the context imediately if the attribute is not available yet. It will be overriden if the `poll` is set and the value becomes available.
 
 

@@ -25,6 +25,7 @@ The intent of the configuration json is to capture all metrics that will be capt
 Each metric can contain the following attributes:
 
 * when - is used to specify that the metric (or sub-metrics) have to meet the condition before they are to be applied
+* tag - specifies what the metric will be reported as (event id for action `event` and audience attribute for action `bind`)
 * source - specifies where to get the audience attribute or event critera
 * key - specifies where to get the value in the source 
 * action - is either `event` or `bind`  (`bind` is used if `action` is not specified)

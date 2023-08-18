@@ -225,7 +225,7 @@ function connectEvent(tag, metric, context){
     });
   } else {
     //wait for analytics integrations to fully initialize
-    setTimeout(()=> emitEvent(tag, metric), 50);
+    setTimeout(()=> emitEvent(tag, metric), 5);
   }
 }
 

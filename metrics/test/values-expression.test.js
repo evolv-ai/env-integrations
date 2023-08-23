@@ -68,12 +68,8 @@ test('expression number value', () => {
     expect(getConvertedValue(metric)).toBe(undefined);
 });
 
-test('expression number value', () => {
-    window.test = {foo: 'test4'};
 
-    let metric = {source: "expression", key: 'window.test.bar'};
-    expect(getConvertedValue(metric)).toBe(undefined);
-});
+//with macros
 
 test('expression with :at macro', () => {
     window.test = {foo: ['test4','test5']};
@@ -96,7 +92,7 @@ test('expression with :join macro', () => {
     expect(getConvertedValue(metric)).toBe('test4|test7');
 });
 
-test('expression with :join macro', () => {
+test('expression with :join macro with post attributes', () => {
     window.test = {foo: [{bar:'test4'},{bar:'test8'}]};
 
     let metric = {source: "expression", key: 'window.test.foo:join.bar'};
@@ -124,6 +120,14 @@ test('expression with :join macro explicit delimeter', () => {
     expect(getConvertedValue(metric)).toBe('test12,test13');
 });
 
+test('expression with :join macro multiple explicit delimeters', () => {
+    window.test = [{foo: [{bar:'test4'},{bar:'test12'}]},{foo:[{bar:'test13'}]}];
+
+    let metric = {source: "expression", key: 'window.test:join(,).foo:join(|).bar'};
+    expect(getConvertedValue(metric)).toBe('test4|test12,test13');
+});
+
+
 test('expression with :join and :at macro', () => {
     window.test = [{foo: [{bart:'test4'},{bar:'test14'}]},{foo:[{bar:'test15'},{bar:'test16'}]}];
 
@@ -139,9 +143,17 @@ test('expression with :sum macro', () => {
     expect(getConvertedValue(metric)).toBe(37);
 });
 
-test('expression with :sum &  :at macro', () => {
+test('expression with :sum & :at macro', () => {
     window.test = [{foo: [{bart:'test4'},{bar:17}]},{foo:[{bar:20}, {bar:21}]}];
 
     let metric = {source: "expression", key: 'window.test:at(1).foo:sum.bar', type: 'number'};
     expect(getConvertedValue(metric)).toBe(41);
+});
+
+
+test('expression with join, :sum macro', () => {
+    window.test = [{foo: [{bart:'test4'},{bar:17}]},{foo:[{bar:20}, {bar:21}]}];
+
+    let metric = {source: "expression", key: 'window.test:join.foo:sum.bar'};
+    expect(getConvertedValue(metric)).toBe('17|41');
 });

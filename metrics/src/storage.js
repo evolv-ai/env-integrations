@@ -9,9 +9,9 @@
 const storePrefix = 'evolv:';
 
 const Storage = {
-    'session': sessionStorage,
-    'local': localStorage,
-    'default': sessionStorage
+    'session': window.sessionStorage,
+    'local': window.localStorage,
+    'default': window.sessionStorage
 };
 
 function marshalValue(valueType, value){

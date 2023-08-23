@@ -12,7 +12,7 @@ function buildFile(src){
       ]
     },
     {
-      input: `./test/harness.js`,
+      input: `./harness/harness.js`,
       output: {
         file: `./dist/harness.js`,
       },

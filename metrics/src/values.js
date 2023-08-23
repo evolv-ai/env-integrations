@@ -70,23 +70,23 @@ export function applyMap(val, metric){
       if (results.length === 1) return getValue(results[0]);
       return null;
     }
-  }
+}
   
-  export function getValue(metric, target){
-    var val = getActiveValue(metric.source, metric.key);
-    
-    let {extract, value} = metric;
-    if (extract){
-      var extracted = target[extract.attribute];
+export function getValue(metric, target){
+  var val = getActiveValue(metric.source, metric.key);
+  
+  let {extract, value} = metric;
+  if (extract){
+    var extracted = target[extract.attribute];
 
-      val = extract.parse 
-          ? extracted.match(new RegExp(extract.parse))[0]
-          : extracted;
-    }
-  
-    if (value) val = value;
-  
-    return metric.storage 
-         ? resolveValue(val, metric) 
-         : val;
+    val = extract.parse 
+        ? extracted.match(new RegExp(extract.parse))[0]
+        : extracted;
   }
+
+  if (value) val = value;
+
+  return metric.storage 
+        ? resolveValue(val, metric) 
+        : val;
+}

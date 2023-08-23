@@ -18,6 +18,7 @@ function marshalValue(valueType, value){
     switch(valueType){
         case 'float': return value;
         case 'int': return value;
+        case 'number': return value;
         case 'boolean': return value;
         case 'array': return JSON.stringify(value); 
         default: return value.toString();
@@ -30,6 +31,7 @@ function unmarshalValue(valueType, value){
     switch(valueType){
         case 'float': return parseFloat(value);
         case 'int': return parseInt(value);
+        case 'number': return Number(value);
         case 'boolean': return /^true$/i.test(value);
         case 'array': return JSON.parse(value);
         default: return value.toString();
@@ -62,6 +64,15 @@ function resolveStoreValue(storage, valueType, value, storeValue){
             case 'cached': return storeValue;
             case 'new': return value;
             default:  return  [...(new Set([...JSON.parse(storeValue), ...value]))];
+        }
+    } else if (valueType === 'number') {
+        switch(resolveWith) {
+            case 'max': return Math.max(storeValue, value);
+            case 'min': return Math.min(storeValue, value);
+            case 'sum': return storeValue + value;
+            case 'cached': return storeValue;
+            case 'new': return value;
+            default: return value;
         }
     } else {
         switch(resolveWith) {

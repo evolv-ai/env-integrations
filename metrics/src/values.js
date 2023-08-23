@@ -72,7 +72,7 @@ export function applyMap(val, metric){
     }
   }
   
-  export function getValue(metric,target){
+  export function getValue(metric, target){
     var val = getActiveValue(metric.source, metric.key);
     
     let {extract, value} = metric;

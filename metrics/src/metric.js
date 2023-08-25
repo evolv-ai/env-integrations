@@ -6,29 +6,38 @@ import { applyMap, convertValue, getValue } from './values.js';
 import { checkWhen } from './when.js';
 
 export function processMetric(metric, context){
-  let {comment, when, apply, ...baseMetric} = metric;
-  let mergedMetric = mergeMetric(context, baseMetric);
+  if (notApplicabile(metric, context)) return;
 
-  //check conditionals
-  if (when && (context.source != 'dom') && !checkWhen(when, context)){
-      return;
-  }
+  let mergedMetric = mergeMetric(context, metric);
+  trackEvaluating({...mergedMetric, apply: metric.apply});
 
-  trackEvaluating({...mergedMetric, apply});
+  console.info('metrics tracing:', mergedMetric, metric, context)
 
-  mergedMetric = {...mergedMetric, when: (when || context.when)};
+  mergedMetric.when = metric.when || context.when;
 
-  if (apply){
-    if (context.source === 'dom' && when){
-      connectAbstractMetric(apply, mergedMetric);
+  if (metric.apply){
+    if (context.source === 'dom' && metric.when){
+      connectAbstractMetric(metric.apply, mergedMetric);
     } else {
-      processApplyList(apply, mergedMetric)//handle map conditions
+      processApplyList(metric.apply, mergedMetric)//handle map conditions
     }
   } else if (!isComplete(mergedMetric))  {
-    if (!comment) console.warn('Evolv Audience - Metric was incomplete: ', mergedMetric);
+    if (!metric.comment) console.warn('Evolv Audience - Metric was incomplete: ', mergedMetric);
   } else {
     applyConcreteMetric(mergedMetric, context);
   }
+}
+
+function processApplyList(applyList, context){
+    if (!Array.isArray(applyList)) return console.warn('Evolv Audience warning: Apply list is not array', applyList);
+  
+    applyList.forEach(metric => processMetric(metric, context));
+  }
+
+function notApplicabile(metric, context){
+   return metric.when && 
+         (context.source != 'dom') && 
+         !checkWhen(metric.when, context);
 }
 
 function applyConcreteMetric(metric, context){
@@ -39,16 +48,10 @@ function applyConcreteMetric(metric, context){
   }
 }
 
-function processApplyList(applyList, context){
-  if (!Array.isArray(applyList)) return console.warn('Evolv Audience warning: Apply list is not array', applyList);
-
-  applyList.forEach(metric => processMetric(metric, context));
-}
-
 function connectAbstractMetric(apply, metric){
   observeSource(metric)
     .subscribe(once((val,data) => 
-      processApplyList(apply, {...metric, value: getValue(metric, data)})
+      processApplyList(apply, {...metric, data, value: getValue(metric, data)})
     ));
 }
 

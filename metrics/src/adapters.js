@@ -5,7 +5,7 @@ var OperatorSet = {
     var array = context[token];
     if (!array) return undefined;
     
-    var delim = delimeter || '|'
+    var delim = delimeter || '|';
     return array
       .map(n=>adapters.getExpressionValue(tokens, n))
       .filter(x=>x)

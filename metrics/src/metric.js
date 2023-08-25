@@ -13,10 +13,10 @@ export function processMetric(metric, context){
 
   console.info('metrics tracing:', mergedMetric, metric, context)
 
-  mergedMetric.when = metric.when || context.when;
+  mergedMetric.when = metric.when;// || context.when;
 
   if (metric.apply){
-    if (context.source === 'dom' && metric.when){
+    if (metric.when){
       connectAbstractMetric(metric.apply, mergedMetric);
     } else {
       processApplyList(metric.apply, mergedMetric)//handle map conditions
@@ -50,9 +50,12 @@ function applyConcreteMetric(metric, context){
 
 function connectAbstractMetric(apply, metric){
   observeSource(metric)
-    .subscribe(once((val,data) => 
-      processApplyList(apply, {...metric, data, value: getValue(metric, data)})
-    ));
+    .subscribe(once((val,data) => {       
+        let value = val || getValue(metric, data);
+        if (!metric.when || checkWhen(metric.when, {...metric, value}, data)){
+            processApplyList(apply, {...metric, data})
+        }
+    }));
 }
 
 function connectEvent(tag, metric, context){

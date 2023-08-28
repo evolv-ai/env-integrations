@@ -1,3 +1,4 @@
+import { trackWarning } from "./track";
 
 var OperatorSet = {
   //array operators
@@ -201,7 +202,7 @@ export const adapters = {
       case 'distribution': 
         return initDistribution();
       default:
-        console.warn("Evolv - No audience extension called: ", name)
+        trackWarning({name, message:"No audience extension called"});
     }
   }
 }

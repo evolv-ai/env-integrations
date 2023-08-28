@@ -1,6 +1,6 @@
 import { adapters } from './adapters.js';
 import { trackWarning } from './track.js';
-import { applyMap, convertValue, getValue } from './values.js';
+import { getValue } from './values.js';
 
 function genName(){
   return `metrics-${new Date().getTime()}`;
@@ -103,7 +103,7 @@ function defaultObservable(metric){
             fnc(val);
             clearPoll(poll)
           }
-        } catch(e){console.info('audience not processed', metric);}
+        } catch(e){trackWarning({metric, error: e, message:'metric processing exception'});}
       }, metric.poll.interval || 50);
       
       addPoll(poll);

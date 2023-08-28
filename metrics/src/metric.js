@@ -1,7 +1,7 @@
 import { emitEvent } from './event.js';
 import { mergeMetric } from './inheritance.js';
 import { observeSource } from './observables.js';
-import { trackEvaluating, trackExecuted } from './track.js';
+import { trackEvaluating, trackExecuted, trackWarning } from './track.js';
 import { applyMap, convertValue, getValue } from './values.js';
 import { checkWhen } from './when.js';
 
@@ -19,14 +19,14 @@ export function processMetric(metric, context){
       processApplyList(metric.apply, mergedMetric)//handle map conditions
     }
   } else if (!isComplete(mergedMetric))  {
-    if (!metric.comment) console.warn('Evolv Audience - Metric was incomplete: ', mergedMetric);
+    if (!metric.comment) trackWarning({metric:mergedMetric, message:'Evolv Audience - Metric was incomplete: '});
   } else {
     applyConcreteMetric(mergedMetric, context);
   }
 }
 
 function processApplyList(applyList, context){
-    if (!Array.isArray(applyList)) return console.warn('Evolv Audience warning: Apply list is not array', applyList);
+    if (!Array.isArray(applyList)) return trackWarning({applyList, context, message:'Evolv Audience warning: Apply list is not array'});
   
     applyList.forEach(metric => processMetric(metric, context));
   }
@@ -80,7 +80,7 @@ function addAudience(tag, metric){
         }
       });
   } catch(e){
-    console.warn('Unable to add audience for', tag, metric, e);
+    trackWarning({metric, tag, message: 'Unable to add audience for'});
   }
 }
 

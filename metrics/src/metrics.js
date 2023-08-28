@@ -4,7 +4,6 @@ import { initializeObservables, resetObservables } from './observables.js';
 import { instrumentSpaEvent } from './spa.js';
 import { initializeTracking, resetTracking, trackEvaluating, trackExecuted } from './track.js';
 
-
 const DefaultContext = {"source": "expression", "key": "location.pathname"};
 let cachedconfig = {};
 

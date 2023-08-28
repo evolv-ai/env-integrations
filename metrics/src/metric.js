@@ -10,9 +10,6 @@ export function processMetric(metric, context){
 
   let mergedMetric = mergeMetric(context, metric);
   trackEvaluating({...mergedMetric, apply: metric.apply});
-
-  console.info('metrics tracing:', mergedMetric, metric, context)
-
   mergedMetric.when = metric.when;// || context.when;
 
   if (metric.apply){
@@ -36,7 +33,7 @@ function processApplyList(applyList, context){
 
 function notApplicabile(metric, context){
    return metric.when && 
-         (context.source != 'dom') && 
+         (context.source != 'dom') && (context.source != 'on-async') &&
          !checkWhen(metric.when, context);
 }
 
@@ -63,10 +60,10 @@ function connectEvent(tag, metric, context){
     .subscribe(((val,data) => {
         if (context.extract && metric.when){
             context.value = undefined;
-            context.value = convertValue(getValue(context,data), context.type)
+            context.value = convertValue(getValue(context,data), context.type);
         }
         if (!metric.when || checkWhen(metric.when, context, data)){
-            setTimeout(()=> emitEvent(tag, metric), 0);
+            setTimeout(()=> emitEvent(tag, metric, data, context), 0);
         }
     }));
 }
@@ -75,10 +72,10 @@ function addAudience(tag, metric){
   try {
     observeSource(metric)
       .subscribe((value, data) =>{
-        if (!value){
+        if (value === null || value === undefined){
           value = getValue(metric, data);
         }
-        if (value){
+        if (value !== null && value !== undefined){
           bindAudienceValue(tag, value, metric);
         }
       });

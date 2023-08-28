@@ -1,3 +1,5 @@
+import { adapters } from './adapters.js';
+import { trackWarning } from './track.js';
 import { applyMap, convertValue, getValue } from './values.js';
 
 function genName(){
@@ -137,8 +139,24 @@ export const Observables = {
         subscribe: listenForDOM
       };
     },
-    on_async(metric){
+    onAsync(metric){
+      function listen(fnc){
 
+        if (!metric.on) return trackWarning({metric, message: "on-async requires attribute 'on'"});
+
+        let obj = adapters.getExpressionValue(metric.key);
+
+        if (!obj.on || typeof obj.on != 'function') return trackWarning({metric, message: "on-async object from '${metric.key}' did not have method 'on'"});
+
+        function handler(){
+          fnc(null, {params:arguments})
+        }
+
+        obj.on(metric.on, handler);
+      }
+      return {
+        subscribe: listen
+      }
     }
 }
 
@@ -150,7 +168,7 @@ export function observeSource(metric){
     const {source, key} = metric
     switch(source){
       case 'dom':       return Observables.dom(metric);
-      case 'on-async':  return Observables.async(metric);
+      case 'on-async':  return Observables.onAsync(metric);
       default:          return  Observables[source] 
                               ? Observables[source](metric) 
                               : defaultObservable(metric);

@@ -2,11 +2,12 @@
 //nuf said
 ////////////////////////////////////////////////
 import {processConfig} from '../src/metrics.js';
+// import data from './test.json';
+import data from './dutch.json';
+// import data from './ndr.json';
 // import data from './a&e.json';
 // import data from ./acc.json';
-import data from './test.json';
 // import data from './safelite.json';
-// import data from './ndr.json';
 
 function loadScript(path){
   var scriptNode = document.createElement('script');

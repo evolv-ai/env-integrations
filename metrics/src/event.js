@@ -4,13 +4,13 @@ import { trackExecuted } from "./track";
 let eventTimestamp = {};
 const EventInterval = 500;
 
-export function emitEvent(tag, metric){
+export function emitEvent(tag, metric, context){
   var lastTime = eventTimestamp[tag];
   var newTimeStamp = new Date().getTime();
 
   if (lastTime && (lastTime > newTimeStamp-EventInterval)) return;
   
   evolv.client.emit(tag);
-  trackExecuted({tag, event: metric});
+  trackExecuted({tag, event: metric, context});
   eventTimestamp[tag] = newTimeStamp;
 }

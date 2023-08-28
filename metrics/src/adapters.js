@@ -12,7 +12,7 @@ var OperatorSet = {
       .join(delim);
   },
   at: function(context, token, tokens, index){
-    var array = context[token];
+    var array = Array.from(context[token]);
     if (!array) return null;
     
     return adapters.getExpressionValue(tokens, array.at(index));
@@ -192,6 +192,9 @@ export const adapters = {
     try{
       return new URL(location.href).searchParams.get(name);
     } catch(e){ return null;}
+  },
+  onAsync: function(name) {
+    return 'async'; //not sure what to do here
   },
   getExtensionValue: function(name){
     switch (name) {

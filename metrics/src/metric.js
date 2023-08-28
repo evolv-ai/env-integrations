@@ -17,7 +17,7 @@ export function processMetric(metric, context){
 
   if (metric.apply){
     if (metric.when){
-      connectAbstractMetric(metric.apply, mergedMetric);
+      connectAbstractMetric(metric.apply, mergedMetric, context);
     } else {
       processApplyList(metric.apply, mergedMetric)//handle map conditions
     }
@@ -48,10 +48,10 @@ function applyConcreteMetric(metric, context){
   }
 }
 
-function connectAbstractMetric(apply, metric){
-  observeSource(metric)
+function connectAbstractMetric(apply, metric, context){
+  observeSource(context)
     .subscribe(once((val,data) => {       
-        let value = val || getValue(metric, data);
+        let value = val || getValue(context, data);
         if (!metric.when || checkWhen(metric.when, {...metric, value}, data)){
             processApplyList(apply, {...metric, data})
         }
@@ -60,10 +60,14 @@ function connectAbstractMetric(apply, metric){
 
 function connectEvent(tag, metric, context){
   observeSource(metric)
-    .subscribe(once((val,data) => {
-      if (!metric.when || checkWhen(metric.when, context, data)){
-        setTimeout(()=> emitEvent(tag, metric), 0);
-      }
+    .subscribe(((val,data) => {
+        if (context.extract && metric.when){
+            context.value = undefined;
+            context.value = convertValue(getValue(context,data), context.type)
+        }
+        if (!metric.when || checkWhen(metric.when, context, data)){
+            setTimeout(()=> emitEvent(tag, metric), 0);
+        }
     }));
 }
 
@@ -94,22 +98,22 @@ function once(fnc){
 
 //audience bind
 function bindAudienceValue(tag, val, metric){
-  const audienceContext = window.evolv.context;
-  let newVal;
-  if (metric.default === val){
-      newVal = val;
-  } else if (metric.map){
-      newVal = applyMap(val, metric);
-      if (!newVal && (!metric.type || metric.type === 'string')) return;
-  } else {
-      newVal = convertValue(val, metric.type);
-  }
+    const audienceContext = window.evolv.context;
+    let newVal;
+    if (metric.default === val){
+        newVal = val;
+    } else if (metric.map){
+        newVal = applyMap(val, metric);
+        if (!newVal && (!metric.type || metric.type === 'string')) return;
+    } else {
+        newVal = convertValue(val, metric.type);
+    }
 
-  if (audienceContext.get(tag) ===  newVal) return false;
+    if (audienceContext.get(tag) ===  newVal) return false;
 
-  audienceContext.set(tag, newVal);
-  trackExecuted({tag, bind: metric, value: newVal});
-  return true;
+    audienceContext.set(tag, newVal);
+    trackExecuted({tag, bind: metric, value: newVal});
+    return true;
 }
 
 function isComplete(metric){

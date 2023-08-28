@@ -19,7 +19,6 @@ export function resetObservables(){
   mutateQueue = [];
 }
 
-
 function supportPolling(metric){
   return metric.poll
       && metric.source !== 'dom'
@@ -128,7 +127,7 @@ export const Observables = {
           if (extendedEvent){
             extendedEvent(metric, fnc);
           } else {
-            getMutate(metric).listen(metric.on, el=> fnc(null, el));
+            getMutate(metric).listen(metric.on, el=> fnc(null, el.target));
           }
         } else {
           getMutate(metric).customMutation((state, el)=> fnc(null, el));

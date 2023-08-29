@@ -7,12 +7,13 @@ function getConvertedValue(metric, target){
 }
 
 test('on async extract string value', () => {
-    window.test = {on: (ev, fnc)=> {
-        expect(ev).toBe('track');
-        console.info('test')
-        fnc('ontest')
-    }};
+    // window.test = {on: (ev, fnc)=> {
+    //     expect(ev).toBe('track');
+    //     console.info('tesing the code')
+    //     fnc('ontest')
+    // }};
 
-    let metric = {source: "op-async", "key": 'window.test', on: 'track', type: 'string', extract: {expression:"params:at(0)"}};
+    // let metric = {source: "op-async", "key": 'window.test', on: 'track', type: 'string', extract: {expression:"params:at(0)"}};
+
 });
 

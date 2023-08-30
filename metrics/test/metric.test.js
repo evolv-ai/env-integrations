@@ -14,7 +14,7 @@ window.evolv = {
 test('single metric to bind', () => {
   window.testValue = 5;
   resetTracking();
-  Observables.test = ()=>({subscribe(fnc){console.info('running')||fnc(5)}});
+  Observables.test = ()=>({subscribe(fnc){fnc(5)}});
 
   let metric = {
     value: 5,

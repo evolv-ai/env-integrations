@@ -1,4 +1,5 @@
 
+import { mergeConfigs, prepareConfig } from './config.js';
 import { processMetric } from './metric.js';
 import { initializeObservables, resetObservables } from './observables.js';
 import { instrumentSpaEvent } from './spa.js';
@@ -14,8 +15,8 @@ export function processConfig(json){
 
     if (!json) return trackWarning({json, message:'Evolv Audience warning: Apply list is not array'});
 
-    cachedconfig = json;
-    processMetric(json, DefaultContext);
+    cachedconfig = prepareConfig(json);
+    processMetric(cachedconfig, DefaultContext);
   } catch(e){
     trackWarning({error:e, message:'Evolv Audience error: Unable to process config'});
   }

@@ -1,3 +1,4 @@
+import { trackWarning } from "./track";
 
 var OperatorSet = {
   //array operators
@@ -5,14 +6,14 @@ var OperatorSet = {
     var array = context[token];
     if (!array) return undefined;
     
-    var delim = delimeter || '|'
+    var delim = delimeter || '|';
     return array
       .map(n=>adapters.getExpressionValue(tokens, n))
       .filter(x=>x)
       .join(delim);
   },
   at: function(context, token, tokens, index){
-    var array = context[token];
+    var array = Array.from(context[token]);
     if (!array) return null;
     
     return adapters.getExpressionValue(tokens, array.at(index));
@@ -32,15 +33,8 @@ function tokenizeExp(exp){
   return Array.isArray(exp) ? exp : exp.split('.');
 }
 
-function initDistribution(){
-  var distributionName = 'evolv:distribution';
-  var distribution = window.localStorage.getItem(distributionName);
-  if (!distribution) {
-    distribution = Math.floor(Math.random()*100);
-    window.localStorage.setItem(distributionName, distribution);
-  }
-
-  return parseInt(distribution)
+function getDistribution(){
+   return Math.floor(Math.random()*100);
 };
 
 //future usage
@@ -193,12 +187,15 @@ export const adapters = {
       return new URL(location.href).searchParams.get(name);
     } catch(e){ return null;}
   },
+  onAsync: function(name) {
+    return 'async'; //not sure what to do here
+  },
   getExtensionValue: function(name){
     switch (name) {
       case 'distribution': 
-        return initDistribution();
+        return getDistribution();
       default:
-        console.warn("Evolv - No audience extension called: ", name)
+        trackWarning({name, message:"No audience extension called"});
     }
   }
 }

@@ -6,12 +6,14 @@
 //     "resolveWith": "(new|cached|union)"
 // },
 
+import { trackWarning } from "./track";
+
 const storePrefix = 'evolv:';
 
 const Storage = {
-    'session': sessionStorage,
-    'local': localStorage,
-    'default': sessionStorage
+    'session': window.sessionStorage,
+    'local': window.localStorage,
+    'default': window.sessionStorage
 };
 
 function marshalValue(valueType, value){
@@ -84,7 +86,7 @@ function resolveStoreValue(storage, valueType, value, storeValue){
 
 function validateStorage(storage){
     if (!storage.key){
-        console.warn('No key for storage', storage);
+        trackWarning({storage, message: 'No key for storage'});
         return false;
     }
     return true;

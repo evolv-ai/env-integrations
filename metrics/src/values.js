@@ -1,6 +1,6 @@
 import { adapters } from './adapters.js';
 import { resolveValue } from './storage.js';
-
+import { trackWarning } from './track.js';
 
 export function getActiveValue(source, key){
   switch(source){
@@ -12,6 +12,7 @@ export function getActiveValue(source, key){
     case 'localStorage':   return adapters.getLocalStorageValue(key);
     case 'sessionStorage': return adapters.getSessionStorageValue(key);
     case 'query':          return adapters.getQueryValue(key);
+    case 'on-async':       return adapters.onAsync(key);
     case 'extension':      return adapters.getExtensionValue(key);
   }
   return null;
@@ -70,23 +71,31 @@ export function applyMap(val, metric){
       if (results.length === 1) return getValue(results[0]);
       return null;
     }
-  }
+}
   
-  export function getValue(metric, target){
-    var val = getActiveValue(metric.source, metric.key);
-    
-    let {extract, value} = metric;
-    if (extract){
-      var extracted = target[extract.attribute];
+export function getValue(metric, data){
+  var val = getActiveValue(metric.source, metric.key);
+  
+  let {extract, value} = metric;
+  if (extract){
+    if (extract.attribute){
+      var extracted = data[extract.attribute];
 
       val = extract.parse 
           ? extracted.match(new RegExp(extract.parse))[0]
           : extracted;
+    } else if (extract.expression){
+      val = adapters.getExpressionValue(extract.expression, data);
+    } else {
+      trackWarning({metric, "message": "extract did not include attribute or expression"});
     }
-  
-    if (value) val = value;
-  
-    return metric.storage 
-         ? resolveValue(val, metric) 
-         : val;
   }
+
+  if (value){
+    val = value;
+  }
+
+  return metric.storage 
+        ? resolveValue(val, metric) 
+        : val;
+}

@@ -33,15 +33,8 @@ function tokenizeExp(exp){
   return Array.isArray(exp) ? exp : exp.split('.');
 }
 
-function initDistribution(){
-  var distributionName = 'evolv:distribution';
-  var distribution = window.localStorage.getItem(distributionName);
-  if (!distribution) {
-    distribution = Math.floor(Math.random()*100);
-    window.localStorage.setItem(distributionName, distribution);
-  }
-
-  return parseInt(distribution)
+function getDistribution(){
+   return Math.floor(Math.random()*100);
 };
 
 //future usage
@@ -200,7 +193,7 @@ export const adapters = {
   getExtensionValue: function(name){
     switch (name) {
       case 'distribution': 
-        return initDistribution();
+        return getDistribution();
       default:
         trackWarning({name, message:"No audience extension called"});
     }

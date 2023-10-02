@@ -34,6 +34,7 @@ function processApplyList(applyList, context){
 function notApplicabile(metric, context){
    return metric.when && 
          (context.source != 'dom') && (context.source != 'on-async') &&
+         !context.poll && 
          !checkWhen(metric.when, context);
 }
 

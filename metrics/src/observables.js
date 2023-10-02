@@ -101,14 +101,14 @@ function defaultObservable(metric){
           if (val){
             foundValue = true;
             fnc(val);
-            clearPoll(poll)
+            removePoll(poll)
           }
         } catch(e){trackWarning({metric, error: e, message:'metric processing exception'});}
       }, metric.poll.interval || 50);
       
       addPoll(poll);
       setTimeout(function(){ 
-        clearPoll(poll)
+        removePoll(poll)
 
         if (!foundValue && metric.default) {
           fnc(metric.default);

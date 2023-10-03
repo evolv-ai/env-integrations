@@ -1,6 +1,7 @@
 import { adapters } from './adapters.js';
 import { trackWarning } from './track.js';
 import { getValue } from './values.js';
+import { checkWhen } from './when.js';
 
 function genName(){
   return `metrics-${new Date().getTime()}`;
@@ -76,13 +77,16 @@ function genUniqueName(tag){
 
 export let ObservableQueue = [];
 
-function defaultObservable(metric){
+function defaultObservable(metric, context){
   function startListening(fnc){
-    var val = getValue(metric);
 
-    if (val){
-      fnc(val)
-      return;
+    if (!metric.when || checkWhen(metric.when, context)){
+      var val = getValue(metric);
+
+      if (val){
+        fnc(val)
+        return;
+      }
     }
 
     if (!supportPolling(metric)){
@@ -95,20 +99,21 @@ function defaultObservable(metric){
       var foundValue = false;
       var poll = setInterval(function(){
         try{
+          if (metric.when && !checkWhen(metric.when, context)) return;
           var val = getValue(metric);
           pollingCount++;
           
           if (val){
             foundValue = true;
             fnc(val);
-            clearPoll(poll)
+            removePoll(poll)
           }
         } catch(e){trackWarning({metric, error: e, message:'metric processing exception'});}
       }, metric.poll.interval || 50);
       
       addPoll(poll);
       setTimeout(function(){ 
-        clearPoll(poll)
+        removePoll(poll)
 
         if (!foundValue && metric.default) {
           fnc(metric.default);
@@ -164,13 +169,13 @@ export function clearSubscriptions(){
 
 }
 
-export function observeSource(metric){
+export function observeSource(metric, context){
     const {source, key} = metric
     switch(source){
-      case 'dom':       return Observables.dom(metric);
-      case 'on-async':  return Observables.onAsync(metric);
+      case 'dom':       return Observables.dom(metric, context);
+      case 'on-async':  return Observables.onAsync(metric, context);
       default:          return  Observables[source] 
-                              ? Observables[source](metric) 
-                              : defaultObservable(metric);
+                              ? Observables[source](metric, context) 
+                              : defaultObservable(metric, context);
     }
 }

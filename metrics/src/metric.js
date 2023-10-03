@@ -6,8 +6,8 @@ import { applyMap, convertValue, getValue } from './values.js';
 import { checkWhen } from './when.js';
 
 export function processMetric(metric, context){
-  if (notApplicabile(metric, context)) return;
 
+  if (notApplicabile(metric, context)) return;
   let mergedMetric = mergeMetric(context, metric);
   trackEvaluating({...mergedMetric, apply: metric.apply});
   mergedMetric.when = metric.when;// || context.when;
@@ -27,28 +27,30 @@ export function processMetric(metric, context){
 
 function processApplyList(applyList, context){
     if (!Array.isArray(applyList)) return trackWarning({applyList, context, message:'Evolv Audience warning: Apply list is not array'});
-  
     applyList.forEach(metric => processMetric(metric, context));
-  }
+}
+
+function supportsAsync(context){
+  // return (context.source === 'dom') || (context.source === 'on-async');
+  return (context.source === 'dom') || (context.source === 'on-async') || context.poll;
+}
 
 function notApplicabile(metric, context){
-   return metric.when && 
-         (context.source != 'dom') && (context.source != 'on-async') &&
-         !checkWhen(metric.when, context);
+   return !supportsAsync(context) && metric.when && !checkWhen(metric.when, context);
 }
 
 function applyConcreteMetric(metric, context){
   if (metric.action === "event"){
     connectEvent(metric.tag, metric, context);
   } else{    
-    addAudience(metric.tag, metric);
+    addAudience(metric.tag, metric, context);
   }
 }
 
 function connectAbstractMetric(apply, metric, context){
   observeSource(context)
-    .subscribe(once((val,data) => {       
-        let value = val || getValue(context, data);
+    .subscribe(once((val,data) => {    
+      let value = val || getValue(context, data);
         if (!metric.when || checkWhen(metric.when, {...metric, value}, data)){
             processApplyList(apply, {...metric, data})
         }
@@ -56,7 +58,7 @@ function connectAbstractMetric(apply, metric, context){
 }
 
 function connectEvent(tag, metric, context){
-  observeSource(metric)
+  observeSource(metric, context)
     .subscribe(((val,data) => {
         if (context.extract && metric.when){
             context.value = undefined;
@@ -68,9 +70,9 @@ function connectEvent(tag, metric, context){
     }));
 }
 
-function addAudience(tag, metric){
+function addAudience(tag, metric, context){
   try {
-    observeSource(metric)
+    observeSource(metric, context)
       .subscribe((value, data) =>{
         if (value === null || value === undefined){
           value = getValue(metric, data);
@@ -80,7 +82,7 @@ function addAudience(tag, metric){
         }
       });
   } catch(e){
-    trackWarning({metric, tag, message: 'Unable to add audience for'});
+    trackWarning({metric, tag, message: `Unable to add audience for: ${e}`});
   }
 }
 

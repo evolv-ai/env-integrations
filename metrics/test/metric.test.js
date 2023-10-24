@@ -171,7 +171,33 @@ test('test polling context with when and 3 layers', () => {
   expect(evolv.metrics.executed.length).toBe(1)
 });
 
+test('test polling context with no match', () => { 
+ 
+  window.testValue = undefined;
 
+  let metric = {
+    when: 'notavail',
+    value: '4',
+    tag: "test",
+    action: "bind"
+  };
+  let context = {
+    source: "expression",
+    key: "window.testValue",
+    apply: [metric],
+    poll: {duration: 100}
+  };
+
+  processMetric(context, {});
+
+  expect(bind.mock.lastCall).toBe(undefined);
+
+  window.testValue = "avail";
+  jest.runAllTimers();
+
+  expect(bind.mock.lastCall).toBe(undefined);
+  expect(evolv.metrics.executed.length).toBe(0)
+});
 
 test('test polling context with no match', () => {  
   console.info('testing with no match');
@@ -234,7 +260,6 @@ test('test polling context with one match and one no match', () => {
 
 test('single metric to emit', () => {
   window.testValue = "avail";
-  resetTracking();
 
   let metric = {
     when: 'avail',
@@ -256,3 +281,125 @@ test('single metric to emit', () => {
   expect(event.mock.lastCall[0]).toBe('test');
   expect(evolv.metrics.executed.length).toBe(1)
 });
+
+
+test('single metric to emit second try', () => {
+  window.testValue = "avail";
+
+  let metric = {
+    tag: "test2",
+    action: "event",
+  };
+
+  let context = {
+    source: "expression",
+    key: "window.testValue",
+    apply: [metric]
+  };
+
+  processMetric(metric, context);
+
+  //reqired because we have to delay because of our default GA integration
+  jest.runAllTimers();
+
+  expect(event.mock.lastCall[0]).toBe('test2');
+  expect(evolv.metrics.executed.length).toBe(1)
+});
+
+
+
+// to test eval_now
+test('test polling context with extra layer for conditions', () => { 
+  window.testValue = undefined;
+  window.testSecondValue = "test";
+
+  let metric = {
+    when: "test",
+    tag: "test5",
+  };
+  let context = {
+    source: "expression",
+    "action": "event",
+    key: "window.testValue",
+    apply: [
+      { 
+        "key": "window.testSecondValue",
+        apply:[metric]
+      }
+    ],
+    poll: {duration: 100}
+  };
+
+  processMetric(context, {});
+
+  jest.runAllTimers();
+
+  expect(event.mock.lastCall[0]).toBe('test5');
+});
+
+test('test polling context with extra layer for conditions', () => { 
+  window.testValue = undefined;
+  window.testSecondValue = "test";
+
+  let metric = {
+    when: "test",
+    tag: "test6",
+  };
+  let context = {
+    source: "expression",
+    "action": "event",
+    key: "window.testValue",
+    eval_now: true,
+    apply: [
+      { 
+        "key": "window.testSecondValue",
+        apply:[metric]
+      }
+    ],
+    poll: {duration: 100}
+  };
+
+  processMetric(context, {});
+
+  jest.runAllTimers();
+
+  expect(event.mock.lastCall).toBe(undefined);
+  expect(evolv.metrics.evaluating.length).toBe(2)
+  expect(evolv.metrics.executed.length).toBe(0)
+});
+
+test('test polling context with extra layer for conditions', () => { 
+  window.testValue = undefined;
+  window.testSecondValue = "test";
+
+  let metric = {
+    when: "test",
+    tag: "test7",
+  };
+  let context = { 
+    source: "expression",
+    "action": "event",
+    key: "window.testValue",
+    eval_now: true,
+    apply: [
+      {  
+        "key": "window.testSecondValue",
+        apply:[metric]
+      }
+    ],
+    poll: {duration: 100}
+  };
+
+  processMetric(context, {});
+
+  expect(evolv.metrics.evaluating.length).toBe(2)
+  expect(evolv.metrics.executed.length).toBe(0)
+
+  window.testValue = 'ready';
+
+  jest.runAllTimers();
+
+  expect(event.mock.lastCall[0]).toBe('test7');
+  expect(evolv.metrics.executed.length).toBe(1)
+});
+

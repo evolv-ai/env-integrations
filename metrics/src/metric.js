@@ -13,7 +13,7 @@ export function processMetric(metric, context){
   mergedMetric.when = metric.when;// || context.when;
 
   if (metric.apply){
-    if (metric.when){
+    if (metric.when || context.eval_now){
       connectAbstractMetric(metric.apply, mergedMetric, context);
     } else {
       processApplyList(metric.apply, mergedMetric)//handle map conditions
@@ -50,7 +50,7 @@ function applyConcreteMetric(metric, context){
 function connectAbstractMetric(apply, metric, context){
   observeSource(context)
     .subscribe(once((val,data) => {    
-      let value = val || getValue(context, data);
+        let value = val || getValue(context, data);
         if (!metric.when || checkWhen(metric.when, {...metric, value}, data)){
             processApplyList(apply, {...metric, data})
         }

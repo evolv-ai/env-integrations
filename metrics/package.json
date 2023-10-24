@@ -1,6 +1,14 @@
 {
   "name": "@evolv-delivery/metrics",
+<<<<<<< HEAD
   "version": "0.8.3",
+=======
+<<<<<<< Updated upstream
+  "version": "0.8.0",
+=======
+  "version": "0.9.0",
+>>>>>>> Stashed changes
+>>>>>>> eval_now
   "description": "Allows Metrics (audience attributes and events) to be populated/emitted from dom, query parameters, datalayer, cookie, local storage, and session storage.",
   "main": "dist/index.js",
   "files": [

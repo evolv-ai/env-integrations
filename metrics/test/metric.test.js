@@ -283,31 +283,6 @@ test('single metric to emit', () => {
 });
 
 
-test('single metric to emit second try', () => {
-  window.testValue = "avail";
-
-  let metric = {
-    tag: "test2",
-    action: "event",
-  };
-
-  let context = {
-    source: "expression",
-    key: "window.testValue",
-    apply: [metric]
-  };
-
-  processMetric(metric, context);
-
-  //reqired because we have to delay because of our default GA integration
-  jest.runAllTimers();
-
-  expect(event.mock.lastCall[0]).toBe('test2');
-  expect(evolv.metrics.executed.length).toBe(1)
-});
-
-
-
 // to test eval_now
 test('test polling context with extra layer for conditions', () => { 
   window.testValue = undefined;

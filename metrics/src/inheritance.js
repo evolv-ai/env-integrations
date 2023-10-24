@@ -5,7 +5,11 @@ const clearsKey = [
 ]
 
 export function mergeMetric(context, metric){
-    const {key, apply, value, comment, when, ...baseContext} = context;
+    let {key, apply, eval_now, value, comment, when, ...baseContext} = context;
+
+    if (eval_now){
+      baseContext = {...baseContext, on:null};
+    }
 
     if (Object.keys(metric).some(k=> clearsKey.includes(k))){
         return {...baseContext, ...metric}

@@ -36,7 +36,7 @@ function supportsAsync(context){
 }
 
 function notApplicabile(metric, context){
-   return !supportsAsync(context) && metric.when && !checkWhen(metric.when, context);
+   return !supportsAsync(context) && !checkWhen(metric.when, context);
 }
 
 function applyConcreteMetric(metric, context){
@@ -51,7 +51,7 @@ function connectAbstractMetric(apply, metric, context){
   observeSource(context)
     .subscribe(once((val,data) => {    
         let value = val || getValue(context, data);
-        if (!metric.when || checkWhen(metric.when, {...metric, value}, data)){
+        if (checkWhen(metric.when, {...metric, value}, data)){
             processApplyList(apply, {...metric, data})
         }
     }));
@@ -64,7 +64,7 @@ function connectEvent(tag, metric, context){
             context.value = undefined;
             context.value = convertValue(getValue(context,data), context.type);
         }
-        if (!metric.when || checkWhen(metric.when, context, data)){
+        if (checkWhen(metric.when, context, data)){
             setTimeout(()=> emitEvent(tag, metric, data, context), 0);
         }
     }));

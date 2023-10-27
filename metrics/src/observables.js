@@ -10,6 +10,10 @@ function genName(){
 let collect = null;
 let mutate = null;
 
+function isValidValue(val){
+  return (val !== undefined && val !== null);
+}
+
 export function initializeObservables(){
   var scope = window.evolv.collect.scope(genName());
   collect = scope.collect;
@@ -67,8 +71,19 @@ const ExtendedEvents = {
           fnc(null,el);
         }
       })
-    )
-}
+    ),
+  'scroll:':(metric, fnc, param) => 
+      window.addEventListener("scroll", () => {
+        let scrollTop = window.scrollY;
+        let docHeight = document.body.offsetHeight;
+        let winHeight = window.innerHeight;
+        let threshold = Number(param);
+        let scrollPercent = scrollTop / (docHeight - winHeight);
+        if (scrollPercent >= threshold){
+          fnc(null, window);
+        }
+      })
+};
 
 let inc = 0
 function genUniqueName(tag){
@@ -80,17 +95,17 @@ export let ObservableQueue = [];
 function defaultObservable(metric, context){
   function startListening(fnc){
 
-    if (!metric.when || checkWhen(metric.when, context)){
+    if (checkWhen(metric.when, context)){
       var val = getValue(metric);
 
-      if (val){
+      if (isValidValue(val)){
         fnc(val)
         return;
       }
     }
 
     if (!supportPolling(metric)){
-      if (metric.default !== null && metric.default !== undefined){
+      if (isValidValue(metric.default)){
         fnc(metric.default);
       }
       return;
@@ -99,11 +114,11 @@ function defaultObservable(metric, context){
       var foundValue = false;
       var poll = setInterval(function(){
         try{
-          if (metric.when && !checkWhen(metric.when, context)) return;
+          if (!checkWhen(metric.when, context)) return;
           var val = getValue(metric);
           pollingCount++;
           
-          if (val){
+          if (isValidValue(val)){
             foundValue = true;
             fnc(val);
             removePoll(poll)
@@ -134,7 +149,13 @@ export const Observables = {
           if (extendedEvent){
             extendedEvent(metric, fnc);
           } else {
-            getMutate(metric).listen(metric.on, el=> fnc(null, el.target));
+            let tokens = metric.on.split(':');
+            extendedEvent = ExtendedEvents[tokens[0]];
+            if (tokens.length > 2 && extendedEvent){
+              extendedEvent(metric, fnc, tokens[1]);
+            } else {
+              getMutate(metric).listen(metric.on, el=> fnc(null, el.target));
+            }
           }
         } else {
           getMutate(metric).customMutation((state, el)=> fnc(null, el));

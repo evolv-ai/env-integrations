@@ -9,6 +9,10 @@ test('value matching', () => {
   expect(checkWhen('test',{value:'test'})).toBe(true);
 });
 
+test('no when', () => {
+    expect(checkWhen(undefined,{value:'test'})).toBe(true);
+});
+
 test('regex matching', () => {
     expect(checkWhen('test.*more',{value:'testing and more'})).toBe(true);
 });
@@ -37,4 +41,18 @@ test('value matching with getValue', () => {
 test('value not matching with getValue', () => {
     window.lastTest = 't3st';
     expect(checkWhen('test', {source: "expression", "key": 'window.lastTest'})).toBe(false);
+});
+
+
+
+test('value matching boolean true', () => {
+    expect(checkWhen(true,{value:true})).toBe(true);
+});
+
+test('value matching boolean false', () => {
+    expect(checkWhen(false,{value:false})).toBe(true);
+});
+
+test('value not matching boolean', () => {
+    expect(checkWhen(true,{value:false})).toBe(false);
 });

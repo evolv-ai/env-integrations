@@ -9,7 +9,7 @@ import data from './test.json';
 // import data from './lln.json'
 // import data from './vbg.json';
 // import data from './a&e.json';
-// import data from ./acc.json';j
+// import data from ./acc.json';
 // import data from './safelite.json';
 
 function loadScript(path){

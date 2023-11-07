@@ -1,10 +1,17 @@
 import { convertValue, getValue } from "../src/values";
+import { resetTracking } from "../src/track";
 
 function getConvertedValue(metric, target){
     let value = getValue(metric, target)
     if (!value) return undefined;
     return convertValue(value, metric.type);
 }
+
+  beforeEach(() => {
+    window.evolv = {metrics:{}}
+    resetTracking();
+  });
+
 
 //simple expressions
 
@@ -40,28 +47,28 @@ test('expression with no value', () => {
 
 // complex expressions
 
-test('expression number value', () => {
+test('expression via chained expression', () => {
     window.test = {foo: 'test1'};
 
     let metric = {source: "expression", key: 'window.test.foo'};
     expect(getConvertedValue(metric)).toBe('test1');
 });
 
-test('expression number value', () => {
+test('expression via function call', () => {
     window.test = {foo: ()=>'test2'};
 
     let metric = {source: "expression", key: 'window.test.foo()'};
     expect(getConvertedValue(metric)).toBe('test2');
 });
 
-test('expression number value', () => {
+test('expression via nested function call', () => {
     window.test = ()=> ({foo: 'test3'});
 
     let metric = {source: "expression", key: 'window.test().foo'};
     expect(getConvertedValue(metric)).toBe('test3');
 });
 
-test('expression number value', () => {
+test('expression undefined value', () => {
     window.test = {foo: 'test4'};
 
     let metric = {source: "expression", key: 'window.test.bar'};
@@ -156,4 +163,41 @@ test('expression with join, :sum macro', () => {
 
     let metric = {source: "expression", key: 'window.test:join.foo:sum.bar'};
     expect(getConvertedValue(metric)).toBe('17|41');
+});
+
+
+
+//with extract
+
+test('expression string value without extract', () => {
+    window.test = {foo: '5test|4'};
+
+    let metric = {source: "expression", key: 'window.test.foo'};
+    expect(getConvertedValue(metric)).toBe('5test|4');
+});
+
+test('expression string value with extract', () => {
+    window.test = {foo: '5test,4'};
+
+    let metric = {extract:{parse:",\\d"},source: "expression", key: 'window.test.foo'};
+    expect(getConvertedValue(metric)).toBe(',4');
+});
+
+test('expression number value with extract', () => {
+    window.test = {foo: '5test,4'};
+
+    let metric = {
+        type: "number",
+        extract:{parse:",\\d"},
+        source: "expression", 
+        key: 'window.test.foo'
+    };
+    expect(getConvertedValue(metric)).toBe(4);
+});
+
+test('expression string value fails with extract', () => {
+    window.test = {foo: '5test4'};
+
+    let metric = {extract:{parse:",\\d"},source: "expression", key: 'window.test.foo'};
+    expect(getConvertedValue(metric)).toBe(undefined);
 });

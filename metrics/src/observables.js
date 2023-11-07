@@ -72,14 +72,14 @@ const ExtendedEvents = {
         }
       })
     ),
-  'scroll:':(metric, fnc, param) => 
+  'scroll':(metric, fnc, param) => 
       window.addEventListener("scroll", () => {
         let scrollTop = window.scrollY;
         let docHeight = document.body.offsetHeight;
         let winHeight = window.innerHeight;
         let threshold = Number(param);
         let scrollPercent = scrollTop / (docHeight - winHeight);
-        if (scrollPercent >= threshold){
+        if (100*scrollPercent >= threshold){
           fnc(null, window);
         }
       })
@@ -151,7 +151,7 @@ export const Observables = {
           } else {
             let tokens = metric.on.split(':');
             extendedEvent = ExtendedEvents[tokens[0]];
-            if (tokens.length > 2 && extendedEvent){
+            if (tokens.length >= 2 && extendedEvent){
               extendedEvent(metric, fnc, tokens[1]);
             } else {
               getMutate(metric).listen(metric.on, el=> fnc(null, el.target));

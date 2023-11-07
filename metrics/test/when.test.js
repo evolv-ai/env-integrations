@@ -43,6 +43,10 @@ test('value not matching with getValue', () => {
     expect(checkWhen('test', {source: "expression", "key": 'window.lastTest'})).toBe(false);
 });
 
+test('value case insensitive matching with getValue', () => {
+    window.lastTest = 'Test';
+    expect(checkWhen('test', {source: "expression", "key": 'window.lastTest'})).toBe(true);
+});
 
 
 test('value matching boolean true', () => {

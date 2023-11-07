@@ -2,14 +2,14 @@
 //nuf said
 ////////////////////////////////////////////////
 import {processConfig} from '../src/metrics.js';
-// import data from './test.json';
+import data from './test.json';
 // import data from './dutch.json';
 // import data from './luluandgeorgia.json';
 // import data from './babyphat.json';
-import data from './lln.json'
+// import data from './lln.json'
 // import data from './vbg.json';
 // import data from './a&e.json';
-// import data from ./acc.json';
+// import data from ./acc.json';j
 // import data from './safelite.json';
 
 function loadScript(path){

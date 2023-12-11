@@ -1,0 +1,30 @@
+{
+    "mixpanel": [
+        {
+            "statements":[],
+            "confirmations": [
+                {
+                    "invoke": "window.mixpanel.track",
+                    "with": [
+                        "evolv.confirmation",
+                        {
+                            "evolv:uid": "${uid}",
+                            "evolv:experiment_id": "${experiment_id}",
+                            "evolv:combination_index": "${combination_id}",
+                            "evolv:project_name": "${project_name}"
+                        }
+                    ]
+                }
+            ],
+            "events": [
+                {
+                    "invoke": "window.mixpanel.track",
+                    "with": [
+                        "evolv.event",
+                        {}
+                    ]
+                }
+            ]
+        }
+    ]
+}

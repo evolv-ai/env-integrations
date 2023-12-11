@@ -1,6 +1,6 @@
 {
   "name": "@evolv-delivery/audience",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Allows audience filters to be populated from datalayer, cookie, fetch and dom ",
   "main": "dist/index.js",
   "files": [

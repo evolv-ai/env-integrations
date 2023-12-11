@@ -2,7 +2,7 @@
 The audience integration supports populating the Evolv context object with values that are extracted from the browser via several mechanisms.
 
 ## *Note: This package will no longer be supported*
-Please use [@evolv-delivery/metrics](https://www.npmjs.com/package/@evolv-delivery/metrics?activeTab=versions) instead. The `metrics` package includes all the features as the `audience` package and represents the future direction for this integration.
+Please use [@evolv-delivery/metrics](https://www.npmjs.com/package/@evolv-delivery/metrics) instead. The `metrics` package includes all the features as the `audience` package and represents the future direction for this integration.
 
 ## Setup in the Evolv Manager
 

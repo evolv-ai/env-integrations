@@ -5,7 +5,7 @@ import {waitFor} from './waitFor.js';
 
 function listenToEvents(config){
   var poll = config.poll || {duration: 20000, interval:50};
-  var events = config.events || ['confirmed'];
+  var events = config.event_types || ['confirmed'];
   var sentEventAllocations = {
     confirmed: {},
     contaminated: {},
@@ -63,12 +63,14 @@ function contextMatch(config, event) {
   }
   return false;
 }
-function processStatements(pageConfig, eventType, evolvEvent){
+function processStatements(pageConfig, event_type, evolvEvent){
   var statements = pageConfig.statements;
-  var eventContext = new EventContext(evolvEvent);
+  var eventContext = new EventContext({...evolvEvent, event_type});
   try{
     statements.forEach(function(statement){
-      runStatement(statement, eventContext);
+      if (statement.event_type === event_type || !statement.event_type) {
+        runStatement(statement, eventContext);
+      }
     })
   } catch(e){console.info('statement failed',e)}
 }
@@ -87,14 +89,16 @@ function areStatementsReady(config){
     });
 }
 export function processAnalytics(config){
-  var configKeys = Object.keys(config);
+  var {event_types,...baseConfig} = config;
+  var configKeys = Object.keys(baseConfig);
   configKeys.forEach(function(key){
     try{
-      var pageOptions = config[key]
+      var pageOptions = baseConfig[key]
       listenToEvents({
         pageOptions: pageOptions,
         check: areStatementsReady,
-        emit: processStatements
+        emit: processStatements,
+        event_types
       });
     } catch(e){console.info('Evolv: Analytics not setup for', key)}
   })

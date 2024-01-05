@@ -1,0 +1,31 @@
+{
+  "event_types": ["confirmed", "contaminated"],
+  "adobe": [
+    {
+      "statements": [
+        {
+          "event_type": "confirmed",
+          "invoke": "window.vztag.api.dispatch",
+          "with": [
+            "evolvCID",
+            {
+              "list": "Combination_${combination_id}:${experiment_id}",
+              "listPrefixed": "Evolv-Combo_${combination_id}:${experiment_id}"
+            }
+          ]
+        },
+        {
+          "event_type": "contaminated",
+          "invoke": "window.vztag.api.dispatch",
+          "with": [
+            "evolvCID",
+            {
+              "list": "Combination_${combination_id}:${experiment_id}:${event_type}",
+              "listPrefixed": "Evolv-Combo_${combination_id}:${experiment_id}:${event_type}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

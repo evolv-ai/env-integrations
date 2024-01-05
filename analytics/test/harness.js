@@ -3,7 +3,7 @@
 //nuf said
 ////////////////////////////////////////////////
 import {processAnalytics} from '../src/analytics.js'
-import data from './analytics-integration-config.json'
+import data from './testdata.json'
 
 function loadScript(path){
   var scriptNode = document.createElement('script');

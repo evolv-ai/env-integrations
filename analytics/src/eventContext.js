@@ -11,7 +11,6 @@ EventContext.prototype.isLocalVar = function(key){
 }
 
 EventContext.prototype.eventValue =  function(key){
-  console.log(this);
   var event = this.event;
   switch (key) {
     case 'combination_id':

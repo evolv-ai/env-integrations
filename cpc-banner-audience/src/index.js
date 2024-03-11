@@ -18,12 +18,16 @@ export default function processConfig() {
   }
 
   waitFor(() => window.evolv?.utils).then(utilsGlobal => {
-    utilsGlobal.init('int-cpcueb');
-    const utils = utilsGlobal['int-cpcueb'];
-    const { log, debug, warn } = utils;
+    utilsGlobal.init('int-upgrade-eligibility');
+    const utils = utilsGlobal['int-upgrade-eligibility'];
+    const { log, warn } = utils;
     const { collect, mutate, $mu } = window.evolv;
+    let oldURL = null;
+
+    log('init integration: Upgrade Eligility Audience');
 
     function overview() {
+      log('init: overview page')
       const isMobile = window.matchMedia('(max-width: 767px)').matches
       let paginationButtons = null;
       const paginationIndexMin = isMobile ? 0 : 1;
@@ -54,7 +58,6 @@ export default function processConfig() {
           collect('div[data-polymap="deviceSection"] li[class*="PaginationListItem-VDS__"] button', 'pagination');
           collect('//div[@data-polymap="deviceSection"]//div[contains(@class, "grid-column")]/parent::div[contains(@class, "grid-column")]', 'device-tile');
       }
-      
       
       mutate('device-tile').customMutation((state, tile) => {
           if (complete) return;
@@ -94,6 +97,8 @@ export default function processConfig() {
     }
 
     function dataselector() {
+      log('init: dataselector page');
+
       utils.isObjectEmpty ??= (object) => {
           return Object.keys(object).length === 0 && object.constructor === Object;
       };
@@ -172,6 +177,8 @@ export default function processConfig() {
     }
   
     function confirm() {
+      log('init: confirmation page');
+
       const isIPhone = localStorage.getItem('evolv:cpc-is-iphone') === 'true';
       const isUpgradeEligible = localStorage.getItem('evolv:cpc-is-upgrade-eligible') === 'true';
 
@@ -182,12 +189,21 @@ export default function processConfig() {
       window.evolv.context.set('vz.CPCIsUpgradeEligible', isUpgradeEligible);
     }
   
-    if (/\/digital\/nsa\/secure\/ui\/udb\/#\//.test(window.location.href)) {
-      overview();
-    } else if (/\/digital\/nsa\/secure\/ui\/cpc\/#\/dataselector(perks)?/.test(window.location.href)) {
-      dataselector();
-    } else if (/\/digital\/nsa\/secure\/ui\/cpc\/#\/confirm/.test(window.location.href)) {
-      confirm();
+    function checkURL() {
+      const newURL = window.location.href;
+      if (newURL === oldURL) return;
+
+      if (/\/digital\/nsa\/secure\/ui\/udb\/#\//.test(window.location.href)) {
+        overview();
+      } else if (/\/digital\/nsa\/secure\/ui\/cpc\/#\/dataselector(perks)?/.test(window.location.href)) {
+        dataselector();
+      } else if (/\/digital\/nsa\/secure\/ui\/cpc\/#\/confirm/.test(window.location.href)) {
+        confirm();
+      }
+
+      oldURL = newURL;
     }
+
+    $mu('#route-page-container').customMutation(checkURL, checkURL);
   });
 };

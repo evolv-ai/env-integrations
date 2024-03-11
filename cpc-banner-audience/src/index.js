@@ -95,7 +95,7 @@ export default function processConfig() {
 
     function dataselector() {
       utils.isObjectEmpty ??= (object) => {
-          Object.keys(object).length === 0 && object.constructor === Object;
+          return Object.keys(object).length === 0 && object.constructor === Object;
       };
       
       utils.getPersistRoot ??= () => {
@@ -146,7 +146,7 @@ export default function processConfig() {
               ?.productDisplayName?.match(/iPhone/)
       }
       
-      $mu('//img/ancestor::div[2]/following-sibling::div/p[last()]', 'phone').customMutation((state, p) => {
+      $mu('//img/ancestor::div[2]/following-sibling::div/p[last()]').customMutation((state, p) => {
           if (foundPhone) return;
       
           const phone = p.textContent.match(/\d{3}-\d{3}-\d{4}/)?.[0]?.replaceAll('-', '');

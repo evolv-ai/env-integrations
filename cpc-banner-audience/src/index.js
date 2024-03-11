@@ -166,9 +166,11 @@ export default function processConfig() {
     }
   
     function confirm() {
-      localStorage.removeItem('evolv:upgrade-eligibility');
-      localStorage.removeItem('evolv:cpc-is-iphone');
-      localStorage.removeItem('evolv:cpc-is-upgrade-eligible');
+      const isIPhone = localStorage.getItem('evolv:cpc-is-iphone') === 'true';
+      const isUpgradeEligible = localStorage.getItem('evolv:cpc-is-upgrade-eligible') === 'true';
+
+      window.evolv.context.set('vz.CPCIsIPhone', isIPhone);
+      window.evolv.context.set('vz.CPCIsUpgradeEligible', isUpgradeEligible);
     }
   
     if (/\/digital\/nsa\/secure\/ui\/udb\/#\//.test(window.location.href)) {

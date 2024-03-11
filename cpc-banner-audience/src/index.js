@@ -154,11 +154,17 @@ export default function processConfig() {
           
           const isIPhone = getIsIPhone(phone);
           const isUpgradeEligible = getIsUpgradeEligible(phone);
-      
+
+          log(`set localStorage item 'evolv:cpc-is-iphone' to '${isIPhone}'`);
           localStorage.setItem('evolv:cpc-is-iphone', isIPhone);
+
+          log(`set localStorage item 'evolv:cpc-is-upgrade-eligible' to '${isUpgradeEligible}'`);
           localStorage.setItem('evolv:cpc-is-upgrade-eligible', isUpgradeEligible);
           
+          log(`set remoteContext item 'vz.CPCIsIPhone' to '${isIPhone}'`);
           window.evolv.context.set('vz.CPCIsIPhone', isIPhone);
+
+          log(`set remoteContext item 'vz.CPCIsUpgradeEligible' to '${isUpgradeEligible}'`);
           window.evolv.context.set('vz.CPCIsUpgradeEligible', isUpgradeEligible);
           
           foundPhone = true;
@@ -169,7 +175,10 @@ export default function processConfig() {
       const isIPhone = localStorage.getItem('evolv:cpc-is-iphone') === 'true';
       const isUpgradeEligible = localStorage.getItem('evolv:cpc-is-upgrade-eligible') === 'true';
 
+      log(`set remoteContext item 'vz.CPCIsIPhone' to '${isIPhone}'`);
       window.evolv.context.set('vz.CPCIsIPhone', isIPhone);
+
+      log(`set remoteContext item 'vz.CPCIsUpgradeEligible' to '${isUpgradeEligible}'`);
       window.evolv.context.set('vz.CPCIsUpgradeEligible', isUpgradeEligible);
     }
   

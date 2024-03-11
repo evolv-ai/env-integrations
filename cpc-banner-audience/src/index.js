@@ -24,7 +24,7 @@ export default function processConfig() {
     const { collect, mutate, $mu } = window.evolv;
     let oldURL = null;
 
-    log('init integration: Upgrade Eligility Audience');
+    log('init integration: upgrade eligibility audience');
 
     function overview() {
       log('init: overview page')
@@ -47,7 +47,7 @@ export default function processConfig() {
 
       function setStorage() {
           complete = true;
-          log ('Setting localStorage item to', tileUpgradeStatus);
+          log (`set localStorage item 'evolv:upgrade-eligibility' to '${tileUpgradeStatus})`);
           localStorage.setItem('evolv:upgrade-eligibility', JSON.stringify(tileUpgradeStatus));
       }
 
@@ -160,17 +160,17 @@ export default function processConfig() {
           const isIPhone = getIsIPhone(phone);
           const isUpgradeEligible = getIsUpgradeEligible(phone);
 
-          log(`set localStorage item 'evolv:cpc-is-iphone' to '${isIPhone}'`);
-          localStorage.setItem('evolv:cpc-is-iphone', isIPhone);
+          log(`set localStorage item 'evolv:cpc-iphone' to '${isIPhone}'`);
+          localStorage.setItem('evolv:cpc-iphone', isIPhone);
 
-          log(`set localStorage item 'evolv:cpc-is-upgrade-eligible' to '${isUpgradeEligible}'`);
-          localStorage.setItem('evolv:cpc-is-upgrade-eligible', isUpgradeEligible);
+          log(`set localStorage item 'evolv:cpc-upgrade-eligible' to '${isUpgradeEligible}'`);
+          localStorage.setItem('evolv:cpc-upgrade-eligible', isUpgradeEligible);
           
-          log(`set remoteContext item 'vz.CPCIsIPhone' to '${isIPhone}'`);
-          window.evolv.context.set('vz.CPCIsIPhone', isIPhone);
+          log(`set remoteContext item 'vz.CPCIPhone' to '${isIPhone}'`);
+          window.evolv.context.set('vz.CPCIPhone', isIPhone);
 
-          log(`set remoteContext item 'vz.CPCIsUpgradeEligible' to '${isUpgradeEligible}'`);
-          window.evolv.context.set('vz.CPCIsUpgradeEligible', isUpgradeEligible);
+          log(`set remoteContext item 'vz.CPCUpgradeEligible' to '${isUpgradeEligible}'`);
+          window.evolv.context.set('vz.CPCUpgradeEligible', isUpgradeEligible);
           
           foundPhone = true;
       });
@@ -179,14 +179,14 @@ export default function processConfig() {
     function confirm() {
       log('init: confirmation page');
 
-      const isIPhone = localStorage.getItem('evolv:cpc-is-iphone') === 'true';
-      const isUpgradeEligible = localStorage.getItem('evolv:cpc-is-upgrade-eligible') === 'true';
+      const isIPhone = localStorage.getItem('evolv:cpc-iphone') === 'true';
+      const isUpgradeEligible = localStorage.getItem('evolv:cpc-upgrade-eligible') === 'true';
 
-      log(`set remoteContext item 'vz.CPCIsIPhone' to '${isIPhone}'`);
-      window.evolv.context.set('vz.CPCIsIPhone', isIPhone);
+      log(`set remoteContext item 'vz.CPCIPhone' to '${isIPhone}'`);
+      window.evolv.context.set('vz.CPCIPhone', isIPhone);
 
-      log(`set remoteContext item 'vz.CPCIsUpgradeEligible' to '${isUpgradeEligible}'`);
-      window.evolv.context.set('vz.CPCIsUpgradeEligible', isUpgradeEligible);
+      log(`set remoteContext item 'vz.CPCUpgradeEligible' to '${isUpgradeEligible}'`);
+      window.evolv.context.set('vz.CPCUpgradeEligible', isUpgradeEligible);
     }
   
     function checkURL() {
@@ -204,6 +204,7 @@ export default function processConfig() {
       oldURL = newURL;
     }
 
+    checkURL();
     $mu('#route-page-container').customMutation(checkURL, checkURL);
   });
 };

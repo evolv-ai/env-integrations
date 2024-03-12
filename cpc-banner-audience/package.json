@@ -1,0 +1,33 @@
+{
+    "name": "@evolv-delivery/upgrade-eligibility",
+    "version": "0.0.9",
+    "description": "Creates an audience for CPC lines that are eligible for upgrade",
+    "main": "dist/index.js",
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "rollup --config rollup.config.js",
+        "watch": "rollup --config rollup.config.js --watch",
+        "dev": "pushd dist; python3 -m http.server 8000; popd",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "charles-evolv",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/evolv-ai/env-integrations.git"
+    },
+    "homepage": "https://github.com/evolv-ai/env-integrations/",
+    "bugs": {
+        "url": "https://github.com/evolv-ai/env-integrations/issues"
+    },
+    "devDependencies": {
+        "@rollup/plugin-json": "^4.1.0"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "rollup-plugin-commonjs": "^10.1.0",
+        "rollup-plugin-node-resolve": "^5.2.0"
+    }
+}

@@ -28,7 +28,7 @@ export default function processConfig() {
       log('init: overview page');
       const isMobile = window.matchMedia('(max-width: 767px)').matches;
       let paginationButtons = null;
-      const paginationIndexMin = isMobile ? 0 : 1;
+      const paginationIndexMin = 1;
       let paginationIndex = paginationIndexMin + 1;
       let paginationIndexMax = null;
       let complete = false;
@@ -38,7 +38,7 @@ export default function processConfig() {
       let timer;
 
       function getIsReady(spans) {
-          return !!spans.some(span => span.textContent === 'Ready for upgrade');
+          return spans.some(span => span.textContent === 'Ready for upgrade');
       }
 
       function getPhone(spans) {
@@ -85,14 +85,16 @@ export default function processConfig() {
           
           if (tileIndex < tileMax - 1) {
               tileIndex += 1;
-          } else if (paginationIndex < paginationIndexMax) {
+          } else if (paginationButtons.length && (paginationIndex < paginationIndexMax)) {
               debug('click pagination:', paginationIndex);
               paginationButtons[paginationIndex].click();
               paginationIndex += 1;
               tileIndex = 0;
-          } else if (paginationIndex === paginationIndexMax) {
+          } else if (paginationButtons.length && (paginationIndex === paginationIndexMax)) {
               debug('click pagination:', paginationIndexMin);
               paginationButtons[paginationIndexMin].click();
+              setStorage();
+          } else {
               setStorage();
           }
       });
@@ -131,7 +133,7 @@ export default function processConfig() {
       
           const upgradeEligibility = JSON.parse(JSONstring);
       
-          return upgradeEligibility[phone];
+          return !!upgradeEligibility[phone];
       }
       
       function getIsIPhone(phone) {

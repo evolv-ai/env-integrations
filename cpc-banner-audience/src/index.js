@@ -64,7 +64,7 @@ export default function processConfig() {
       mutate('device-tile').customMutation((state, tile) => {
           if (complete) return;
           
-          const tileMaxNew = tile.parentNode.parentNode.childNodes.length;
+          const tileMaxNew = isMobile ? tile.parentNode.childNodes.length : tile.parentNode.parentNode.childNodes.length;
           tileMax = tileMaxNew > tileMax ? tileMaxNew : tileMax;
           
           paginationButtons ??= collect.get('pagination').elements;

@@ -24,6 +24,17 @@ export default function processConfig() {
     const { collect, mutate, $mu } = window.evolv;
     let oldURL = null;
 
+    function fail(message) {
+      warn(message);
+      mutate.revert();
+      ['evolv:upgrade-eligibility', 'evolv:cpc-iphone', 'evolv:cpc-upgrade-eligible']
+        .forEach(item => localStorage.removeItem(item));
+      window.evolv.client.contaminate({
+        reason: 'requirements-missing',
+        details: message,
+      });
+    }
+
     function overview() {
       log('init: overview page');
       const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -35,7 +46,6 @@ export default function processConfig() {
       let tileIndex = 0;
       let tileMax = null;
       let tileUpgradeStatus = {};
-      let timer;
 
       function getIsReady(spans) {
           return spans.some(span => span.textContent === 'Ready for upgrade');
@@ -122,30 +132,26 @@ export default function processConfig() {
           const JSONstring = localStorage.getItem('evolv:upgrade-eligibility');
           
           if (!JSONstring) {
-              const message = 'No localStorage item "evolv:upgrade-eligibility" set';
-              warn(message);
-              window.evolv.client.contaminate({
-              reason: 'no-upgrade-eligibility',
-              details: message,
-            });
+            fail('No localStorage item "evolv:upgrade-eligibility" set');
             return;
           }
       
           const upgradeEligibility = JSON.parse(JSONstring);
-      
-          return !!upgradeEligibility[phone];
+          const lineEligible = upgradeEligibility[phone];
+          
+          if (lineEligible === undefined) {
+            fail(`Upgrade eligibility for ${phone} not set`);
+            return
+          }
+
+          return lineEligible;
       }
       
       function getIsIPhone(phone) {
           const persistRoot = utils.getPersistRoot();
           
           if (!persistRoot) {
-              const message = 'No sessionStorage item "persist:root" set';
-              warn(message);
-              window.evolv.client.contaminate({
-                  reason: 'no-persist-root',
-                  details: message,
-                });
+              fail(`No sessionStorage item 'persist:root' set`);
             return;
           }
       

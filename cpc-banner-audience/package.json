@@ -1,6 +1,6 @@
 {
     "name": "@evolv-delivery/upgrade-eligibility",
-    "version": "0.0.15",
+    "version": "0.0.16",
     "description": "Creates an audience for CPC lines that are eligible for upgrade",
     "main": "dist/index.js",
     "files": [

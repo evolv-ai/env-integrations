@@ -75,10 +75,9 @@ export default function processConfig() {
           if (complete) return;
           
           const tileMaxNew = isMobile ? tile.parentNode.childNodes.length : tile.parentNode.parentNode.childNodes.length;
-          tileMax = tileMaxNew > tileMax ? tileMaxNew : tileMax;
           
           paginationButtons ??= collect.get('pagination').elements;
-          paginationIndexMax = paginationIndexMax || paginationButtons.length - 1;
+          paginationIndexMax = paginationIndexMax || paginationButtons.length - 1; // 2
           
           const spans = Array.from(tile.querySelectorAll('span'));
           const phone = getPhone(spans);
@@ -93,9 +92,9 @@ export default function processConfig() {
               }
           }
           
-          if (tileIndex < tileMax - 1) {
+          if (tileIndex < tileMax - 1) { // 2 < 2 ?
               tileIndex += 1;
-          } else if (paginationButtons.length && (paginationIndex < paginationIndexMax)) {
+          } else if (paginationButtons.length && (paginationIndex < paginationIndexMax)) { 
               debug('click pagination:', paginationIndex);
               paginationButtons[paginationIndex].click();
               paginationIndex += 1;

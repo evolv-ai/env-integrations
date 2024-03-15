@@ -74,10 +74,10 @@ export default function processConfig() {
       mutate('device-tile').customMutation((state, tile) => {
           if (complete) return;
           
-          const tileMaxNew = isMobile ? tile.parentNode.childNodes.length : tile.parentNode.parentNode.childNodes.length;
+          const tileMax = isMobile ? tile.parentNode.childNodes.length : tile.parentNode.parentNode.childNodes.length;
           
           paginationButtons ??= collect.get('pagination').elements;
-          paginationIndexMax = paginationIndexMax || paginationButtons.length - 1; // 2
+          paginationIndexMax = paginationIndexMax || paginationButtons.length - 1;
           
           const spans = Array.from(tile.querySelectorAll('span'));
           const phone = getPhone(spans);
@@ -92,7 +92,7 @@ export default function processConfig() {
               }
           }
           
-          if (tileIndex < tileMax - 1) { // 2 < 2 ?
+          if (tileIndex < tileMax - 1) {
               tileIndex += 1;
           } else if (paginationButtons.length && (paginationIndex < paginationIndexMax)) { 
               debug('click pagination:', paginationIndex);

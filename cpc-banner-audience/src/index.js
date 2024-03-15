@@ -24,19 +24,31 @@ export default function processConfig() {
     const { collect, mutate, $mu } = window.evolv;
     let oldURL = null;
 
+    function fail(message) {
+      warn(message);
+      mutate.revert();
+      ['evolv:upgrade-eligibility', 'evolv:cpc-iphone', 'evolv:cpc-upgrade-eligible']
+        .forEach(item => localStorage.removeItem(item));
+      window.evolv.client.contaminate({
+        reason: 'requirements-missing',
+        details: message,
+      });
+    }
+
     function overview() {
-      log('init: overview page')
-      const isMobile = window.matchMedia('(max-width: 767px)').matches
+      log('init: overview page');
+      const isMobile = window.matchMedia('(max-width: 767px)').matches;
       let paginationButtons = null;
-      const paginationIndexMin = isMobile ? 0 : 1;
+      const paginationIndexMin = 1;
       let paginationIndex = paginationIndexMin + 1;
       let paginationIndexMax = null;
       let complete = false;
+      let tileIndex = 0;
+      let tileMax = null;
       let tileUpgradeStatus = {};
-      let timer;
 
       function getIsReady(spans) {
-          return !!spans.some(span => span.textContent === 'Ready for upgrade');
+          return spans.some(span => span.textContent === 'Ready for upgrade');
       }
 
       function getPhone(spans) {
@@ -45,7 +57,7 @@ export default function processConfig() {
 
       function setStorage() {
           complete = true;
-          const tileUpgradeStatusString = JSON.stringify(tileUpgradeStatus)
+          const tileUpgradeStatusString = JSON.stringify(tileUpgradeStatus);
           log (`set localStorage item 'evolv:upgrade-eligibility' to '${tileUpgradeStatusString}'`);
           localStorage.setItem('evolv:upgrade-eligibility', tileUpgradeStatusString);
       }
@@ -53,13 +65,16 @@ export default function processConfig() {
       if (isMobile) {
           collect('div[data-polymap="deviceSection"] .slick-dots button', 'pagination');
           collect('div[data-polymap="deviceSection"] .slick-slide', 'device-tile');
+          
       } else {
           collect('div[data-polymap="deviceSection"] li[class*="PaginationListItem-VDS__"] button', 'pagination');
-          collect('//div[@data-polymap="deviceSection"]//div[contains(@class, "grid-column")]/parent::div[contains(@class, "grid-column")]', 'device-tile');
+          collect('//div[@data-polymap="deviceSection"]//div[contains(@class, "grid-column")]//div[contains(@class, "grid-column")]', 'device-tile');
       }
       
       mutate('device-tile').customMutation((state, tile) => {
           if (complete) return;
+          
+          const tileMax = isMobile ? tile.parentNode.childNodes.length : tile.parentNode.parentNode.childNodes.length;
           
           paginationButtons ??= collect.get('pagination').elements;
           paginationIndexMax = paginationIndexMax || paginationButtons.length - 1;
@@ -77,20 +92,19 @@ export default function processConfig() {
               }
           }
           
-          clearTimeout(timer);
-          if (isMobile || !paginationButtons.length) {
-              timer = setTimeout(setStorage, 25);
+          if (tileIndex < tileMax - 1) {
+              tileIndex += 1;
+          } else if (paginationButtons.length && (paginationIndex < paginationIndexMax)) { 
+              debug('click pagination:', paginationIndex);
+              paginationButtons[paginationIndex].click();
+              paginationIndex += 1;
+              tileIndex = 0;
+          } else if (paginationButtons.length && (paginationIndex === paginationIndexMax)) {
+              debug('click pagination:', paginationIndexMin);
+              paginationButtons[paginationIndexMin].click();
+              setStorage();
           } else {
-              timer = setTimeout(() => {
-                  if (paginationIndex < paginationIndexMax) {
-                      debug('click pagination:', paginationIndex);
-                      paginationButtons[paginationIndex].click();
-                      paginationIndex += 1;
-                  } else if (paginationIndex === paginationIndexMax) {
-                      paginationButtons[paginationIndexMin].click();
-                      setStorage();
-                  }
-              }, 25);
+              setStorage();
           }
       });
     }
@@ -117,30 +131,26 @@ export default function processConfig() {
           const JSONstring = localStorage.getItem('evolv:upgrade-eligibility');
           
           if (!JSONstring) {
-              const message = 'No localStorage item "evolv:upgrade-eligibility" set';
-              warn(message);
-              window.evolv.client.contaminate({
-              reason: 'no-upgrade-eligibility',
-              details: message,
-            });
+            fail('No localStorage item "evolv:upgrade-eligibility" set');
             return;
           }
       
           const upgradeEligibility = JSON.parse(JSONstring);
-      
-          return upgradeEligibility[phone];
+          const lineEligible = upgradeEligibility[phone];
+          
+          if (lineEligible === undefined) {
+            fail(`Upgrade eligibility for ${phone} not set`);
+            return
+          }
+
+          return lineEligible;
       }
       
       function getIsIPhone(phone) {
           const persistRoot = utils.getPersistRoot();
           
           if (!persistRoot) {
-              const message = 'No sessionStorage item "persist:root" set';
-              warn(message);
-              window.evolv.client.contaminate({
-                  reason: 'no-persist-root',
-                  details: message,
-                });
+              fail(`No sessionStorage item 'persist:root' set`);
             return;
           }
       

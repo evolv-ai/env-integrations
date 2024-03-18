@@ -5,16 +5,7 @@ export default [
   {
     input: `./src/index.js`,
     output: {
-      file: `./dist/cjs/index.js`,
-      format: 'cjs',
-      exports: 'auto'
-    },
-    plugins: [json()]
-  },
-  {
-    input: `./src/index.js`,
-    output: {
-      file: `./dist/es/index.js`,
+      file: `./dist/index.js`,
       format: 'es',
       exports: 'auto'
     },

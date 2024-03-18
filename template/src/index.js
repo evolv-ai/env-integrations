@@ -1,6 +1,6 @@
 import { version } from '../package.json';
 
-export default function integration() {
+module.exports = (config) => {
   function waitFor(callback, timeout = 5000, interval = 25) {
     return new Promise((resolve, reject) => {
         let poll;
@@ -26,7 +26,7 @@ export default function integration() {
     const { collect, mutate, $mu } = window.evolv;
     const sessionKey = 'evolv:example-value';
     const contextKey = 'vz.exampleValue';
-    let oldURL = null;
+    const webURL = 'web.url';
 
     // Procedure if requirements are not met
     function fail(message) {
@@ -37,6 +37,16 @@ export default function integration() {
         reason: 'requirements-unmet',
         details: message,
       });
+    }
+
+    function checkURL(event, key, url) {
+      if (!(key === webURL)) return;
+
+      if (/\/example\/page\/1\//.test(url)) {
+        examplePage1();
+      } else if (/\/example\/page\/2\//.test(url)) {
+        examplePage2();
+      }
     }
 
     function examplePage1() {
@@ -54,7 +64,7 @@ export default function integration() {
       const exampleValueString = sessionStorage.getItem(sessionKey);
 
       if (!exampleValueString) {
-        fail(`'${sessionKey}' was not found`);
+        fail(`Session storage item '${sessionKey}' was not found`);
       }
 
       // sessionStorage is always a string, so convert to boolean
@@ -64,25 +74,8 @@ export default function integration() {
       window.evolv.context.set(contextKey, exampleValue);
     }
   
-    function checkURL() {
-      const newURL = window.location.href;
-      if (newURL === oldURL) return;
-
-      if (/\/example\/page\/1\//.test(window.location.href)) {
-        examplePage1();
-      } else if (/\/example\/page\/2\//.test(window.location.href)) {
-        examplePage2();
-      }
-
-      oldURL = newURL;
-    }
-
-    checkURL();
-
-    // The ideal reference point is going to be the container who's contents
-    // change with the URL during SPA navigation. By running the `checkURL`
-    // function on both initialization and modification you can monitor the URL
-    // without having to monkey-patch popState
-    $mu('#example-app-container').customMutation(checkURL, checkURL);
+    checkURL('init', webURL, evolv.context.get(webURL));
+    evolv.client.on('context.value.added', checkURL);
+    evolv.client.on('context.value.changed', checkURL);
   });
 };

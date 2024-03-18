@@ -13,11 +13,10 @@ Reads `evolv:example-value` on `/example/page/2`, setting boolean remoteContext 
 To create `new-integration` from this template in your `/evolv/env-integrations` folder:
 
 ```bash
-mkdir new-integration
-rsync -av templates/ new-integration/
+rsync -av templates/ new-integration
 ```
 
-And then edit your `package.json`, `src/index.js`, and `README.md` to fit your project
+And then customize your `package.json`, `src/index.js`, and `README.md` to fit your project
 
 ## NPM scripts
 
@@ -32,7 +31,7 @@ And then edit your `package.json`, `src/index.js`, and `README.md` to fit your p
 
 ## Local Hosting
 
-To host locally run `npm start` inject the following into your `<head>` tag using [Resource Override](https://chromewebstore.google.com/detail/resource-override/pkoacgokdfckfpndoffpifphamojphii)
+Run `npm start` to host locally. To run in your browser inject the following into your `<head>` tag using [Resource Override](https://chromewebstore.google.com/detail/resource-override/pkoacgokdfckfpndoffpifphamojphii)
 
 ```js
 (() => {

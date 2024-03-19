@@ -11,7 +11,7 @@
     "clear": "rm -rf dist",
     "build": "npm run clear && rollup --config rollup.config.js",
     "watch": "rollup --config rollup.config.js --watch",
-    "serve": "http-server --cors --silent dist",
+    "serve": "http-server dist/es --cors --silent",
     "dev": "npm-run-all -s clear -p watch serve",
     "start": "npm run dev",
     "publish": "npm run build && npm publish",

@@ -4,7 +4,7 @@ Created for experiment [Example Experiment](https://evolv-ai.atlassian.net/brows
 
 Sets `sessionStorage` item on `/example/page/1` of `evolv:example-value` containing `exampleValue`.
 
-Reads `evolv:example-value` on `/example/page/2`, setting boolean remoteContext entries for `vz.exampleValue`.
+Reads `evolv:example-value` on `/example/page/2`, setting a boolean remoteContext entry for `vz.exampleValue`.
 
 ---
 
@@ -41,7 +41,7 @@ Run `npm start` to host locally. To run in your browser inject the following int
     
     const script = document.createElement('script');
     script.type = 'module';
-    script.text = 'import integration from "http://localhost:8080/dist/es/index.js"; console.log("[evolv-local] example-integration: load"); integration()';
+    script.text = 'import integration from "http://localhost:8080/index.js"; console.log("[evolv-local] example-integration: load"); integration()';
     document.head.appendChild(script);
 })();
 ```

@@ -1,8 +1,8 @@
 {
     "name": "@evolv-delivery/example-integration",
-    "version": "0.0.2",
+    "version": "0.0.1",
     "description": "Captures a value on one page and binds it to the remote context on another page",
-    "main": "dist/index.js",
+    "main": "dist/cjs/index.js",
     "files": [
         "dist",
         "README.md"
@@ -11,7 +11,7 @@
         "clear": "rm -rf dist",
         "build": "npm run clear && rollup --config rollup.config.js",
         "watch": "rollup --config rollup.config.js --watch",
-        "serve": "http-server --cors --silent dist",
+        "serve": "http-server ./dist/es/ --cors --silent",
         "dev": "npm-run-all -s clear -p watch serve",
         "start": "npm run dev",
         "publish": "npm run build && npm publish",

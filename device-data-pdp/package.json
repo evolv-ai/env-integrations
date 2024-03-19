@@ -14,7 +14,7 @@
     "serve": "http-server dist/es --cors --silent",
     "dev": "npm-run-all -s clear -p watch serve",
     "start": "npm run dev",
-    "publish": "npm run build && npm publish",
+    "publish": "npm run build && npm publish --access public",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

@@ -76,7 +76,6 @@ export default function (config) {
         fail(`Session storage item '${sessionKey}' was not found`);
       }
 
-      // sessionStorage is always a string, so convert to boolean
       const deviceValuesObj = JSON.parse(deviceValues);
 
       Object.keys(deviceValuesObj).forEach((key) => {

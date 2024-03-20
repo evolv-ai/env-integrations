@@ -1,6 +1,6 @@
 {
   "name": "@evolv-delivery/device-data-pdp",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "Captures a value on one page and binds it to the remote context on another page",
   "main": "dist/cjs/index.js",
   "files": [

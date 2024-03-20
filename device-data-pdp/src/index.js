@@ -81,7 +81,8 @@ export default function (config) {
 
       Object.keys(deviceValuesObj).forEach((key) => {
         const contextKey = `vz.device.${key}`;
-        const contextValue = deviceValuesObj[key];
+        const contextValue = (key === 'nonRecurringPrice') ? parseFloat(deviceValuesObj[key]) : deviceValuesObj[key];
+
         log(
           `Bind '${contextKey}': '${contextValue}' to evolv.context.remoteContext`
         );

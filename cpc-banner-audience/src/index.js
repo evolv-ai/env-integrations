@@ -35,13 +35,13 @@ export default function processConfig() {
       });
     }
 
-    function overview() {
+    function accountOverviewPage() {
       log('init: overview page');
       const isMobile = window.matchMedia('(max-width: 767px)').matches;
       let paginationButtons = null;
-      const paginationIndexMin = 1;
-      let paginationIndex = paginationIndexMin + 1;
-      let paginationIndexMax = null;
+      const paginationMin = 1;
+      let paginationIndex = paginationMin + 1;
+      let paginationMax = null;
       let complete = false;
       let tileIndex = 0;
       let tileMax = null;
@@ -77,7 +77,7 @@ export default function processConfig() {
           const tileMax = isMobile ? tile.parentNode.childNodes.length : tile.parentNode.parentNode.childNodes.length;
           
           paginationButtons ??= collect.get('pagination').elements;
-          paginationIndexMax = paginationIndexMax || paginationButtons.length - 1;
+          paginationMax = paginationMax || paginationButtons.length - 1;
           
           const spans = Array.from(tile.querySelectorAll('span'));
           const phone = getPhone(spans);
@@ -94,14 +94,14 @@ export default function processConfig() {
           
           if (tileIndex < tileMax - 1) {
               tileIndex += 1;
-          } else if (paginationButtons.length && (paginationIndex < paginationIndexMax)) { 
+          } else if (paginationButtons.length && (paginationIndex < paginationMax)) { 
               debug('click pagination:', paginationIndex);
               paginationButtons[paginationIndex].click();
               paginationIndex += 1;
               tileIndex = 0;
-          } else if (paginationButtons.length && (paginationIndex === paginationIndexMax)) {
-              debug('click pagination:', paginationIndexMin);
-              paginationButtons[paginationIndexMin].click();
+          } else if (paginationButtons.length && (paginationIndex === paginationMax)) {
+              debug('click pagination:', paginationMin);
+              paginationButtons[paginationMin].click();
               setStorage();
           } else {
               setStorage();
@@ -109,7 +109,7 @@ export default function processConfig() {
       });
     }
 
-    function dataselector() {
+    function dataselectorPage() {
       log('init: dataselector page');
 
       utils.isObjectEmpty ??= (object) => {
@@ -185,7 +185,7 @@ export default function processConfig() {
       });
     }
   
-    function confirm() {
+    function confirmPage() {
       log('init: confirmation page');
 
       const isIPhone = localStorage.getItem('evolv:cpc-iphone') === 'true';
@@ -203,11 +203,11 @@ export default function processConfig() {
       if (newURL === oldURL) return;
 
       if (/\/digital\/nsa\/secure\/ui\/udb\/#\//.test(window.location.href)) {
-        overview();
+        accountOverviewPage();
       } else if (/\/digital\/nsa\/secure\/ui\/cpc\/#\/dataselector(perks)?/.test(window.location.href)) {
-        dataselector();
+        dataselectorPage();
       } else if (/\/digital\/nsa\/secure\/ui\/cpc\/#\/confirm/.test(window.location.href)) {
-        confirm();
+        confirmPage();
       }
 
       oldURL = newURL;

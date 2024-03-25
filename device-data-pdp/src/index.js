@@ -19,8 +19,9 @@ export default function (config) {
     });
   }
 
-  waitFor(() => window.evolv?.utils && window.vzdl?.page?.flow && window.vzdl.user.authStatus).then(() => {
-    const utils = window.evolv.utils.init('int-device-data-pdp');
+  waitFor(() => window.evolv?.utils && window.vzdl?.page?.flow && window.vzdl.user?.authStatus).then(() => {
+    const sandboxKey = 'int-device-data-pdp'
+    const utils = window.evolv.utils.init(sandboxKey);
     const { log, debug, warn } = utils;
     const { collect, mutate, $mu } = window.evolv;
     const sessionKey = 'evolv:device-data-pdp';
@@ -35,7 +36,7 @@ export default function (config) {
       sessionStorage.removeItem(sessionKey);
       window.evolv.client.contaminate({
         reason: 'requirements-unmet',
-        details: message,
+        details: `[${sandboxKey}] ${message}`,
       });
     }
 

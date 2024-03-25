@@ -19,8 +19,8 @@ export default function (config) {
     });
   }
 
-  waitFor(() => window.evolv?.utils).then((utilsGlobal) => {
-    const utils = utilsGlobal.init('int-device-data-pdp');
+  waitFor(() => window.evolv?.utils && window.vzdl?.page?.flow && window.vzdl.user.authStatus).then(() => {
+    const utils = window.evolv.utils.init('int-device-data-pdp');
     const { log, debug, warn } = utils;
     const { collect, mutate, $mu } = window.evolv;
     const sessionKey = 'evolv:device-data-pdp';
@@ -41,10 +41,14 @@ export default function (config) {
 
     function checkURL(event, key, url) {
       if (!(key === webURL)) return;
+      if (/logged\sin/i.test(window.vzdl.user.authStatus)) return; // Exclude customer
 
       if (/\/smartphones\/(?!.*-certified-pre-owned).*\//i.test(url)) {
         pdpPage();
-      } else if (/\/sales\/nextgen\/protection(\/options)?\.html/i.test(url)) {
+      } else if (
+        /\/sales\/nextgen\/protection(\/options)?\.html/i.test(url)
+        && !/^nso$/i.test(window.vzdl.page.flow) // Exclude BYOD
+        ) {
         dpPages();
       } else if (/\/sales\/nextgen\/expresscart\.html/i.test(url)) {
         cartPage();

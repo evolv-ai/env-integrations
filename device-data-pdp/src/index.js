@@ -26,7 +26,7 @@ export default function (config) {
     const { collect, mutate, $mu } = window.evolv;
     const sessionKey = 'evolv:device-data-pdp';
     const webURL = 'web.url';
-    const URLcriteria = {
+    const URLCriteria = {
       pdpPage: (url) => /\/smartphones\/(?!.*-certified-pre-owned).*\//i.test(url),
       dpPages: (url) => /\/sales\/nextgen\/protection(\/options)?\.html/i.test(url)
       && !/^nso$/i.test(window.vzdl.page.flow),
@@ -51,11 +51,11 @@ export default function (config) {
       if (!(key === webURL)) return;
       if (/logged\sin/i.test(window.vzdl.user.authStatus)) return; // Exclude customer
 
-      if (URLcriteria.pdpPage(url)) {
+      if (URLCriteria.pdpPage(url)) {
         pdpPage();
-      } else if (URLcriteria.dpPages(url)) {
+      } else if (URLCriteria.dpPages(url)) {
         dpPages();
-      } else if (URLcriteria.cartPage(url)) {
+      } else if (URLCriteria.cartPage(url)) {
         cartPage();
       }
     }
@@ -64,7 +64,7 @@ export default function (config) {
       const url = window.location.href;
 
       // Only run if you're on an approved page (mutate functions could span pages due to SPA nav)
-      if (Object.keys(URLcriteria).every(key => !URLcriteria[key](url))) return;
+      if (Object.keys(URLCriteria).every(key => !URLCriteria[key](url))) return;
 
       const sessionStorageOld = sessionStorage.getItem(sessionKey);
       let deviceValuesOld;
@@ -84,7 +84,7 @@ export default function (config) {
           properties.nonRecurringPrice = parseFloat(properties.nonRecurringPrice);
         }
 
-        if (URLcriteria.pdpPage(url)) {
+        if (URLCriteria.pdpPage(url)) {
           properties.nseSmartphone = true;
         } else {
           const deviceOld = deviceValuesOld?.find(deviceValueOld => deviceValueOld.productId === device.productId);
@@ -134,7 +134,7 @@ export default function (config) {
       if (dpHasLoaded) return;
 
       $mu('#stickydevice-device-line-info', 'line').customMutation((state, lineElement) => {
-        if (!URLcriteria.dpPages(window.location.href)) return;
+        if (!URLCriteria.dpPages(window.location.href)) return;
 
         const lineIndex = parseInt(lineElement.textContent?.match(/Line (\d+)/)?.[1], 10) - 1;
         if (!(lineIndex >= 0)) {

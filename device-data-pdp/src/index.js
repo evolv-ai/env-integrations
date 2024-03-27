@@ -64,7 +64,7 @@ export default function (config) {
       const url = window.location.href;
 
       // Only run if you're on an approved page (mutate functions could span pages due to SPA nav)
-      if (Object.keys(URLCriteria).every(key => !URLCriteria[key](url))) return;
+      if (['pdpPage', 'cartPage'].every(key => !URLCriteria[key](url))) return;
 
       const sessionStorageOld = sessionStorage.getItem(sessionKey);
       let deviceValuesOld;
@@ -73,26 +73,27 @@ export default function (config) {
         deviceValuesOld = JSON.parse(sessionStorageOld);
       }
 
-      const deviceValuesRaw = window.vzdl?.txn?.product?.current?.filter(product => product.category.toLowerCase() === 'device')?.map(device => {
-        const properties = (({ name, nonRecurringPrice, productId }) => ({
-            name,
-            nonRecurringPrice,
-            productId,
-          }))(device)
-        
-        if (properties.nonRecurringPrice) {
-          properties.nonRecurringPrice = parseFloat(properties.nonRecurringPrice);
-        }
+      const deviceValuesRaw = window.vzdl?.txn?.product?.current
+        ?.filter(product => product.category.toLowerCase() === 'device')
+        ?.map((device, deviceIndex) => {
+          const properties = (({ name, nonRecurringPrice, productId }) => ({
+              name,
+              nonRecurringPrice,
+              productId,
+            }))(device)
+          
+          if (properties.nonRecurringPrice) {
+            properties.nonRecurringPrice = parseFloat(properties.nonRecurringPrice);
+          }
 
-        if (URLCriteria.pdpPage(url)) {
-          properties.nseSmartphone = true;
-        } else {
-          const deviceOld = deviceValuesOld?.find(deviceValueOld => deviceValueOld.productId === device.productId);
-          properties.nseSmartphone = deviceOld?.nseSmartphone || false;
-        }
+          if (URLCriteria.pdpPage(url)) {
+            properties.nseSmartphone = true;
+          } else if (URLCriteria.cartPage(url)) {
+            properties.nseSmartphone = deviceValuesOld?.[deviceIndex]?.nseSmartphone || false;
+          }
 
-        return properties;
-      });
+          return properties;
+        });
 
       let sessionStorageNew;
 
@@ -107,17 +108,18 @@ export default function (config) {
       if (!sessionStorageNew || sessionStorageNew === sessionStorageOld) return;
 
       log(
-        `Set sessionStorage item '${sessionKey}' to ${deviceValues}`
+        `Set sessionStorage item '${sessionKey}' to ${sessionStorageNew}`
       );
 
-      sessionStorage.setItem(sessionKey, deviceValues);
+      sessionStorage.setItem(sessionKey, sessionStorageNew);
     }
 
     function pdpPage() {
       log(`init: pdp page - v${version}`);
       const mtn = sessionStorage.getItem('SELECTED_PROSPECT_MTN');
       const lineIndex = mtn ? parseInt( mtn.match(/newLine(\d+)/)?.[1], 10) : 0;
-      waitFor(() => window.vzdl?.txn?.product?.current?.[0]).then(() => updateSessionStorage(lineIndex));
+      waitFor(() => window.vzdl?.txn?.product?.current?.[0])
+        .then(() => updateSessionStorage(lineIndex));
     }
 
     function dpPages() {
@@ -125,46 +127,47 @@ export default function (config) {
 
       if (dpHasLoaded) return; // Prevents multiple instances of collector
 
-      $mu('#stickydevice-device-line-info', 'int-device-data-pdp-line').customMutation((state, lineElement) => {
-        const href = window.location.href;
-        const deviceValues = sessionStorage.getItem(sessionKey);
+      $mu('#stickydevice-device-line-info', 'int-device-data-pdp-line')
+        .customMutation((state, lineElement) => {
+          const href = window.location.href;
+          const deviceValues = sessionStorage.getItem(sessionKey);
 
-        if (!URLCriteria.dpPages(href)) {
-          warn(`'${href}' does not meet URL criteria`);
-          return;
-        }
+          // Prevents Mutate from loading this function on unauthorized pages due to SPA nav
+          if (!URLCriteria.dpPages(href)) {
+            return;
+          }
 
-        if (!deviceValues) {
-          warn(`No sessionStorage item '${sessionKey}' found`);
-          return;
-        }
+          if (!deviceValues) {
+            warn(`No sessionStorage item '${sessionKey}' found`);
+            return;
+          }
 
-        const lineIndex = parseInt(lineElement.textContent?.match(/Line (\d+)/)?.[1], 10) - 1;
-        if (!(lineIndex >= 0)) {
-          warn('No line number');
-          return;
-        }
+          const lineIndex = parseInt(lineElement.textContent?.match(/Line (\d+)/)?.[1], 10) - 1;
+          if (!(lineIndex >= 0)) {
+            warn('No line number');
+            return;
+          }
 
-        const deviceValuesObj = JSON.parse(deviceValues);
-        const device = deviceValuesObj[lineIndex];
+          const deviceValuesObj = JSON.parse(deviceValues);
+          const device = deviceValuesObj[lineIndex];
 
-        if (!device) {
-          warn(`Line ${lineIndex} not found in '${sessionKey}`)
-          return;
-        }
+          if (!device) {
+            warn(`Line ${lineIndex + 1} not found in sessionStorage item '${sessionKey}'`)
+            return;
+          }
 
-        Object.keys(device).forEach((key) => {
-          const contextKey = `vz.device.${key}`;
-          const contextValue = device[key];
+          Object.keys(device).forEach((key) => {
+            const contextKey = `vz.device.${key}`;
+            const contextValue = device[key];
 
-          if (window.evolv.context.get(contextKey) === contextValue) return;
+            if (window.evolv.context.get(contextKey) === contextValue) return;
 
-          log(
-            `Bind '${contextKey}': '${contextValue}' to evolv.context.remoteContext`
-          );
-          window.evolv.context.set(contextKey, contextValue);
-        });
-      })
+            log(
+              `Bind '${contextKey}': '${contextValue}' to evolv.context.remoteContext`
+            );
+            window.evolv.context.set(contextKey, contextValue);
+          });
+        })
 
       dpHasLoaded = true;
     }
@@ -173,7 +176,8 @@ export default function (config) {
       log(`init: cart page - v${version}`);
 
       if (cartHasLoaded) return;
-      $mu('.cart', 'int-device-data-pdp-watcher').customMutation(() => updateSessionStorage(), () => updateSessionStorage());
+      $mu('.cart', 'int-device-data-pdp-watcher')
+        .customMutation(() => updateSessionStorage(), () => updateSessionStorage());
 
       cartHasLoaded = true;
     }

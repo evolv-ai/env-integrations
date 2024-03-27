@@ -116,36 +116,42 @@ export default function (config) {
     function pdpPage() {
       log(`init: pdp page - v${version}`);
       const mtn = sessionStorage.getItem('SELECTED_PROSPECT_MTN');
-
       const lineIndex = mtn ? parseInt( mtn.match(/newLine(\d+)/)?.[1], 10) : 0;
-
       waitFor(() => window.vzdl?.txn?.product?.current?.[0]).then(() => updateSessionStorage(lineIndex));
     }
 
     function dpPages() {
       log(`init: dp pages - v${version}`);
-      const deviceValues = sessionStorage.getItem(sessionKey);
 
-      if (!deviceValues) {
-        fail(`Session storage item '${sessionKey}' was not found`);
-        return;
-      }
+      if (dpHasLoaded) return; // Prevents multiple instances of collector
 
-      if (dpHasLoaded) return;
+      $mu('#stickydevice-device-line-info', 'int-device-data-pdp-line').customMutation((state, lineElement) => {
+        const href = window.location.href;
+        const deviceValues = sessionStorage.getItem(sessionKey);
 
-      $mu('#stickydevice-device-line-info', 'line').customMutation((state, lineElement) => {
-        if (!URLCriteria.dpPages(window.location.href)) return;
+        if (!URLCriteria.dpPages(href)) {
+          warn(`'${href}' does not meet URL criteria`);
+          return;
+        }
+
+        if (!deviceValues) {
+          warn(`No sessionStorage item '${sessionKey}' found`);
+          return;
+        }
 
         const lineIndex = parseInt(lineElement.textContent?.match(/Line (\d+)/)?.[1], 10) - 1;
         if (!(lineIndex >= 0)) {
-          fail('No line number');
+          warn('No line number');
           return;
         }
 
         const deviceValuesObj = JSON.parse(deviceValues);
         const device = deviceValuesObj[lineIndex];
 
-        if (!device) return;
+        if (!device) {
+          warn(`Line ${lineIndex} not found in '${sessionKey}`)
+          return;
+        }
 
         Object.keys(device).forEach((key) => {
           const contextKey = `vz.device.${key}`;

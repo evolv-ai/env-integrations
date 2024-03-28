@@ -1,6 +1,6 @@
 {
   "name": "@evolv-delivery/progressive-plans-audience",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Binds remote context property if the account is eligible for the banner",
   "main": "dist/cjs/index.js",
   "files": [
@@ -14,7 +14,6 @@
     "serve": "http-server dist/es --cors --silent",
     "dev": "npm-run-all -s clear -p watch serve",
     "start": "npm run dev",
-    "publish": "npm run build && npm publish",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

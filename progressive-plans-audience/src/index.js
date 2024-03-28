@@ -86,6 +86,10 @@ export default (config) => {
           const planAutoPayText = Array.from(tileHeading.querySelectorAll('span')).find(span => /With(out)? Auto Pay/.test(span.textContent)).textContent;
           let planAutoPay;
 
+          if (!planName || !planPrice || !planAutoPayText) {
+            fail(`planName: ${planName}, planPrice: ${planPrice}, planAutoPayText: ${planAutoPayText}`)
+          }
+
           if (planAutoPayText?.includes('Without')) {
             planAutoPay = false;
           } else if (planAutoPayText?.includes('With')) {

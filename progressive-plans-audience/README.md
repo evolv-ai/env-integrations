@@ -4,7 +4,7 @@ Created for experiment [Wireless Customer Sales](https://evolv-ai.atlassian.net/
 
 Reads plan prices on `https://www.verizon.com/sales/nextgen/plans/progressiveplans.html` and determines if they are eligible for the banner.
 
-Sets boolean remoteContext entries for `vz.AAL-banner`.
+Sets a boolean remoteContext entry for `vz.AAL-banner`.
 
 ---
 

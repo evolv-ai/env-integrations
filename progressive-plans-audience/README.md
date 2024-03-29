@@ -1,4 +1,4 @@
-# Example Audience Integration
+# Progressive Plans Audience
 
 Created for experiment [Wireless Customer Sales](https://evolv-ai.atlassian.net/browse/VCG2-930) concept 11
 

@@ -77,7 +77,7 @@ export default (config) => {
 
       const planPricing = {}
 
-      $mu('//h2[@regularweight="light"][contains(text(), "Unlimited")]/ancestor::div[2]', 'int-progressive-plan-audience-tile-heading')
+      $mu('//div[contains(@id, "carousel")]//h2[contains(text(), "Unlimited")]/ancestor::div[2]', 'int-progressive-plan-audience-tile-heading')
         .customMutation((state, tileHeading) => {
           if (!isProgressivePlansPage) return;
 

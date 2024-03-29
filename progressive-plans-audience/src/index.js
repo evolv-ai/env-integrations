@@ -19,9 +19,9 @@ export default (config) => {
     });
   }
 
-  waitFor(() => window.evolv?.utils).then(utilsGlobal => {
+  waitFor(() => window.evolv?.utils && window.vzdl?.page?.flow).then(() => {
     const sandboxKey = 'int-progressive-plans-audience';
-    const utils = utilsGlobal.init(sandboxKey);
+    const utils = window.evolv.utils.init(sandboxKey);
     const { log, debug, warn } = utils;
     const { collect, mutate, $mu } = window.evolv;
     const contextKey = 'vz.AAL-banner';
@@ -40,7 +40,8 @@ export default (config) => {
     }
 
     function isProgressivePlansPage(url = window.location.href) {
-      return /\/sales\/nextgen\/plans\/progressiveplans\.html/i.test(url) //sales/nextgen/plans/progressiveplans.html
+      return /\/sales\/nextgen\/plans\/progressiveplans\.html/i.test(url) // /sales/nextgen/plans/progressiveplans.html
+        && /aal/i.test(window.vzdl.page.flow) // in AAL flow
     }
 
     function checkURL(event, key, url) {

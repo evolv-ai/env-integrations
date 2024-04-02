@@ -1,7 +1,7 @@
 import { version } from '../package.json';
 
 export default () => {
-  function waitFor(callback, timeout = 10000, interval = 25) {
+  function waitFor(callback, timeout = 5000, interval = 25) {
     return new Promise((resolve, reject) => {
         let poll;
         const timer = setTimeout(() => {

@@ -1,6 +1,6 @@
 {
   "name": "@evolv-delivery/progressive-plans-audience",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Binds remote context property if the account is eligible for the banner",
   "main": "dist/cjs/index.js",
   "files": [

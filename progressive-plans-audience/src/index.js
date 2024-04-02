@@ -1,6 +1,6 @@
 import { version } from '../package.json';
 
-export default (config) => {
+export default () => {
   function waitFor(callback, timeout = 5000, interval = 25) {
     return new Promise((resolve, reject) => {
         let poll;
@@ -24,19 +24,18 @@ export default (config) => {
     const utils = window.evolv.utils.init(sandboxKey);
     const { log, debug, warn } = utils;
     const { collect, mutate, $mu } = window.evolv;
-    const contextKey = 'vz.AAL-banner';
+    const contextKey = 'vz.AALBanner';
     const webURL = 'web.url';
     utils.hasRun ??= false;
 
     // Procedure if requirements are not met
     function fail(message) {
       warn(message);
-      mutate.revert();
-      sessionStorage.removeItem(sessionKey);
-      window.evolv.client.contaminate({
-        reason: 'requirements-unmet',
-        details: `${sandboxKey} ${message}`,
-      });
+      // mutate.revert();
+      // window.evolv.client.contaminate({
+      //   reason: 'requirements-unmet',
+      //   details: `[${sandboxKey} ${version}] ${message}`,
+      // });
     }
 
     function isProgressivePlansPage(url = window.location.href) {
@@ -77,33 +76,39 @@ export default (config) => {
 
       const planPricing = {}
 
-      $mu('//div[contains(@id, "carousel")]//h2[contains(text(), "Unlimited")]/ancestor::div[2]', 'int-progressive-plan-audience-tile-heading')
+      $mu('//div[contains(@class, "InnerTileContainer")]//h2[contains(text(), "Unlimited")]/ancestor::div[2]', 'int-progressive-plan-audience-tile-heading')
         .customMutation((state, tileHeading) => {
-          if (!isProgressivePlansPage) return;
+          if (!isProgressivePlansPage()) return;
 
-          const planPrices = {};
-          const planName = tileHeading.querySelector('h2').textContent;
-          const planPrice = parseInt(tileHeading.querySelector('span[regularweight="light"] span').textContent.match(/\$(\d+)/)[1], 10);
-          const planAutoPayText = Array.from(tileHeading.querySelectorAll('span')).find(span => /With(out)? Auto Pay/.test(span.textContent)).textContent;
-          let planAutoPay;
+          const planTextPattern = /\$(\d+)(per\smonth\s*\/mo\*\s*|\s*)(with(out)?)\sauto\spay/i;
+          const planName = tileHeading.querySelector('h2')?.textContent;
 
-          if (!planName || !planPrice || !planAutoPayText) {
-            fail(`planName: ${planName}, planPrice: ${planPrice}, planAutoPayText: ${planAutoPayText}`)
+          if (!planName) {
+            fail('No plan name');
+            return;
           }
 
-          if (planAutoPayText?.includes('Without')) {
-            planAutoPay = false;
-          } else if (planAutoPayText?.includes('With')) {
-            planAutoPay = true;
-          } else {
-            fail('Autopay status not found')
+          let planTextMatch;
+
+          Array.from(tileHeading.querySelectorAll('div')).find(div => {
+            planTextMatch = div.textContent.match(planTextPattern);
+            return planTextMatch;
+          });
+
+          if (!planTextMatch) {
+            fail('No matching plan text found');
+            return;
           }
 
-          planPricing[planName] = planAutoPay ? planPrice : planPrice + 10;
+          planPricing[planName] = planTextMatch[3].toLowerCase() === 'without' ? parseInt(planTextMatch[1], 10) : parseInt(planTextMatch[1], 10) + 10
+
+          if (!planPricing[planName]) {
+            fail(`No plan price`)
+          }
           
           if (Object.keys(planPricing).length === 3) {
             const planReferenceIndex = planReference.findIndex(planGroup => Object.keys(planPricing).every(name => planPricing[name] === planGroup[name]))
-            log(`Bind '${contextKey}' to evolv.context.remoteContext`);
+            log(`Bind '${contextKey}: ${planReferenceIndex}' to evolv.context.remoteContext`);
             window.evolv.context.set(contextKey, planReferenceIndex);
           }
 
@@ -114,5 +119,7 @@ export default (config) => {
     checkURL('init', webURL, evolv.context.get(webURL));
     evolv.client.on('context.value.added', checkURL);
     evolv.client.on('context.value.changed', checkURL);
+  }).catch(() => {
+    warn(`timeout: window.evolv.utils = ${window.evolv.utils}; vzdl.page.flow = ${vzdl?.page?.flow}`)
   });
 };

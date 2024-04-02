@@ -119,7 +119,5 @@ export default () => {
     checkURL('init', webURL, evolv.context.get(webURL));
     evolv.client.on('context.value.added', checkURL);
     evolv.client.on('context.value.changed', checkURL);
-  }).catch(() => {
-    warn(`timeout: window.evolv.utils = ${window.evolv.utils}; vzdl.page.flow = ${vzdl?.page?.flow}`)
-  });
+  }).catch(() => {});
 };

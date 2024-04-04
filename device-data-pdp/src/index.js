@@ -1,6 +1,6 @@
 import { version } from '../package.json';
 
-export default function (config) {
+export default function () {
   function waitFor(callback, timeout = 5000, interval = 25) {
     return new Promise((resolve, reject) => {
       let poll;
@@ -27,7 +27,7 @@ export default function (config) {
     const sessionKey = 'evolv:device-data-pdp';
     const webURL = 'web.url';
     const URLCriteria = {
-      pdpPage: (url) => /\/smartphones\/(?!.*-certified-pre-owned).*\//i.test(url),
+      interstitialPage: (url) => /\/sales\/nextgen\/offerinterstitial\.html.*\//i.test(url),
       dpPages: (url) => /\/sales\/nextgen\/protection(\/options)?\.html/i.test(url)
       && !/^nso$/i.test(window.vzdl.page.flow),
       cartPage: (url) => /\/sales\/nextgen\/expresscart\.html/i.test(url)
@@ -46,13 +46,12 @@ export default function (config) {
       });
     }
 
-
     function checkURL(event, key, url) {
       if (!(key === webURL)) return;
       if (/logged\sin/i.test(window.vzdl.user.authStatus)) return; // Exclude customer
 
-      if (URLCriteria.pdpPage(url)) {
-        pdpPage();
+      if (URLCriteria.interstitialPage(url)) {
+        interstitialPage();
       } else if (URLCriteria.dpPages(url)) {
         dpPages();
       } else if (URLCriteria.cartPage(url)) {
@@ -64,29 +63,21 @@ export default function (config) {
       const url = window.location.href;
 
       // Only run if you're on an approved page (mutate functions could span pages due to SPA nav)
-      if (['pdpPage', 'cartPage'].every(key => !URLCriteria[key](url))) return;
-
-      const sessionStorageOld = sessionStorage.getItem(sessionKey);
-      let deviceValuesOld;
-
-      if (sessionStorageOld) {
-        deviceValuesOld = JSON.parse(sessionStorageOld);
-      }
+      if (['interstitialPage', 'cartPage'].every(key => !URLCriteria[key](url))) return;
 
       const deviceValuesRaw = window.vzdl?.txn?.product?.current
         ?.filter(product => product.category.toLowerCase() === 'device')
         ?.map((device, deviceIndex) => {
-          const properties = (({ name, nonRecurringPrice, productId }) => ({
-              name,
-              nonRecurringPrice,
-              productId,
-            }))(device)
+          const properties = (({ name, fullRetailPrice }) => ({
+            name,
+            fullRetailPrice
+          }))(device)
           
-          if (properties.nonRecurringPrice) {
-            properties.nonRecurringPrice = parseFloat(properties.nonRecurringPrice);
+          if (properties.fullRetailPrice) {
+            properties.fullRetailPrice = parseFloat(properties.fullRetailPrice);
           }
 
-          if (URLCriteria.pdpPage(url)) {
+          if (URLCriteria.interstitialPage(url)) {
             properties.nseSmartphone = true;
           } else if (URLCriteria.cartPage(url)) {
             properties.nseSmartphone = deviceValuesOld?.[deviceIndex]?.nseSmartphone || false;
@@ -96,94 +87,69 @@ export default function (config) {
         });
 
       let sessionStorageNew;
+    }
 
-      if (lineIndex >= 0) {
-        const deviceValuesArray = [];
-        deviceValuesArray[lineIndex] = deviceValuesRaw[0];
-        sessionStorageNew = JSON.stringify(deviceValuesArray);
-      } else {
-        sessionStorageNew = JSON.stringify(deviceValuesRaw);
+
+  });
+
+    // Wait for initial criteria
+
+    // Setup
+    
+    // Modify URL Criteria from PDP to Offer Interstitial
+
+    // Fail proceedure
+
+    // Modify CheckURL for Offer Interstitial
+
+    // Function to Update Session Storage
+
+    // Function to run on Offer Interstitial
+    
+      // Get full retail price & name from current product vzdl
+      // Get line number from sticky header
+      // Publish to sessionStorage
+
+    // Function for DP pages
+      
+      // Get session storage
+        // parse session string to JSON
+        // convert price from string to number
+        // convert line number from string to number
+            
+      // Find the device bind price to remoteContext
+
+    // Cart Page
+
+      // Monitor for changes to cart
+      function cartPage() {
+        log(`init: cart page - v${version}`);
+
+        if (cartHasLoaded) return;
+
+        let isWaiting = false;
+        let productCurrentOld = JSON.stringify(window.vzdl.txn.product.current);
+
+        function waitForProductChange() {
+          if (isWaiting) return;
+          isWaiting = true;
+
+          waitFor(() => JSON.stringify(window.vzdl.txn.product.current) !== productCurrentOld)
+            .then(() => {
+              updateSessionStorage();
+              isWaiting = false;
+            });
+        }
+
+      // Update sessionStorage with most recent devices
+        $mu('.cart', 'int-device-data-pdp-watcher')
+          .customMutation(() => waitForProductChange(), () => waitForProductChange());
+  
+        cartHasLoaded = true;
       }
 
-      if (!sessionStorageNew || sessionStorageNew === sessionStorageOld) return;
-
-      log(
-        `Set sessionStorage item '${sessionKey}' to ${sessionStorageNew}`
-      );
-
-      sessionStorage.setItem(sessionKey, sessionStorageNew);
-    }
-
-    function pdpPage() {
-      log(`init: pdp page - v${version}`);
-      const mtn = sessionStorage.getItem('SELECTED_PROSPECT_MTN');
-      const lineIndex = mtn ? parseInt( mtn.match(/newLine(\d+)/)?.[1], 10) : 0;
-      waitFor(() => window.vzdl?.txn?.product?.current?.[0])
-        .then(() => updateSessionStorage(lineIndex));
-    }
-
-    function dpPages() {
-      log(`init: dp pages - v${version}`);
-
-      if (dpHasLoaded) return; // Prevents multiple instances of collector
-
-      $mu('#stickydevice-device-line-info', 'int-device-data-pdp-line')
-        .customMutation((state, lineElement) => {
-          const href = window.location.href;
-          const deviceValues = sessionStorage.getItem(sessionKey);
-
-          // Prevents Mutate from loading this function on unauthorized pages due to SPA nav
-          if (!URLCriteria.dpPages(href)) {
-            return;
-          }
-
-          if (!deviceValues) {
-            warn(`No sessionStorage item '${sessionKey}' found`);
-            return;
-          }
-
-          const lineIndex = parseInt(lineElement.textContent?.match(/Line (\d+)/)?.[1], 10) - 1;
-          if (!(lineIndex >= 0)) {
-            warn('No line number');
-            return;
-          }
-
-          const deviceValuesObj = JSON.parse(deviceValues);
-          const device = deviceValuesObj[lineIndex];
-
-          if (!device) {
-            warn(`Line ${lineIndex + 1} not found in sessionStorage item '${sessionKey}'`)
-            return;
-          }
-
-          Object.keys(device).forEach((key) => {
-            const contextKey = `vz.device.${key}`;
-            const contextValue = device[key];
-
-            if (window.evolv.context.get(contextKey) === contextValue) return;
-
-            log(
-              `Bind '${contextKey}': '${contextValue}' to evolv.context.remoteContext`
-            );
-            window.evolv.context.set(contextKey, contextValue);
-          });
-        })
-
-      dpHasLoaded = true;
-    }
-
-    function cartPage() {
-      log(`init: cart page - v${version}`);
-
-      if (cartHasLoaded) return;
-      $mu('.cart', 'int-device-data-pdp-watcher')
-        .customMutation(() => updateSessionStorage(), () => updateSessionStorage());
-
-      cartHasLoaded = true;
-    }
-
+    // Monitor URL
     checkURL('init', webURL, evolv.context.get(webURL));
     evolv.client.on('context.value.added', checkURL);
     evolv.client.on('context.value.changed', checkURL);
-  });
 }

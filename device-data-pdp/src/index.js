@@ -19,7 +19,7 @@ export default function() {
     });
   }
 
-  waitFor(() => window.evolv?.utils && window.vzdl?.page?.flow && window.vzdl.user?.authStatus).then(() => {
+  waitFor(() => window.evolv?.utils && window.vzdl?.page?.flow && window.vzdl.user?.authStatus, 10000).then(() => {
     const sandboxKey = 'int-device-data-pdp'
     const utils = window.evolv.utils.init(sandboxKey);
     const { log, debug, warn } = utils;
@@ -64,6 +64,35 @@ export default function() {
       return parseInt(lineElement.textContent?.match(/Line (\d+)/)?.[1], 10);
     }
 
+    function cartUpdateSessionStorage() {
+      // Only run if you're on an approved page (mutate functions could span pages due to SPA nav)
+      if (!URLCriteria.cartPage(window.location.href)) return;
+
+      const vzdlDevices = window.vzdl?.txn?.product?.current
+        ?.filter(product => product.category.toLowerCase() === 'device');
+      
+      const deviceDataString = sessionStorage.getItem(sessionKey);
+      if (!deviceDataString) {
+        warn(`No sessionStorage item '${sessionKey}' found`);
+        return;
+      }
+
+      const deviceData = JSON.parse(deviceDataString);
+      const deviceDataNew = {};
+
+      vzdlDevices.forEach((vzdlDevice, index) => {
+        const lineNumber = index + 1;
+        const { name } = vzdlDevice;
+        const price = vzdlDevice.fullRetailPrice;
+        const nse = deviceData[lineNumber]?.nse || false;
+        deviceDataNew[lineNumber] = { name, price, nse };
+      });
+
+      const sessionStorageNew = JSON.stringify(deviceDataNew);
+      log (`Set sessionStorage item '${sessionKey}' to ${sessionStorageNew}`);
+      sessionStorage.setItem(sessionKey, sessionStorageNew);
+    }
+
     // Function to run on Offer Interstitial
     function interstitialPage() {
       log(`init: interstitial page - v${version}`);
@@ -80,18 +109,28 @@ export default function() {
             warn('No line number');
             return;
           }
+          const lineNumberString = lineNumber.toString();
 
-          const name = window.vzdl?.txn?.product?.current?.[0].name;
-          const price = window.vzdl?.txn?.product?.current?.[0].fullRetailPrice;
+          const deviceDataString = sessionStorage.getItem(sessionKey);
+          if (!deviceDataString) {
+            return;
+          }
+
+          const deviceData = JSON.parse(deviceDataString);
+
+          const vzdlDevice = window.vzdl?.txn?.product?.current
+            ?.find(device => device.selectedLineMdnHash === lineNumberString);
+
+          const name = vzdlDevice.name;
+          const price = vzdlDevice.fullRetailPrice;
           const nse = true;
 
-          const deviceData = {}
           deviceData[lineNumber] = { name, price, nse };
 
           const sessionStorageNew = JSON.stringify(deviceData);
-          log(`Set sessionStorage item '${sessionKey}' to '${sessionStorageNew}'`);
+          
+          log (`Set sessionStorage item '${sessionKey}' to ${sessionStorageNew}`);
           sessionStorage.setItem(sessionKey, sessionStorageNew);
-            
 
           interstitialHasLoaded = true;
         });
@@ -132,7 +171,12 @@ export default function() {
             const contextKey = `vz.device.${key}`;
             const contextValue = device[key];
 
-            if (window.evolv.context.get(contextKey) === contextValue) return;
+            if (window.evolv.context.get(contextKey) === contextValue) {
+              log(
+                `evolv.context.remoteContext property '${contextKey}': '${contextValue}' already bound`
+              );
+              return
+            };
 
             log(
               `Bind '${contextKey}': '${contextValue}' to evolv.context.remoteContext`
@@ -143,35 +187,6 @@ export default function() {
 
           dpHasLoaded = true;
         });
-    }
-      
-    function cartUpdateSessionStorage() {
-      // Only run if you're on an approved page (mutate functions could span pages due to SPA nav)
-      if (!URLCriteria.cartPage(window.location.href)) return;
-
-      const vzdlDevices = window.vzdl?.txn?.product?.current
-        ?.filter(product => product.category.toLowerCase() === 'device');
-      
-      const deviceDataString = sessionStorage.getItem(sessionKey);
-      if (!deviceDataString) {
-        warn(`No sessionStorage item '${sessionKey}' found`);
-        return;
-      }
-
-      const deviceData = JSON.parse(deviceDataString);
-      const deviceDataNew = {};
-
-      vzdlDevices.forEach((vzdlDevice, index) => {
-        const lineNumber = index + 1;
-        const { name } = vzdlDevice;
-        const price = vzdlDevice.fullRetailPrice;
-        const nse = deviceData[lineNumber].nse || false;
-        deviceDataNew[lineNumber] = { name, price, nse };
-      });
-
-      const sessionStorageNew = JSON.stringify(deviceDataNew);
-      log (`Set sessionStorage item '${sessionKey}' to ${sessionStorageNew}`);
-      sessionStorage.setItem(sessionKey, sessionStorageNew);
     }
 
     function cartPage() {
@@ -186,7 +201,7 @@ export default function() {
         if (isWaiting) return;
         isWaiting = true;
 
-        waitFor(() => JSON.stringify(window.vzdl.txn.product.current) !== productCurrentOld)
+        waitFor(() => JSON.stringify(window.vzdl?.txn?.product?.current) !== productCurrentOld)
           .then(() => {
             cartUpdateSessionStorage();
             productCurrentOld = JSON.stringify(window.vzdl.txn.product.current);
@@ -197,8 +212,14 @@ export default function() {
       }
 
       // Update sessionStorage with most recent devices
-      $mu('.cart', 'int-device-data-pdp-watcher')
+      $mu('//div[contains(concat(" ", @class, " "), " cart ")] | //div[contains(@data-testid, "product-dev")]/parent::div', 'int-device-data-pdp-watcher')
         .customMutation(() => waitForProductChange(), () => waitForProductChange());
+
+      collect('//div[contains(@id, "newLine")]').subscribe((action, element) => {
+        if (action === 1) {
+          log(element);
+        }
+      })
 
       cartHasLoaded = true;
     }
@@ -208,5 +229,5 @@ export default function() {
     evolv.client.on('context.value.added', checkURL);
     evolv.client.on('context.value.changed', checkURL);
 
-  }).catch(() => {});
+  }, 10000).catch(() => {});
 }

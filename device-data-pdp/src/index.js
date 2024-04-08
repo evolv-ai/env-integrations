@@ -30,22 +30,9 @@ export default function() {
       interstitialPage: (url) => /\/sales\/nextgen\/offerinterstitial\.html/i.test(url),
       dpPages: (url) => /\/sales\/nextgen\/protection(\/options)?\.html/i.test(url)
         && !/^nso$/i.test(window.vzdl.page.flow),
-      cartPage: (url) => /\/sales\/next(gen)?\/expresscart\.html/i.test(url)
     }
     let dpHasLoaded = false;
     let interstitialHasLoaded = false;
-    let cartHasLoaded = false;
-
-    // Procedure if requirements are not met
-    function fail(message) {
-      warn(message);
-      mutate.revert();
-      sessionStorage.removeItem(sessionKey);
-      window.evolv.client.contaminate({
-        reason: 'requirements-unmet',
-        details: `[${sandboxKey}] ${message}`,
-      });
-    }
 
     function checkURL(event, key, url) {
       if (!(key === webURL)) return;
@@ -55,42 +42,11 @@ export default function() {
         interstitialPage();
       } else if (URLCriteria.dpPages(url)) {
         dpPages();
-      } else if (URLCriteria.cartPage(url)) {
-        cartPage();
       }
     }
 
     function getLineNumber(lineElement) {
       return parseInt(lineElement.textContent?.match(/Line (\d+)/)?.[1], 10);
-    }
-
-    function cartUpdateSessionStorage() {
-      // Only run if you're on an approved page (mutate functions could span pages due to SPA nav)
-      if (!URLCriteria.cartPage(window.location.href)) return;
-
-      const vzdlDevices = window.vzdl?.txn?.product?.current
-        ?.filter(product => product.category.toLowerCase() === 'device');
-      
-      const deviceDataString = sessionStorage.getItem(sessionKey);
-      if (!deviceDataString) {
-        warn(`No sessionStorage item '${sessionKey}' found`);
-        return;
-      }
-
-      const deviceData = JSON.parse(deviceDataString);
-      const deviceDataNew = {};
-
-      vzdlDevices.forEach((vzdlDevice, index) => {
-        const lineNumber = index + 1;
-        const { name } = vzdlDevice;
-        const price = vzdlDevice.fullRetailPrice;
-        const nse = deviceData[lineNumber]?.nse || false;
-        deviceDataNew[lineNumber] = { name, price, nse };
-      });
-
-      const sessionStorageNew = JSON.stringify(deviceDataNew);
-      log (`Set sessionStorage item '${sessionKey}' to ${sessionStorageNew}`);
-      sessionStorage.setItem(sessionKey, sessionStorageNew);
     }
 
     // Function to run on Offer Interstitial
@@ -109,18 +65,19 @@ export default function() {
             warn('No line number');
             return;
           }
+
           const lineNumberString = lineNumber.toString();
-
           const deviceDataString = sessionStorage.getItem(sessionKey);
-          if (!deviceDataString) {
-            return;
+          let deviceData = {};
+
+          if (deviceDataString) {
+            deviceData = JSON.parse(deviceDataString);
           }
-
-          const deviceData = JSON.parse(deviceDataString);
-
-          const vzdlDevice = window.vzdl?.txn?.product?.current
-            ?.find(device => device.selectedLineMdnHash === lineNumberString);
-
+          
+          const vzdlProductCurrent = window.vzdl?.txn?.product?.current
+          const vzdlDeviceIndex = vzdlProductCurrent
+            ?.findIndex(device => device.selectedLineMdnHash === lineNumberString) || 0;
+          const vzdlDevice = vzdlProductCurrent[vzdlDeviceIndex];
           const name = vzdlDevice.name;
           const price = vzdlDevice.fullRetailPrice;
           const nse = true;
@@ -187,41 +144,6 @@ export default function() {
 
           dpHasLoaded = true;
         });
-    }
-
-    function cartPage() {
-      log(`init: cart page - v${version}`);
-
-      if (cartHasLoaded) return;
-
-      let isWaiting = false;
-      let productCurrentOld;
-
-      function waitForProductChange() {
-        if (isWaiting) return;
-        isWaiting = true;
-
-        waitFor(() => JSON.stringify(window.vzdl?.txn?.product?.current) !== productCurrentOld)
-          .then(() => {
-            cartUpdateSessionStorage();
-            productCurrentOld = JSON.stringify(window.vzdl.txn.product.current);
-            isWaiting = false;
-          }).catch(() => {
-            isWaiting = false;
-          });
-      }
-
-      // Update sessionStorage with most recent devices
-      $mu('//div[contains(concat(" ", @class, " "), " cart ")] | //div[contains(@data-testid, "product-dev")]/parent::div', 'int-device-data-pdp-watcher')
-        .customMutation(() => waitForProductChange(), () => waitForProductChange());
-
-      collect('//div[contains(@id, "newLine")]').subscribe((action, element) => {
-        if (action === 1) {
-          log(element);
-        }
-      })
-
-      cartHasLoaded = true;
     }
 
     // Monitor URL

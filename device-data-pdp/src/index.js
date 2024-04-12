@@ -19,7 +19,7 @@ export default function() {
     });
   }
 
-  waitFor(() => window.evolv?.utils && window.vzdl?.page?.flow && window.vzdl.user?.authStatus, 10000).then(() => {
+  waitFor(() => window.evolv?.utils && window.vzdl.user?.authStatus, 10000).then(() => {
     const sandboxKey = 'int-device-data-pdp'
     const utils = window.evolv.utils.init(sandboxKey);
     const { log, debug, warn } = utils;
@@ -29,7 +29,6 @@ export default function() {
     const URLCriteria = {
       interstitialPage: (url) => /\/sales\/nextgen\/offerinterstitial\.html/i.test(url),
       dpPages: (url) => /\/sales\/nextgen\/protection(\/options)?\.html/i.test(url)
-        && !/^nso$/i.test(window.vzdl.page.flow),
     }
     let dpHasLoaded = false;
     let interstitialHasLoaded = false;

@@ -19,7 +19,7 @@ export default function() {
     });
   }
 
-  waitFor(() => window.evolv?.utils && window.vzdl.user?.authStatus, 10000).then(() => {
+  waitFor(() => window.evolv?.utils && window.vzdl?.user?.authStatus, 10000).then(() => {
     const sandboxKey = 'int-device-data-pdp'
     const utils = window.evolv.utils.init(sandboxKey);
     const { log, debug, warn } = utils;
@@ -35,7 +35,7 @@ export default function() {
 
     function checkURL(event, key, url) {
       if (!(key === webURL)) return;
-      if (/logged\sin/i.test(window.vzdl.user.authStatus)) return; // Exclude customer
+      if (/logged\sin/i.test(window.vzdl?.user?.authStatus)) return; // Exclude customer
 
       if (URLCriteria.interstitialPage(url)) {
         interstitialPage();

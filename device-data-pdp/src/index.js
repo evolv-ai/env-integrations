@@ -1,6 +1,6 @@
 import { version } from '../package.json';
 
-export default function (config) {
+export default function() {
   function waitFor(callback, timeout = 5000, interval = 25) {
     return new Promise((resolve, reject) => {
       let poll;
@@ -19,7 +19,7 @@ export default function (config) {
     });
   }
 
-  waitFor(() => window.evolv?.utils && window.vzdl?.page?.flow && window.vzdl.user?.authStatus).then(() => {
+  waitFor(() => window.evolv?.utils && window.vzdl?.user?.authStatus, 10000).then(() => {
     const sandboxKey = 'int-device-data-pdp'
     const utils = window.evolv.utils.init(sandboxKey);
     const { log, debug, warn } = utils;
@@ -27,101 +27,72 @@ export default function (config) {
     const sessionKey = 'evolv:device-data-pdp';
     const webURL = 'web.url';
     const URLCriteria = {
-      pdpPage: (url) => /\/smartphones\/(?!.*-certified-pre-owned).*\//i.test(url),
+      interstitialPage: (url) => /\/sales\/nextgen\/offerinterstitial\.html/i.test(url),
       dpPages: (url) => /\/sales\/nextgen\/protection(\/options)?\.html/i.test(url)
-      && !/^nso$/i.test(window.vzdl.page.flow),
-      cartPage: (url) => /\/sales\/nextgen\/expresscart\.html/i.test(url)
     }
     let dpHasLoaded = false;
-    let cartHasLoaded = false;
-
-    // Procedure if requirements are not met
-    function fail(message) {
-      warn(message);
-      mutate.revert();
-      sessionStorage.removeItem(sessionKey);
-      window.evolv.client.contaminate({
-        reason: 'requirements-unmet',
-        details: `[${sandboxKey}] ${message}`,
-      });
-    }
-
+    let interstitialHasLoaded = false;
 
     function checkURL(event, key, url) {
       if (!(key === webURL)) return;
-      if (/logged\sin/i.test(window.vzdl.user.authStatus)) return; // Exclude customer
+      if (/logged\sin/i.test(window.vzdl?.user?.authStatus)) return; // Exclude customer
 
-      if (URLCriteria.pdpPage(url)) {
-        pdpPage();
+      if (URLCriteria.interstitialPage(url)) {
+        interstitialPage();
       } else if (URLCriteria.dpPages(url)) {
         dpPages();
-      } else if (URLCriteria.cartPage(url)) {
-        cartPage();
       }
     }
 
-    function updateSessionStorage(lineIndex) {
-      const url = window.location.href;
+    function getLineNumber(lineElement) {
+      return parseInt(lineElement.textContent?.match(/Line (\d+)/)?.[1], 10);
+    }
 
-      // Only run if you're on an approved page (mutate functions could span pages due to SPA nav)
-      if (['pdpPage', 'cartPage'].every(key => !URLCriteria[key](url))) return;
+    // Function to run on Offer Interstitial
+    function interstitialPage() {
+      log(`init: interstitial page - v${version}`);
+      if (interstitialHasLoaded) return;
 
-      const sessionStorageOld = sessionStorage.getItem(sessionKey);
-      let deviceValuesOld;
+      $mu('#stickydevice-device-line-info', 'int-device-data-pdp-line')
+        .customMutation((state, lineElement) => {
 
-      if (sessionStorageOld) {
-        deviceValuesOld = JSON.parse(sessionStorageOld);
-      }
+          // Prevents Mutate from loading this function on unauthorized pages due to SPA nav
+          if (!URLCriteria.interstitialPage(window.location.href)) return;
 
-      const deviceValuesRaw = window.vzdl?.txn?.product?.current
-        ?.filter(product => product.category.toLowerCase() === 'device')
-        ?.map((device, deviceIndex) => {
-          const properties = (({ name, nonRecurringPrice, productId }) => ({
-              name,
-              nonRecurringPrice,
-              productId,
-            }))(device)
+          const lineNumber = getLineNumber(lineElement);
+          if (!(lineNumber >= 0)) {
+            warn('No line number');
+            return;
+          }
+
+          const lineNumberString = lineNumber.toString();
+          const deviceDataString = sessionStorage.getItem(sessionKey);
+          let deviceData = {};
+
+          if (deviceDataString) {
+            deviceData = JSON.parse(deviceDataString);
+          }
           
-          if (properties.nonRecurringPrice) {
-            properties.nonRecurringPrice = parseFloat(properties.nonRecurringPrice);
-          }
+          const vzdlProductCurrent = window.vzdl?.txn?.product?.current
+          const vzdlDeviceIndex = vzdlProductCurrent
+            ?.findIndex(device => device.selectedLineMdnHash === lineNumberString) || 0;
+          const vzdlDevice = vzdlProductCurrent[vzdlDeviceIndex];
+          const name = vzdlDevice.name;
+          const price = vzdlDevice.fullRetailPrice;
+          const nse = true;
 
-          if (URLCriteria.pdpPage(url)) {
-            properties.nseSmartphone = true;
-          } else if (URLCriteria.cartPage(url)) {
-            properties.nseSmartphone = deviceValuesOld?.[deviceIndex]?.nseSmartphone || false;
-          }
+          deviceData[lineNumber] = { name, price, nse };
 
-          return properties;
+          const sessionStorageNew = JSON.stringify(deviceData);
+          
+          log (`Set sessionStorage item '${sessionKey}' to ${sessionStorageNew}`);
+          sessionStorage.setItem(sessionKey, sessionStorageNew);
+
+          interstitialHasLoaded = true;
         });
-
-      let sessionStorageNew;
-
-      if (lineIndex >= 0) {
-        const deviceValuesArray = [];
-        deviceValuesArray[lineIndex] = deviceValuesRaw[0];
-        sessionStorageNew = JSON.stringify(deviceValuesArray);
-      } else {
-        sessionStorageNew = JSON.stringify(deviceValuesRaw);
-      }
-
-      if (!sessionStorageNew || sessionStorageNew === sessionStorageOld) return;
-
-      log(
-        `Set sessionStorage item '${sessionKey}' to ${sessionStorageNew}`
-      );
-
-      sessionStorage.setItem(sessionKey, sessionStorageNew);
     }
 
-    function pdpPage() {
-      log(`init: pdp page - v${version}`);
-      const mtn = sessionStorage.getItem('SELECTED_PROSPECT_MTN');
-      const lineIndex = mtn ? parseInt( mtn.match(/newLine(\d+)/)?.[1], 10) : 0;
-      waitFor(() => window.vzdl?.txn?.product?.current?.[0])
-        .then(() => updateSessionStorage(lineIndex));
-    }
-
+    // Function for DP pages
     function dpPages() {
       log(`init: dp pages - v${version}`);
 
@@ -129,30 +100,26 @@ export default function (config) {
 
       $mu('#stickydevice-device-line-info', 'int-device-data-pdp-line')
         .customMutation((state, lineElement) => {
-          const href = window.location.href;
-          const deviceValues = sessionStorage.getItem(sessionKey);
+          if (!URLCriteria.dpPages(window.location.href)) return;
+          
+          const deviceDataString = sessionStorage.getItem(sessionKey);
 
-          // Prevents Mutate from loading this function on unauthorized pages due to SPA nav
-          if (!URLCriteria.dpPages(href)) {
-            return;
-          }
-
-          if (!deviceValues) {
+          if (!deviceDataString) {
             warn(`No sessionStorage item '${sessionKey}' found`);
             return;
           }
 
-          const lineIndex = parseInt(lineElement.textContent?.match(/Line (\d+)/)?.[1], 10) - 1;
-          if (!(lineIndex >= 0)) {
+          const lineNumber = getLineNumber(lineElement);
+          if (!(lineNumber >= 0)) {
             warn('No line number');
             return;
           }
 
-          const deviceValuesObj = JSON.parse(deviceValues);
-          const device = deviceValuesObj[lineIndex];
+          const deviceData = JSON.parse(deviceDataString);
+          const device = deviceData[lineNumber];
 
           if (!device) {
-            warn(`Line ${lineIndex + 1} not found in sessionStorage item '${sessionKey}'`)
+            warn(`Line ${lineNumber} not found in sessionStorage item '${sessionKey}'`)
             return;
           }
 
@@ -160,30 +127,28 @@ export default function (config) {
             const contextKey = `vz.device.${key}`;
             const contextValue = device[key];
 
-            if (window.evolv.context.get(contextKey) === contextValue) return;
+            if (window.evolv.context.get(contextKey) === contextValue) {
+              log(
+                `evolv.context.remoteContext property '${contextKey}': '${contextValue}' already bound`
+              );
+              return
+            };
 
             log(
               `Bind '${contextKey}': '${contextValue}' to evolv.context.remoteContext`
             );
+
             window.evolv.context.set(contextKey, contextValue);
           });
-        })
 
-      dpHasLoaded = true;
+          dpHasLoaded = true;
+        });
     }
 
-    function cartPage() {
-      log(`init: cart page - v${version}`);
-
-      if (cartHasLoaded) return;
-      $mu('.cart', 'int-device-data-pdp-watcher')
-        .customMutation(() => updateSessionStorage(), () => updateSessionStorage());
-
-      cartHasLoaded = true;
-    }
-
+    // Monitor URL
     checkURL('init', webURL, evolv.context.get(webURL));
     evolv.client.on('context.value.added', checkURL);
     evolv.client.on('context.value.changed', checkURL);
-  });
+
+  }, 10000).catch(() => {});
 }

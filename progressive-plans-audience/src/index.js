@@ -31,11 +31,6 @@ export default () => {
     // Procedure if requirements are not met
     function fail(message) {
       warn(message);
-      // mutate.revert();
-      // window.evolv.client.contaminate({
-      //   reason: 'requirements-unmet',
-      //   details: `[${sandboxKey} ${version}] ${message}`,
-      // });
     }
 
     function isProgressivePlansPage(url = window.location.href) {
@@ -76,7 +71,7 @@ export default () => {
 
       const planPricing = {}
 
-      $mu('//div[contains(@class, "InnerTileContainer")]//h2[contains(text(), "Unlimited")]/ancestor::div[2]', 'int-progressive-plan-audience-tile-heading')
+      $mu('//div[contains(@class, "InnerTileContainer")]//h3[contains(text(), "Unlimited")]/ancestor::div[2]', 'int-progressive-plan-audience-tile-heading')
         .customMutation((state, tileHeading) => {
           if (!isProgressivePlansPage()) return;
 

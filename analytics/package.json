@@ -1,6 +1,6 @@
 {
   "name": "@evolv-delivery/analytics",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Captures and processes evolv events with a set of configurable steps",
   "main": "dist/index.js",
   "files": [
@@ -11,7 +11,7 @@
   "scripts": {
     "build": "rollup --config rollup.config.js",
     "watch": "rollup --config rollup.config.js --watch",
-    "dev": "pushd dist; python3 -m http.server 8000; popd",
+    "dev": "pushd dist; python3 -m http.server 8000np; popd",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

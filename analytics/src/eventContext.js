@@ -10,15 +10,25 @@ EventContext.prototype.isLocalVar = function(key){
   return key.indexOf('@') === 0;
 }
 
+EventContext.prototype.getDisplayName = function() {
+    let cid = this.event.cid;
+		if (!cid) return '';
+
+		let eid = cid.split(':')[1];
+		return window.evolv.client.getDisplayName('experiments', eid);
+}
+
 EventContext.prototype.eventValue =  function(key){
   var event = this.event;
   switch (key) {
     case 'combination_id':
-      return(event.ordinal);
+      return (event.ordinal);
     case 'experiment_id':
-      return(event.group_id);
+      return (event.group_id);
     case 'user_id':
-      return(event.uid);  
+      return (event.uid);
+    case 'project_name':
+      return this.getDisplayName();
     default:
       return event[key] || '';
   }
@@ -69,4 +79,3 @@ EventContext.prototype.buildArray = function(configArray){
     return $this.extractValue(exp)
   })
 }
-

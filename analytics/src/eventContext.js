@@ -10,7 +10,11 @@ EventContext.prototype.isLocalVar = function(key){
   return key.indexOf('@') === 0;
 }
 
-EventContext.prototype.getDisplayName = function() {
+EventContext.prototype.initializeAsync = async function(){
+  this.event.project_name = await this.getDisplayName();
+}
+
+EventContext.prototype.getDisplayName = async function() {
     let cid = this.event.cid;
 		if (!cid) return '';
 
@@ -27,8 +31,8 @@ EventContext.prototype.eventValue =  function(key){
       return (event.group_id);
     case 'user_id':
       return (event.uid);
-    case 'project_name':
-      return this.getDisplayName();
+    // case 'project_name':
+    //   return this.getDisplayName();
     default:
       return event[key] || '';
   }

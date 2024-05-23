@@ -27,7 +27,7 @@ function listenToEvents(config){
           }
         } catch(e){console.info('Evolv: Analytics not sent', e);}
       }
-  
+
       window.evolv.client.on(eventType, function (type) {
         var allocations = extractAllocations(eventType);
         allocations.forEach(function(allocation) {
@@ -66,14 +66,17 @@ function contextMatch(config, event) {
 function processStatements(pageConfig, event_type, evolvEvent){
   var statements = pageConfig.statements;
   var eventContext = new EventContext({...evolvEvent, event_type});
-  try{
-    statements.forEach(function(statement){
-      if (statement.event_type === event_type || !statement.event_type) {
-        runStatement(statement, eventContext);
-      }
-    })
-  } catch(e){console.info('statement failed',e)}
+  eventContext.initializeAsync().then(()=>{
+    try{
+      statements.forEach(function(statement){
+        if (statement.event_type === event_type || !statement.event_type) {
+          runStatement(statement, eventContext);
+        }
+      })
+    } catch(e){console.info('statement failed',e)}
+  });
 }
+
 function areStatementsReady(config){
   return config.statements
     .every(function(statement){
@@ -81,7 +84,7 @@ function areStatementsReady(config){
       if (statement.bind){
         var obj = tokenizeExp(target).slice(0,-1);
         if (obj.length === 0) return true
-        
+
         return !!getExpression(obj);
       } else{
         return !!getExpression(target)

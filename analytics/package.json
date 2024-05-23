@@ -1,6 +1,6 @@
 {
   "name": "@evolv-delivery/analytics",
-  "version": "0.6.1",
+  "version": "0.7.2",
   "description": "Captures and processes evolv events with a set of configurable steps",
   "main": "dist/index.js",
   "files": [

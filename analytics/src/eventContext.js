@@ -10,15 +10,35 @@ EventContext.prototype.isLocalVar = function(key){
   return key.indexOf('@') === 0;
 }
 
+EventContext.prototype.initializeAsync = function(){
+  let event = this.event;
+  return new Promise((resolve,reject)=>
+    getProjectName(event).then(projectName=>{
+      event.project_name = projectName;
+      resolve();
+    })
+  );
+}
+
+function getProjectName(event){
+  return new Promise((resolve,reject)=>{
+    let cid = event.cid;
+		if (!cid) return '';
+
+		let eid = cid.split(':')[1];
+		resolve(window.evolv.client.getDisplayName('experiments', eid));
+  });
+}
+
 EventContext.prototype.eventValue =  function(key){
   var event = this.event;
   switch (key) {
     case 'combination_id':
-      return(event.ordinal);
+      return (event.ordinal);
     case 'experiment_id':
-      return(event.group_id);
+      return (event.group_id);
     case 'user_id':
-      return(event.uid);  
+      return (event.uid);
     default:
       return event[key] || '';
   }
@@ -69,4 +89,3 @@ EventContext.prototype.buildArray = function(configArray){
     return $this.extractValue(exp)
   })
 }
-

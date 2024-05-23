@@ -63,19 +63,20 @@ function contextMatch(config, event) {
   }
   return false;
 }
-async function processStatements(pageConfig, event_type, evolvEvent){
+function processStatements(pageConfig, event_type, evolvEvent){
   var statements = pageConfig.statements;
   var eventContext = new EventContext({...evolvEvent, event_type});
-  await eventContext.initializeAsync();
-
-  try{
-    statements.forEach(function(statement){
-      if (statement.event_type === event_type || !statement.event_type) {
-        runStatement(statement, eventContext);
-      }
-    })
-  } catch(e){console.info('statement failed',e)}
+  eventContext.initializeAsync().then(()=>{
+    try{
+      statements.forEach(function(statement){
+        if (statement.event_type === event_type || !statement.event_type) {
+          runStatement(statement, eventContext);
+        }
+      })
+    } catch(e){console.info('statement failed',e)}
+  });
 }
+
 function areStatementsReady(config){
   return config.statements
     .every(function(statement){

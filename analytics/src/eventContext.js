@@ -10,16 +10,24 @@ EventContext.prototype.isLocalVar = function(key){
   return key.indexOf('@') === 0;
 }
 
-EventContext.prototype.initializeAsync = async function(){
-  this.event.project_name = await this.getDisplayName();
+EventContext.prototype.initializeAsync = function(){
+  let event = this.event;
+  return new Promise((resolve,reject)=>
+    getProjectName(event).then(projectName=>{
+      event.project_name = projectName;
+      resolve();
+    })
+  );
 }
 
-EventContext.prototype.getDisplayName = async function() {
-    let cid = this.event.cid;
+function getProjectName(event){
+  return new Promise((resolve,reject)=>{
+    let cid = event.cid;
 		if (!cid) return '';
 
 		let eid = cid.split(':')[1];
-		return window.evolv.client.getDisplayName('experiments', eid);
+		resolve(window.evolv.client.getDisplayName('experiments', eid));
+  });
 }
 
 EventContext.prototype.eventValue =  function(key){
@@ -31,8 +39,6 @@ EventContext.prototype.eventValue =  function(key){
       return (event.group_id);
     case 'user_id':
       return (event.uid);
-    // case 'project_name':
-    //   return this.getDisplayName();
     default:
       return event[key] || '';
   }

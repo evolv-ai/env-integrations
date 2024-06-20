@@ -49,7 +49,7 @@ export function applyMap(val, metric){
           return mapOption.default || mapOption.value;
         }
         
-        var pattern = new RegExp(mapOption.when);
+        var pattern = new RegExp(mapOption.when, 'i');
         return pattern.test(val);
       });
       if (results){
@@ -64,7 +64,7 @@ export function applyMap(val, metric){
             return null;
           }
           
-          var pattern = new RegExp(mapOption.when);
+          var pattern = new RegExp(mapOption.when,'i');
           return pattern.test(val);
       });
       if (results.length === 0 && fallback) return getValue(fallback)
@@ -82,10 +82,14 @@ export function getValue(metric, data){
       var extracted = data[extract.attribute];
 
       val = extract.parse 
-          ? extracted.match(new RegExp(extract.parse))[0]
+          ? extracted.match(new RegExp(extract.parse,'i'))[0]
           : extracted;
     } else if (extract.expression){
       val = adapters.getExpressionValue(extract.expression, data);
+    } else if (extract.parse && typeof val === 'string'){
+      var regex = new RegExp(extract.parse,'i');
+      var results = val.match(regex);
+      val = results && results[0];
     } else {
       trackWarning({metric, "message": "extract did not include attribute or expression"});
     }

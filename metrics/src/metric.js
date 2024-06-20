@@ -13,7 +13,7 @@ export function processMetric(metric, context){
   mergedMetric.when = metric.when;// || context.when;
 
   if (metric.apply){
-    if (metric.when){
+    if (metric.when || context.eval_now){
       connectAbstractMetric(metric.apply, mergedMetric, context);
     } else {
       processApplyList(metric.apply, mergedMetric)//handle map conditions
@@ -36,7 +36,7 @@ function supportsAsync(context){
 }
 
 function notApplicabile(metric, context){
-   return !supportsAsync(context) && metric.when && !checkWhen(metric.when, context);
+   return !supportsAsync(context) && !checkWhen(metric.when, context);
 }
 
 function applyConcreteMetric(metric, context){
@@ -50,22 +50,25 @@ function applyConcreteMetric(metric, context){
 function connectAbstractMetric(apply, metric, context){
   observeSource(context)
     .subscribe(once((val,data) => {    
-      let value = val || getValue(context, data);
-        if (!metric.when || checkWhen(metric.when, {...metric, value}, data)){
+        let value = val || getValue(context, data);
+        if (checkWhen(metric.when, {...metric, value}, data)){
             processApplyList(apply, {...metric, data})
         }
     }));
 }
 
 function connectEvent(tag, metric, context){
+  var fired = false;
   observeSource(metric, context)
     .subscribe(((val,data) => {
+      if (fired) return;
         if (context.extract && metric.when){
             context.value = undefined;
             context.value = convertValue(getValue(context,data), context.type);
         }
-        if (!metric.when || checkWhen(metric.when, context, data)){
-            setTimeout(()=> emitEvent(tag, metric, data, context), 0);
+        if (checkWhen(metric.when, context, data)){
+          fired = true;
+          setTimeout(()=> emitEvent(tag, metric, data, context), 0);
         }
     }));
 }

@@ -3,7 +3,7 @@
 //nuf said
 ////////////////////////////////////////////////
 import {processAnalytics} from '../src/analytics.js'
-import data from './testdata.json'
+import data from './test.json'
 
 function loadScript(path){
   var scriptNode = document.createElement('script');
@@ -26,10 +26,10 @@ function waitFor(check, invoke, poll){
       }
     } catch(e){console.info('listener not processed')}
   }, poll.interval)
-  setTimeout(function(){ 
+  setTimeout(function(){
       if (!polling) return
-      
-      clearInterval(polling)     
+
+      clearInterval(polling)
       console.info('evolv render listener timeout', poll)
       window.evolvRenderTimeout = {
           msg:'evolv render listener timeout', poll: poll
@@ -38,7 +38,7 @@ function waitFor(check, invoke, poll){
 }
 
 waitFor(
-  () => window.evolv, 
+  () => window.evolv,
   ()=> processAnalytics(data),
   {duration: 900000, interval:20}
 )

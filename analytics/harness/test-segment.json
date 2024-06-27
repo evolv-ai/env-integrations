@@ -1,0 +1,25 @@
+{
+  "segment": [
+    {
+      "statements": [
+        {
+          "invoke": "window.analytics.track",
+          "with": [
+            "Experiment Viewed",
+            {
+              "nonInteraction": 1,
+              "experiment_id": "${group_id}",
+              "experiment_name": "${project_name}",
+              "variation_id": "${cid}",
+              "variation_name": "combination ${combination_id}"
+            }
+          ]
+        }
+      ],
+      "poll": {
+        "duration": 20000,
+        "interval": 50
+      }
+    }
+  ]
+}

@@ -2,7 +2,7 @@ import json from '@rollup/plugin-json'
 
 
 function buildFile(src){
-  return  [   
+  return  [
     {
       input: `./src/index.js`,
       output: {
@@ -12,7 +12,7 @@ function buildFile(src){
       ]
     },
     {
-      input: `./test/testConfig.js`,
+      input: `./harness/testConfig.js`,
       output: {
         file: `./dist/testConfig.js`,
       },
@@ -21,7 +21,7 @@ function buildFile(src){
       ]
     },
     {
-      input: `./test/harness.js`,
+      input: `./harness/harness.js`,
       output: {
         file: `./dist/harness.js`,
       },
@@ -33,4 +33,3 @@ function buildFile(src){
 }
 
 export default buildFile()
-

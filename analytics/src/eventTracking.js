@@ -1,6 +1,6 @@
 
 // {lastInteraction: 1718914875654, sentEvents}
-const StorageKey = 'uid:unique_confirmations';
+const StorageKey = 'evolv:event_tracking';
 
 let sentEvents = {//default values - to be updated from localStorage
   confirmed: [],     //eids

@@ -62,6 +62,7 @@ The optional `"experiements"` block must have an `"operator"` with an `"include"
                 }
             ]
         }
-    ]
+    ],
+    "uniqueConfirmationsPerSession": true
 }
 ```

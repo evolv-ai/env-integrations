@@ -1,29 +1,25 @@
-import {EventContext} from './eventContext.js';
 import {extractAllocations} from './allocations.js';
-import {runStatement, getExpression, tokenizeExp} from './statement.js';
 import {waitFor} from './waitFor.js';
+import { areStatementsReady, processStatements } from './statements.js';
+import { eventTracking } from './eventTracking.js';
 
 function listenToEvents(config){
   var poll = config.poll || {duration: 20000, interval:50};
   var events = config.event_types || ['confirmed'];
-  var sentEventAllocations = {
-    confirmed: {},
-    contaminated: {},
-    others: {}
-  };
   var emitCheck = config.check;
   var emit = config.emit;
   var pageOptions = config.pageOptions || [];
+  let tracking = eventTracking(config.uniqueConfirmationsPerSession);
+
   function checkEvolv(){ return window.evolv}
+
   function bindListener() {
     events.forEach(function(eventType){
-      var sentAllocations = sentEventAllocations[eventType] || sentEventAllocations.others;
       function emitAllocations(pageConfig, allocation){
         try {
-          var cid = allocation.cid
-          if (!sentAllocations[cid]){
-            emit(pageConfig, eventType, allocation)
-            sentAllocations[cid] = true;
+          if (!tracking.hasSent(eventType, allocation)){
+            emit(pageConfig, eventType, allocation);
+            tracking.markAsSent(eventType, allocation);
           }
         } catch(e){console.info('Evolv: Analytics not sent', e);}
       }
@@ -63,34 +59,7 @@ function contextMatch(config, event) {
   }
   return false;
 }
-function processStatements(pageConfig, event_type, evolvEvent){
-  var statements = pageConfig.statements;
-  var eventContext = new EventContext({...evolvEvent, event_type});
-  eventContext.initializeAsync().then(()=>{
-    try{
-      statements.forEach(function(statement){
-        if (statement.event_type === event_type || !statement.event_type) {
-          runStatement(statement, eventContext);
-        }
-      })
-    } catch(e){console.info('statement failed',e)}
-  });
-}
 
-function areStatementsReady(config){
-  return config.statements
-    .every(function(statement){
-      var target = statement.invoke || statement.bind || statement.init || statement.append;
-      if (statement.bind){
-        var obj = tokenizeExp(target).slice(0,-1);
-        if (obj.length === 0) return true
-
-        return !!getExpression(obj);
-      } else{
-        return !!getExpression(target)
-      }
-    });
-}
 export function processAnalytics(config){
   var {event_types,...baseConfig} = config;
   var configKeys = Object.keys(baseConfig);
@@ -101,7 +70,8 @@ export function processAnalytics(config){
         pageOptions: pageOptions,
         check: areStatementsReady,
         emit: processStatements,
-        event_types
+        event_types,
+        uniqueConfirmationsPerSession: baseConfig.uniqueConfirmationsPerSession
       });
     } catch(e){console.info('Evolv: Analytics not setup for', key)}
   })

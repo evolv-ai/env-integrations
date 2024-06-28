@@ -51,6 +51,7 @@ function markAsSentSession(eventType, allocation){
 export function eventTracking(perSessionFlag){
   if (perSessionFlag) {
     loadSession(perSessionFlag);
+    updateSession();
   }
   const markAsSent = perSessionFlag ? markAsSentSession : markAsSentLocal;
   return {hasSent, markAsSent};

@@ -17,12 +17,11 @@
 
 ## Utils
 **Kind**: global class  
-**Internal**:   
 
 * [Utils](#Utils)
     * [new Utils(id, config)](#new_Utils_new)
     * [.debounce](#Utils+debounce) ⇒ <code>function</code>
-    * [.subscribe](#Utils+subscribe) ⇒ <code>object</code>
+    * [.subscribe](#Utils+subscribe) ⇒ <code>Object</code>
     * [.addClass](#Utils+addClass)
     * [.removeClass](#Utils+removeClass)
     * [.updateText](#Utils+updateText)
@@ -30,7 +29,7 @@
     * [.namespace](#Utils+namespace)
     * [.throttle(callback, limit)](#Utils+throttle) ⇒ <code>function</code>
     * [.waitFor(callback, timeout, interval)](#Utils+waitFor) ⇒ <code>Promise</code>
-    * [.slugify(string)](#Utils+slugify) ⇒ <code>string</code>
+    * [.slugify(string)](#Utils+slugify) ⇒ <code>String</code>
     * [.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
     * [.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code>
     * [.$(selector)](#Utils+$) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
@@ -59,23 +58,23 @@ of the timeout before executing.
 | Param | Type | Description |
 | --- | --- | --- |
 | callback | <code>function</code> | The function to debounce |
-| timeout | <code>number</code> | The timeout in milliseconds |
+| timeout | <code>Number</code> | The timeout in milliseconds |
 
 <a name="Utils+subscribe"></a>
 
-### utils.subscribe ⇒ <code>object</code>
+### utils.subscribe ⇒ <code>Object</code>
 Polls a callback function at the specified interval. When its return value changes, the listener is called.
 If the timeout is reached and no callback has been fired, the catch callback is called.
 
 **Kind**: instance property of [<code>Utils</code>](#Utils)  
-**Returns**: <code>object</code> - An object with a then() function that takes a listener callback followed by a catch()
+**Returns**: <code>Object</code> - An object with a then() function that takes a listener callback followed by a catch()
  function accepts a catch callback.  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | callback | <code>function</code> | The callback function to poll |
-| timeout | <code>number</code> | The timeout in milliseconds, defaults to 5000 |
-| interval | <code>number</code> | The interval in milliseconds, defaults to 25 |
+| timeout | <code>Number</code> | The timeout in milliseconds, defaults to 5000 |
+| interval | <code>Number</code> | The interval in milliseconds, defaults to 25 |
 
 **Example** *(Example usage of subscribe)*  
 ```js
@@ -101,7 +100,7 @@ Adds a class from an element only if a change needs to occur.
 | Param | Type | Description |
 | --- | --- | --- |
 | element | <code>HTMLElement</code> | The element |
-| className | <code>string</code> | The class name |
+| className | <code>String</code> | The class name |
 
 <a name="Utils+removeClass"></a>
 
@@ -113,7 +112,7 @@ Removes a class from an element only if a change needs to occur.
 | Param | Type | Description |
 | --- | --- | --- |
 | element | <code>HTMLElement</code> | The element |
-| className | <code>string</code> | The class name |
+| className | <code>String</code> | The class name |
 
 <a name="Utils+updateText"></a>
 
@@ -125,7 +124,7 @@ Updates an element's innerText only if a change needs to occur.
 | Param | Type | Description |
 | --- | --- | --- |
 | element | <code>HTMLElement</code> | The element |
-| text | <code>string</code> | The new text for the element |
+| text | <code>String</code> | The new text for the element |
 
 <a name="Utils+wrap"></a>
 
@@ -138,18 +137,18 @@ Wraps an element or a group of elements with an HTML element defined by a string
 | Param | Type | Description |
 | --- | --- | --- |
 | elements | <code>HTMLElement</code> \| <code>NodeList</code> \| <code>Array.&lt;HTMLElement&gt;</code> | The elements to be wrapped |
-| wrapperString | <code>string</code> | String containing markup a valid HTML element |
+| wrapperString | <code>String</code> | String containing markup a valid HTML element |
 
 <a name="Utils+namespace"></a>
 
 ### utils.namespace
-Adds prefixed classes to the body element.
+Adds classes prefixed with `evolv-` to the body element.
 
 **Kind**: instance property of [<code>Utils</code>](#Utils)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| ...args | <code>string</code> | The namespace |
+| args | <code>String</code> \| <code>Number</code> | The namespace |
 
 <a name="Utils+throttle"></a>
 
@@ -162,7 +161,7 @@ For functions called in rapid succession, this function will only call once per 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | callback | <code>function</code> |  | The function to throttle |
-| limit | <code>number</code> | <code>16</code> | The interval in milliseconds |
+| limit | <code>Number</code> | <code>16</code> | The interval in milliseconds |
 
 <a name="Utils+waitFor"></a>
 
@@ -176,20 +175,20 @@ Polls a callback function until it returns a truthy value or a timeout is reache
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | callback | <code>function</code> |  | The callback function to poll |
-| timeout | <code>number</code> | <code>5000</code> | The timeout in milliseconds, defaults to 5000 |
-| interval | <code>number</code> | <code>25</code> | The interval in milliseconds, defaults to 25 |
+| timeout | <code>Number</code> | <code>5000</code> | The timeout in milliseconds, defaults to 5000 |
+| interval | <code>Number</code> | <code>25</code> | The interval in milliseconds, defaults to 25 |
 
 <a name="Utils+slugify"></a>
 
-### utils.slugify(string) ⇒ <code>string</code>
+### utils.slugify(string) ⇒ <code>String</code>
 Transforms a string into a slug.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
-**Returns**: <code>string</code> - The slug  
+**Returns**: <code>String</code> - The slug  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| string | <code>string</code> | The string to transform |
+| string | <code>String</code> | The string to transform |
 
 <a name="Utils+makeElements"></a>
 
@@ -201,8 +200,8 @@ Creates an array of elements from an HTML string and adds click handlers to the 
 
 | Param | Type | Description |
 | --- | --- | --- |
-| HTMLString | <code>string</code> | The HTML string |
-| clickHandlers | <code>object</code> | An object where the keys are CSS selectors and the values are click handlers |
+| HTMLString | <code>String</code> | The HTML string |
+| clickHandlers | <code>Object</code> | An object where the keys are CSS selectors and the values are click handlers |
 
 <a name="Utils+makeElement"></a>
 
@@ -214,8 +213,8 @@ Creates an element from an HTML string and adds click handlers to the element.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| HTMLString | <code>string</code> | The HTML string |
-| clickHandlers | <code>object</code> | An object where the keys are CSS selectors and the values are click handlers |
+| HTMLString | <code>String</code> | The HTML string |
+| clickHandlers | <code>Object</code> | An object where the keys are CSS selectors and the values are click handlers |
 
 <a name="Utils+$"></a>
 
@@ -227,7 +226,7 @@ Selects an element from the DOM or creates new element from an HTML string.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| selector | <code>string</code> | The CSS selector, XPath expression, or HTML string |
+| selector | <code>String</code> | The CSS selector, XPath expression, or HTML string |
 
 <a name="Utils+$$"></a>
 
@@ -239,7 +238,7 @@ Selects elements from the DOM or creates new elements from an HTML string.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| selector | <code>string</code> | The CSS selector, XPath expression, or HTML string |
+| selector | <code>String</code> | The CSS selector, XPath expression, or HTML string |
 
 <a name="init"></a>
 

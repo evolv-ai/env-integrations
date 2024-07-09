@@ -25,9 +25,9 @@ class Utils {
   /**
    * For functions called in rapid succession, waits until a call has not been made for the duration
    * of the timeout before executing.
-   * @param {function} callback The function to debounce
-   * @param {number} timeout The timeout in milliseconds
-   * @returns {function} The throttled function
+   * @param {Function} callback The function to debounce
+   * @param {Number} timeout The timeout in milliseconds
+   * @returns {Function} The throttled function
    */
   debounce = (callback, timeout = 25) => {
     let timer;
@@ -41,9 +41,9 @@ class Utils {
 
   /**
    * For functions called in rapid succession, this function will only call once per a specified interval.
-   * @param {function} callback The function to throttle
-   * @param {number} limit The interval in milliseconds
-   * @returns {function} The throttled function
+   * @param {Function} callback The function to throttle
+   * @param {Number} limit The interval in milliseconds
+   * @returns {Function} The throttled function
    */
   throttle(callback, limit = 16) {
     let wait = false;
@@ -61,9 +61,9 @@ class Utils {
 
   /**
    * Polls a callback function until it returns a truthy value or a timeout is reached.
-   * @param {function} callback The callback function to poll
-   * @param {number} timeout The timeout in milliseconds, defaults to 5000
-   * @param {number} interval The interval in milliseconds, defaults to 25
+   * @param {Function} callback The callback function to poll
+   * @param {Number} timeout The timeout in milliseconds, defaults to 5000
+   * @param {Number} interval The interval in milliseconds, defaults to 25
    * @returns {Promise} A promise that resolves when the callback returns a truthy value
    *    or rejects when the timeout is reached.
    */
@@ -88,10 +88,10 @@ class Utils {
   /**
    * Polls a callback function at the specified interval. When its return value changes, the listener is called.
    * If the timeout is reached and no callback has been fired, the catch callback is called.
-   * @param {function} callback The callback function to poll
-   * @param {number} timeout The timeout in milliseconds, defaults to 5000
-   * @param {number} interval The interval in milliseconds, defaults to 25
-   * @returns {object} An object with a then() function that takes a listener callback followed by a catch()
+   * @param {Function} callback The callback function to poll
+   * @param {Number} timeout The timeout in milliseconds, defaults to 5000
+   * @param {Number} interval The interval in milliseconds, defaults to 25
+   * @returns {Object} An object with a then() function that takes a listener callback followed by a catch()
    *  function accepts a catch callback.
    * @example <caption>Example usage of subscribe</caption>
    * // This snippet will prevent a session token from being deleted by storing a copy of it in localStorage.
@@ -148,8 +148,8 @@ class Utils {
 
   /**
    * Transforms a string into a slug.
-   * @param {string} string The string to transform
-   * @returns {string} The slug
+   * @param {String} string The string to transform
+   * @returns {String} The slug
    */
   slugify(string) {
     return string
@@ -162,8 +162,8 @@ class Utils {
 
   /**
    * Creates an array of elements from an HTML string and adds click handlers to the elements.
-   * @param {string} HTMLString The HTML string
-   * @param {object} clickHandlers An object where the keys are CSS selectors and the values are click handlers
+   * @param {String} HTMLString The HTML string
+   * @param {Object} clickHandlers An object where the keys are CSS selectors and the values are click handlers
    * @returns {HTMLElement[]} The array of elements
    */
   makeElements(HTMLString, clickHandlers = {}) {
@@ -180,8 +180,8 @@ class Utils {
 
   /**
    * Creates an element from an HTML string and adds click handlers to the element.
-   * @param {string} HTMLString The HTML string
-   * @param {object} clickHandlers An object where the keys are CSS selectors and the values are click handlers
+   * @param {String} HTMLString The HTML string
+   * @param {Object} clickHandlers An object where the keys are CSS selectors and the values are click handlers
    * @returns {HTMLElement} A single element
    */
   makeElement(HTMLString, clickHandlers = {}) {
@@ -197,7 +197,7 @@ class Utils {
 
   /**
    * Selects an element from the DOM or creates new element from an HTML string.
-   * @param {string} selector The CSS selector, XPath expression, or HTML string
+   * @param {String} selector The CSS selector, XPath expression, or HTML string
    * @returns {HTMLElement[]} An array containing a single element
    */
   $(selector) {
@@ -224,7 +224,7 @@ class Utils {
 
   /**
    * Selects elements from the DOM or creates new elements from an HTML string.
-   * @param {string} selector The CSS selector, XPath expression, or HTML string
+   * @param {String} selector The CSS selector, XPath expression, or HTML string
    * @returns {HTMLElement[]} The array of elements
    */
   $$(selector) {
@@ -249,7 +249,7 @@ class Utils {
   /**
    * Adds a class from an element only if a change needs to occur.
    * @param {HTMLElement} element The element
-   * @param {string} className The class name
+   * @param {String} className The class name
    */
   addClass = (element, className) => {
     if (!element.classList.contains(className)) {
@@ -261,7 +261,7 @@ class Utils {
   /**
    * Removes a class from an element only if a change needs to occur.
    * @param {HTMLElement} element The element
-   * @param {string} className The class name
+   * @param {String} className The class name
    */
   removeClass = (element, className) => {
     if (element.classList.contains(className)) {
@@ -273,7 +273,7 @@ class Utils {
   /**
    * Updates an element's innerText only if a change needs to occur.
    * @param {HTMLElement} element The element
-   * @param {string} text The new text for the element
+   * @param {String} text The new text for the element
    */
   updateText = (element, text) => {
     if (element.innerText !== text) {
@@ -286,7 +286,7 @@ class Utils {
   /**
    * Wraps an element or a group of elements with an HTML element defined by a string
    * @param {HTMLElement|NodeList|HTMLElement[]} elements The elements to be wrapped
-   * @param {string} wrapperString String containing markup a valid HTML element
+   * @param {String} wrapperString String containing markup a valid HTML element
    * @returns {HTMLElement} The wrapped element
    */
   wrap = (elements, wrapperString) => {
@@ -299,8 +299,8 @@ class Utils {
   };
 
   /**
-   * Adds prefixed classes to the body element.
-   * @param {...string} args The namespace
+   * Adds classes prefixed with `evolv-` to the body element.
+   * @param {...String|Number} args The namespace
    */
   namespace = (...args) => {
     this.addClass(document.body, ['evolv', ...args].join('-'));

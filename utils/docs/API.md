@@ -20,6 +20,10 @@
 
 * [Utils](#Utils)
     * [new Utils(id, config)](#new_Utils_new)
+    * [.log](#Utils+log)
+    * [.debug](#Utils+debug)
+    * [.warn](#Utils+warn)
+    * [.describe](#Utils+describe)
     * [.debounce](#Utils+debounce) ⇒ <code>function</code>
     * [.subscribe](#Utils+subscribe) ⇒ <code>Object</code>
     * [.addClass](#Utils+addClass)
@@ -29,7 +33,7 @@
     * [.namespace](#Utils+namespace)
     * [.throttle(callback, limit)](#Utils+throttle) ⇒ <code>function</code>
     * [.waitFor(callback, timeout, interval)](#Utils+waitFor) ⇒ <code>Promise</code>
-    * [.slugify(string)](#Utils+slugify) ⇒ <code>String</code>
+    * [.slugify(string)](#Utils+slugify) ⇒ <code>string</code>
     * [.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
     * [.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code>
     * [.$(selector)](#Utils+$) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
@@ -43,8 +47,57 @@ The utils object containing all helper functions
 
 | Param | Type | Description |
 | --- | --- | --- |
-| id | <code>String</code> | A unique key for referencing the utils sandbox |
+| id | <code>string</code> | A unique key for referencing the utils sandbox |
 | config | <code>Object</code> | A configuration object that defines the project. Used by <code>describe()</code> |
+
+<a name="Utils+log"></a>
+
+### utils.log
+Logs a message to the console that can only be seen if the <code>evolv:logs</code> localStorage item is set
+   to <code>normal</code> or <code>debug</code>.
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ...args | <code>string</code> \| <code>number</code> | The messages to log |
+
+<a name="Utils+debug"></a>
+
+### utils.debug
+Logs an debug message to the console that can only be seen if the <code>evolv:logs</code> localStorage item is set
+   to <code>debug</code>.
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ...args | <code>string</code> \| <code>number</code> | The debug messages to log. |
+
+<a name="Utils+warn"></a>
+
+### utils.warn
+Logs a warning to the console that can only be seen if the <code>evolv:logs</code> localStorage item is set
+   to <code>normal</code> or <code>debug</code>.
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ...args | <code>string</code> \| <code>number</code> | The warnings to log. |
+
+<a name="Utils+describe"></a>
+
+### utils.describe
+Logs the description of a context, variable, or variant from <code>evolv-config.json</code> to the console.
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| context | <code>string</code> | The context id. |
+| variable | <code>string</code> | The variable id. |
+| variant | <code>string</code> | The variant id. |
 
 <a name="Utils+debounce"></a>
 
@@ -58,7 +111,7 @@ of the timeout before executing.
 | Param | Type | Description |
 | --- | --- | --- |
 | callback | <code>function</code> | The function to debounce |
-| timeout | <code>Number</code> | The timeout in milliseconds |
+| timeout | <code>number</code> | The timeout in milliseconds |
 
 <a name="Utils+subscribe"></a>
 
@@ -73,8 +126,8 @@ If the timeout is reached and no callback has been fired, the catch callback is 
 | Param | Type | Description |
 | --- | --- | --- |
 | callback | <code>function</code> | The callback function to poll |
-| timeout | <code>Number</code> | The timeout in milliseconds, defaults to 5000 |
-| interval | <code>Number</code> | The interval in milliseconds, defaults to 25 |
+| timeout | <code>number</code> | The timeout in milliseconds, defaults to 5000 |
+| interval | <code>number</code> | The interval in milliseconds, defaults to 25 |
 
 **Example** *(Example usage of subscribe)*  
 ```js
@@ -100,7 +153,7 @@ Adds a class from an element only if a change needs to occur.
 | Param | Type | Description |
 | --- | --- | --- |
 | element | <code>HTMLElement</code> | The element |
-| className | <code>String</code> | The class name |
+| className | <code>string</code> | The class name |
 
 <a name="Utils+removeClass"></a>
 
@@ -112,7 +165,7 @@ Removes a class from an element only if a change needs to occur.
 | Param | Type | Description |
 | --- | --- | --- |
 | element | <code>HTMLElement</code> | The element |
-| className | <code>String</code> | The class name |
+| className | <code>string</code> | The class name |
 
 <a name="Utils+updateText"></a>
 
@@ -124,7 +177,7 @@ Updates an element's innerText only if a change needs to occur.
 | Param | Type | Description |
 | --- | --- | --- |
 | element | <code>HTMLElement</code> | The element |
-| text | <code>String</code> | The new text for the element |
+| text | <code>string</code> | The new text for the element |
 
 <a name="Utils+wrap"></a>
 
@@ -137,7 +190,7 @@ Wraps an element or a group of elements with an HTML element defined by a string
 | Param | Type | Description |
 | --- | --- | --- |
 | elements | <code>HTMLElement</code> \| <code>NodeList</code> \| <code>Array.&lt;HTMLElement&gt;</code> | The elements to be wrapped |
-| wrapperString | <code>String</code> | String containing markup a valid HTML element |
+| wrapperString | <code>string</code> | String containing markup a valid HTML element |
 
 <a name="Utils+namespace"></a>
 
@@ -148,7 +201,7 @@ Adds classes prefixed with `evolv-` to the body element.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| args | <code>String</code> \| <code>Number</code> | The namespace |
+| ...args | <code>string</code> \| <code>number</code> | The namespace |
 
 <a name="Utils+throttle"></a>
 
@@ -161,7 +214,7 @@ For functions called in rapid succession, this function will only call once per 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | callback | <code>function</code> |  | The function to throttle |
-| limit | <code>Number</code> | <code>16</code> | The interval in milliseconds |
+| limit | <code>number</code> | <code>16</code> | The interval in milliseconds |
 
 <a name="Utils+waitFor"></a>
 
@@ -175,20 +228,20 @@ Polls a callback function until it returns a truthy value or a timeout is reache
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | callback | <code>function</code> |  | The callback function to poll |
-| timeout | <code>Number</code> | <code>5000</code> | The timeout in milliseconds, defaults to 5000 |
-| interval | <code>Number</code> | <code>25</code> | The interval in milliseconds, defaults to 25 |
+| timeout | <code>number</code> | <code>5000</code> | The timeout in milliseconds, defaults to 5000 |
+| interval | <code>number</code> | <code>25</code> | The interval in milliseconds, defaults to 25 |
 
 <a name="Utils+slugify"></a>
 
-### utils.slugify(string) ⇒ <code>String</code>
+### utils.slugify(string) ⇒ <code>string</code>
 Transforms a string into a slug.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
-**Returns**: <code>String</code> - The slug  
+**Returns**: <code>string</code> - The slug  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| string | <code>String</code> | The string to transform |
+| string | <code>string</code> | The string to transform |
 
 <a name="Utils+makeElements"></a>
 
@@ -200,7 +253,7 @@ Creates an array of elements from an HTML string and adds click handlers to the 
 
 | Param | Type | Description |
 | --- | --- | --- |
-| HTMLString | <code>String</code> | The HTML string |
+| HTMLString | <code>string</code> | The HTML string |
 | clickHandlers | <code>Object</code> | An object where the keys are CSS selectors and the values are click handlers |
 
 <a name="Utils+makeElement"></a>
@@ -213,7 +266,7 @@ Creates an element from an HTML string and adds click handlers to the element.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| HTMLString | <code>String</code> | The HTML string |
+| HTMLString | <code>string</code> | The HTML string |
 | clickHandlers | <code>Object</code> | An object where the keys are CSS selectors and the values are click handlers |
 
 <a name="Utils+$"></a>
@@ -226,7 +279,7 @@ Selects an element from the DOM or creates new element from an HTML string.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| selector | <code>String</code> | The CSS selector, XPath expression, or HTML string |
+| selector | <code>string</code> | The CSS selector, XPath expression, or HTML string |
 
 <a name="Utils+$$"></a>
 
@@ -238,7 +291,7 @@ Selects elements from the DOM or creates new elements from an HTML string.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| selector | <code>String</code> | The CSS selector, XPath expression, or HTML string |
+| selector | <code>string</code> | The CSS selector, XPath expression, or HTML string |
 
 <a name="init"></a>
 

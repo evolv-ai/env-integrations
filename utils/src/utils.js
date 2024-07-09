@@ -1,33 +1,111 @@
 /* eslint-disable class-methods-use-this */
 import { version } from '../package.json';
-import logs from './logs.js';
+
+/***
+ * Creates the prefix for a log message.
+ * @internal
+ * @param {string} id - The context id.
+ * @param {number} opacity - The opacity of the prefix. A number between 0 and 1.
+ */
+function getlogPrefix(id, opacity) {
+  return [
+    `%c[evolv${id ? `-${id}` : '-utils'}]`,
+    `background-color: rgba(255, 122, 65, ${
+      opacity / 2
+    }); border: 1px solid rgba(255, 122, 65, ${opacity}); border-radius: 2px`,
+  ];
+}
 
 class Utils {
+  #config;
+
+  #logPrefixNormal;
+
+  #logPrefixDebug;
+
   /**
    * The utils object containing all helper functions
-   * @param {String} id A unique key for referencing the utils sandbox
+   * @param {string} id A unique key for referencing the utils sandbox
    * @param {Object} config A configuration object that defines the project. Used by <code>describe()</code>
    */
   constructor(id, config) {
-    const logFunctions = logs.init(id, config);
+    this.#config = config;
 
-    this.logLevel = logFunctions.logLevel;
-    this.log = logFunctions.log;
-    this.warn = logFunctions.warn;
-    this.debug = logFunctions.debug;
+    this.logLevel =
+      localStorage
+        .getItem('evolv:logs')
+        ?.match(/normal|debug/i)?.[0]
+        .toLowerCase() || 'silent';
+
+    this.#logPrefixNormal = getlogPrefix(id, 1);
+    this.#logPrefixDebug = getlogPrefix(id, 0.5);
+
     this.version = version;
-
-    if (config) {
-      this.describe = logFunctions.describe;
-    }
   }
+
+  /**
+   * Logs a message to the console that can only be seen if the <code>evolv:logs</code> localStorage item is set
+   *    to <code>normal</code> or <code>debug</code>.
+   * @param {...(string|number)} args - The messages to log
+   */
+  log = (...args) => {
+    if (this.logLevel === 'normal' || this.logLevel === 'debug') {
+      console.log(...this.#logPrefixNormal, ...args); // eslint-disable-line no-console
+    }
+  };
+
+  /**
+   * Logs an debug message to the console that can only be seen if the <code>evolv:logs</code> localStorage item is set
+   *    to <code>debug</code>.
+   * @param {...(string|number)} args - The debug messages to log.
+   */
+  debug = (...args) => {
+    if (this.logLevel === 'debug') {
+      console.log(...this.#logPrefixDebug, ...args); // eslint-disable-line no-console
+    }
+  };
+
+  /**
+   * Logs a warning to the console that can only be seen if the <code>evolv:logs</code> localStorage item is set
+   *    to <code>normal</code> or <code>debug</code>.
+   * @param {...(string|number)} args - The warnings to log.
+   */
+  warn = (...args) => {
+    if (this.logLevel === 'normal' || this.logLevel === 'debug') {
+      console.warn(...this.#logPrefixNormal, ...args); // eslint-disable-line no-console
+    }
+  };
+
+  /**
+   * Logs the description of a context, variable, or variant from <code>evolv-config.json</code> to the console.
+   * @param {string} context - The context id.
+   * @param {string} variable - The variable id.
+   * @param {string} variant - The variant id.
+   */
+  describe = (context, variable, variant) => {
+    if (!this.#config) {
+      this.warn('Describe requires Evolv Utils to be initialized with a config object');
+      return;
+    }
+    const type = ['context', 'variable', 'variant'];
+    let typeIndex;
+    const item = [context, variable, variant].reduce((acc, cur, index) => {
+      if (cur) {
+        const next = acc[`${type[index]}s`].find((v) => v.id === cur);
+        typeIndex = index;
+        return next;
+      }
+      return acc;
+    }, this.#config);
+    this.log(`init ${type[typeIndex]}:`, item.display_name);
+  };
 
   /**
    * For functions called in rapid succession, waits until a call has not been made for the duration
    * of the timeout before executing.
-   * @param {Function} callback The function to debounce
-   * @param {Number} timeout The timeout in milliseconds
-   * @returns {Function} The throttled function
+   * @param {function} callback The function to debounce
+   * @param {number} timeout The timeout in milliseconds
+   * @returns {function} The throttled function
    */
   debounce = (callback, timeout = 25) => {
     let timer;
@@ -41,9 +119,9 @@ class Utils {
 
   /**
    * For functions called in rapid succession, this function will only call once per a specified interval.
-   * @param {Function} callback The function to throttle
-   * @param {Number} limit The interval in milliseconds
-   * @returns {Function} The throttled function
+   * @param {function} callback The function to throttle
+   * @param {number} limit The interval in milliseconds
+   * @returns {function} The throttled function
    */
   throttle(callback, limit = 16) {
     let wait = false;
@@ -61,9 +139,9 @@ class Utils {
 
   /**
    * Polls a callback function until it returns a truthy value or a timeout is reached.
-   * @param {Function} callback The callback function to poll
-   * @param {Number} timeout The timeout in milliseconds, defaults to 5000
-   * @param {Number} interval The interval in milliseconds, defaults to 25
+   * @param {function} callback The callback function to poll
+   * @param {number} timeout The timeout in milliseconds, defaults to 5000
+   * @param {number} interval The interval in milliseconds, defaults to 25
    * @returns {Promise} A promise that resolves when the callback returns a truthy value
    *    or rejects when the timeout is reached.
    */
@@ -88,9 +166,9 @@ class Utils {
   /**
    * Polls a callback function at the specified interval. When its return value changes, the listener is called.
    * If the timeout is reached and no callback has been fired, the catch callback is called.
-   * @param {Function} callback The callback function to poll
-   * @param {Number} timeout The timeout in milliseconds, defaults to 5000
-   * @param {Number} interval The interval in milliseconds, defaults to 25
+   * @param {function} callback The callback function to poll
+   * @param {number} timeout The timeout in milliseconds, defaults to 5000
+   * @param {number} interval The interval in milliseconds, defaults to 25
    * @returns {Object} An object with a then() function that takes a listener callback followed by a catch()
    *  function accepts a catch callback.
    * @example <caption>Example usage of subscribe</caption>
@@ -148,8 +226,8 @@ class Utils {
 
   /**
    * Transforms a string into a slug.
-   * @param {String} string The string to transform
-   * @returns {String} The slug
+   * @param {string} string The string to transform
+   * @returns {string} The slug
    */
   slugify(string) {
     return string
@@ -162,7 +240,7 @@ class Utils {
 
   /**
    * Creates an array of elements from an HTML string and adds click handlers to the elements.
-   * @param {String} HTMLString The HTML string
+   * @param {string} HTMLString The HTML string
    * @param {Object} clickHandlers An object where the keys are CSS selectors and the values are click handlers
    * @returns {HTMLElement[]} The array of elements
    */
@@ -180,7 +258,7 @@ class Utils {
 
   /**
    * Creates an element from an HTML string and adds click handlers to the element.
-   * @param {String} HTMLString The HTML string
+   * @param {string} HTMLString The HTML string
    * @param {Object} clickHandlers An object where the keys are CSS selectors and the values are click handlers
    * @returns {HTMLElement} A single element
    */
@@ -197,7 +275,7 @@ class Utils {
 
   /**
    * Selects an element from the DOM or creates new element from an HTML string.
-   * @param {String} selector The CSS selector, XPath expression, or HTML string
+   * @param {string} selector The CSS selector, XPath expression, or HTML string
    * @returns {HTMLElement[]} An array containing a single element
    */
   $(selector) {
@@ -224,7 +302,7 @@ class Utils {
 
   /**
    * Selects elements from the DOM or creates new elements from an HTML string.
-   * @param {String} selector The CSS selector, XPath expression, or HTML string
+   * @param {string} selector The CSS selector, XPath expression, or HTML string
    * @returns {HTMLElement[]} The array of elements
    */
   $$(selector) {
@@ -249,7 +327,7 @@ class Utils {
   /**
    * Adds a class from an element only if a change needs to occur.
    * @param {HTMLElement} element The element
-   * @param {String} className The class name
+   * @param {string} className The class name
    */
   addClass = (element, className) => {
     if (!element.classList.contains(className)) {
@@ -261,7 +339,7 @@ class Utils {
   /**
    * Removes a class from an element only if a change needs to occur.
    * @param {HTMLElement} element The element
-   * @param {String} className The class name
+   * @param {string} className The class name
    */
   removeClass = (element, className) => {
     if (element.classList.contains(className)) {
@@ -273,7 +351,7 @@ class Utils {
   /**
    * Updates an element's innerText only if a change needs to occur.
    * @param {HTMLElement} element The element
-   * @param {String} text The new text for the element
+   * @param {string} text The new text for the element
    */
   updateText = (element, text) => {
     if (element.innerText !== text) {
@@ -285,8 +363,8 @@ class Utils {
 
   /**
    * Wraps an element or a group of elements with an HTML element defined by a string
-   * @param {HTMLElement|NodeList|HTMLElement[]} elements The elements to be wrapped
-   * @param {String} wrapperString String containing markup a valid HTML element
+   * @param {(HTMLElement|NodeList|HTMLElement[])} elements The elements to be wrapped
+   * @param {string} wrapperString String containing markup a valid HTML element
    * @returns {HTMLElement} The wrapped element
    */
   wrap = (elements, wrapperString) => {
@@ -300,7 +378,7 @@ class Utils {
 
   /**
    * Adds classes prefixed with `evolv-` to the body element.
-   * @param {...String|Number} args The namespace
+   * @param {...(string|number)} args The namespace
    */
   namespace = (...args) => {
     this.addClass(document.body, ['evolv', ...args].join('-'));

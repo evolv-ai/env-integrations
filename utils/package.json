@@ -7,7 +7,7 @@
   "scripts": {
     "del": "rm -rf ./dist && rm -rf ./docs",
     "build:rollup": "rollup --config rollup.config.mjs",
-    "build:docs": "mkdir docs && jsdoc2md src/utils.js > docs/API.md",
+    "build:docs": "mkdir docs && jsdoc2md src/*.js > docs/API.md",
     "watch:rollup": "rollup --config rollup.config.mjs --watch",
     "export": "npm-run-all -l -s del build:* export:*",
     "serve": "http-server ./dist --port 8082 --cors --silent",

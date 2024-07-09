@@ -76,7 +76,7 @@ export default () => {
           if (!isProgressivePlansPage()) return;
 
           const planTextPattern = /\$(\d+)(per\smonth\s*\/mo\*\s*|\s*)(with(out)?)\sauto\spay/i;
-          const planName = tileHeading.querySelector('h2')?.textContent;
+          const planName = tileHeading.querySelector('h3')?.textContent;
 
           if (!planName) {
             fail('No plan name');

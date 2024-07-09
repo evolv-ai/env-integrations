@@ -1,0 +1,41 @@
+{
+  "name": "@evolv-delivery/utils",
+  "version": "1.0.0",
+  "description": "A library of helper functions for writing experiments",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "del": "rm -rf ./dist && rm -rf ./docs",
+    "build:rollup": "rollup --config rollup.config.mjs",
+    "build:docs": "mkdir docs && jsdoc2md src/utils.js > docs/API.md",
+    "watch:rollup": "rollup --config rollup.config.mjs --watch",
+    "export": "npm-run-all -l -s del build:* export:*",
+    "serve": "http-server ./dist --port 8082 --cors --silent",
+    "build": "npm-run-all -l -s del build:*",
+    "start": "npm-run-all -l -s del build:* -p watch:* serve"
+  },
+  "author": "Charles Robertson",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "docs"
+  ],
+  "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-transform-private-methods": "^7.22.5",
+    "@babel/preset-env": "^7.22.10",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-terser": "^0.4.0",
+    "eslint": "^8.48.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-import": "^2.27.5",
+    "http-server": "^14.1.1",
+    "jsdoc-to-markdown": "^8.0.1",
+    "nodemon": "^2.0.20",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.8.3",
+    "rollup": "^3.28.1"
+  }
+}

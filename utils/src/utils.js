@@ -195,7 +195,7 @@ class Utils {
     setTimeout(() => {
       clearInterval(poll);
       if (catcherA && !fired) {
-        this.debug('subscribe to: timed out');
+        this.debug('subscribe: timed out');
         catcherA();
       }
     }, duration);

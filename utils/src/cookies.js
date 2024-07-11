@@ -53,7 +53,6 @@ class CookieMethods {
    * document.cookie = 'throttle=|EnableTest1';
    * utils.cookie.appendItem('|EnableTest2');
    * document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
-   * ;
    */
   appendItem(key, value, encode = true) {
     const existingValue = this.getItem(key, false);

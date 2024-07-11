@@ -1,6 +1,8 @@
 ## Classes
 
 <dl>
+<dt><a href="#CookieMethods">CookieMethods</a></dt>
+<dd></dd>
 <dt><a href="#Utils">Utils</a></dt>
 <dd></dd>
 </dl>
@@ -13,6 +15,79 @@
 </dd>
 </dl>
 
+<a name="CookieMethods"></a>
+
+## CookieMethods
+**Kind**: global class  
+
+* [CookieMethods](#CookieMethods)
+    * [new CookieMethods()](#new_CookieMethods_new)
+    * [.getItem(key, [decode])](#CookieMethods+getItem) ⇒ <code>string</code>
+    * [.setItem(key, value, [encode])](#CookieMethods+setItem)
+    * [.appendItem(key, value, [encode])](#CookieMethods+appendItem)
+
+<a name="new_CookieMethods_new"></a>
+
+### new CookieMethods()
+A group of methods for getting and setting cookies. These methods get assigned to the
+<code>evolv.utils.cookie</code> object.
+
+<a name="CookieMethods+getItem"></a>
+
+### cookieMethods.getItem(key, [decode]) ⇒ <code>string</code>
+Retrieves the decoded (optionally) value of the specified cookie.
+
+**Kind**: instance method of [<code>CookieMethods</code>](#CookieMethods)  
+**Returns**: <code>string</code> - The value of the cookie  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| key | <code>string</code> |  | The cookie key |
+| [decode] | <code>boolean</code> | <code>true</code> | Whether to decode the value |
+
+**Example**  
+```js
+document.cookie = 'test-cookie=true';
+utils.cookie.getItem('test-cookie'); // 'true'
+```
+<a name="CookieMethods+setItem"></a>
+
+### cookieMethods.setItem(key, value, [encode])
+Sets an encoded (optionally) value to the specified cookie.
+
+**Kind**: instance method of [<code>CookieMethods</code>](#CookieMethods)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| key | <code>string</code> |  | The cookie key |
+| value | <code>string</code> \| <code>number</code> |  | The value to assign |
+| [encode] | <code>boolean</code> | <code>true</code> | Whether to URI encode the value |
+
+**Example**  
+```js
+utils.cookie.setItem('testCookie', '{"a":"1","b":"2"}');
+document.cookie; // 'testCookie=%7B%22a%22%3A%221%22%2C%22b%22%3A%222%22%7D'
+```
+<a name="CookieMethods+appendItem"></a>
+
+### cookieMethods.appendItem(key, value, [encode])
+Appends an encoded (optionally) value to the specifiec cookie.
+
+**Kind**: instance method of [<code>CookieMethods</code>](#CookieMethods)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| key | <code>string</code> |  | The cookie key |
+| value | <code>string</code> \| <code>number</code> |  | The value to append |
+| [encode] | <code>boolean</code> | <code>true</code> | Whether to URI encode the value |
+
+**Example**  
+```js
+document.cookie = 'throttle=|EnableTest1';
+utils.cookie.appendItem('|EnableTest2');
+document.cookie; // 'throttle=|EnableTest1|EnableTest2'
+;
+```
 <a name="Utils"></a>
 
 ## Utils
@@ -129,7 +204,7 @@ If the timeout is reached and no callback has been fired, the catch callback is 
 | timeout | <code>number</code> | The timeout in milliseconds, defaults to 5000 |
 | interval | <code>number</code> | The interval in milliseconds, defaults to 25 |
 
-**Example** *(Example usage of subscribe)*  
+**Example**  
 ```js
 // This snippet will prevent a session token from being deleted by storing a copy of it in localStorage.
 

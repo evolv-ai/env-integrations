@@ -85,7 +85,7 @@ Appends an encoded (optionally) value to the specifiec cookie.
 ```js
 document.cookie = 'throttle=|EnableTest1';
 utils.cookie.appendItem('|EnableTest2');
-document.cookie; // 'throttle=|EnableTest1|EnableTest2'
+document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
 ;
 ```
 <a name="Utils"></a>

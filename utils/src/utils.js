@@ -1,5 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { version } from '../package.json';
+import CookieMethods from './cookies.js';
 
 /***
  * Creates the prefix for a log message.
@@ -171,7 +172,7 @@ class Utils {
    * @param {number} interval The interval in milliseconds, defaults to 25
    * @returns {Object} An object with a then() function that takes a listener callback followed by a catch()
    *  function accepts a catch callback.
-   * @example <caption>Example usage of subscribe</caption>
+   * @example
    * // This snippet will prevent a session token from being deleted by storing a copy of it in localStorage.
    *
    * subscribe(() => sessionStorage.getItem(key), 600000, 250).then(sessionToken => {
@@ -223,6 +224,8 @@ class Utils {
       },
     };
   };
+
+  cookie = new CookieMethods(this.debug);
 
   /**
    * Transforms a string into a slug.

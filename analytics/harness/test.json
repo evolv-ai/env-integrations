@@ -1,26 +1,68 @@
 {
-  "segment": [
-    {
-      "statements": [
+  "ga4-server": {
+        "source": {
+          "type": "dom"
+        },
+
+      "destinations": [
+          {
+            "statements": [ 
+                  {
+                      "invoke": "window.dataLayer.push",
+                      "with": [
+                      {
+                        "event": "evolv",
+                        "evolvEventDetails": {
+                          "cid": "${cid}",
+                          "eid": "${eid}",
+                          "excluded": false,
+                          "group_id": "${group_id}",
+                          "non_interaction": true,
+                          "ordinal": "${combination_id}",
+                          "projectName": "${project_name}",
+                          "type": "confirmed",
+                          "uid": "${uid}"
+                        } 
+                      }
+                    ]
+                  }
+              ],
+              "poll": {
+                  "duration": 20000,
+                  "interval": 50
+              }
+          }
+      ]
+  },
+  "ga4": {
+    "destinations": [
         {
-          "invoke": "window.console.info",
-          "with": [
-            "********* Experiment Viewed *********",
-            {
-              "nonInteraction": 1,
-              "experiment_id": "${group_id}",
-              "experiment_name": "${project_name}",
-              "variation_id": "${cid}",
-              "variation_name": "combination ${combination_id}"
+          "statements": [ 
+                {
+                    "invoke": "window.dataLayer.push",
+                    "with": [
+                    {
+                      "event": "evolv",
+                      "evolvEventDetails": {
+                        "cid": "${cid}",
+                        "eid": "${eid}",
+                        "excluded": false,
+                        "group_id": "${group_id}",
+                        "non_interaction": true,
+                        "ordinal": "${combination_id}",
+                        "projectName": "${project_name}",
+                        "type": "confirmed",
+                        "uid": "${uid}"
+                      } 
+                    }
+                  ]
+                }
+            ],
+            "poll": {
+                "duration": 20000,
+                "interval": 50
             }
-          ]
         }
-      ],
-      "poll": {
-        "duration": 20000,
-        "interval": 50
-      }
-    }
-  ],
-  "uniqueConfirmationsPerSession": true
+    ]
+  }
 }

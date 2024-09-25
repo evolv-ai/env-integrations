@@ -34,12 +34,12 @@ function updateSession(){
 
 function hasSent(eventType, allocation){
   let cid = allocation.cid;
-  return eventList(eventType).includes(cid || eventType)
+  return eventList(eventType).includes(`${eventType}-${cid}`)
 }
 
 function markAsSentLocal(eventType, allocation){
   let cid = allocation.cid;
-  return eventList(eventType).push(cid || eventType)
+  return eventList(eventType).push(`${eventType}-${cid}`)
 }
 
 function markAsSentSession(eventType, allocation){

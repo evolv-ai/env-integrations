@@ -2,44 +2,43 @@ import {extractAllocations} from './allocations.js';
 import {waitFor} from './waitFor.js';
 import { areStatementsReady, processStatements } from './statements.js';
 import { eventTracking } from './eventTracking.js';
+import { getSource } from './eventSource.js';
 
 function listenToEvents(config){
   var poll = config.poll || {duration: 20000, interval:50};
   var events = config.event_types || ['confirmed'];
   var emitCheck = config.check;
   var emit = config.emit;
-  var pageOptions = config.pageOptions || [];
+  var pageOptions = config.pageOptions || {};
   let tracking = eventTracking(config.uniqueConfirmationsPerSession);
 
   function checkEvolv(){ return window.evolv}
 
   function bindListener() {
     events.forEach(function(eventType){
-      function emitAllocations(pageConfig, allocation){
+      function emitAllocations(pageConfig, event){
         try {
-          if (!tracking.hasSent(eventType, allocation)){
-            emit(pageConfig, eventType, allocation);
-            tracking.markAsSent(eventType, allocation);
+          if (!tracking.hasSent(eventType, event)){
+            emit(pageConfig, eventType, event);
+            tracking.markAsSent(eventType, event);
           }
         } catch(e){console.info('Evolv: Analytics not sent', e);}
       }
-
-      window.evolv.client.on(eventType, function (type) {
-        var allocations = extractAllocations(eventType);
-        allocations.forEach(function(allocation) {
-          var pageConfig = findMatchingConfig(pageOptions, allocation);
-          if (!pageConfig) return;
-          waitFor(emitCheck.bind(null, pageConfig), emitAllocations.bind(null,pageConfig, allocation), poll);
-        })
+      
+      getSource(config).on(eventType, function (event) {
+        var pageConfig = findMatchingConfig(pageOptions, event);
+        if (!pageConfig) return;
+        waitFor(emitCheck.bind(null, pageConfig), emitAllocations.bind(null,pageConfig, event), poll);
       });
     });
   }
   waitFor(checkEvolv, bindListener, poll);
 }
 //json config processing
-function findMatchingConfig(configs, event){
-  for (var i=0; i< configs.length; i++){
-    var config = configs[i]
+function findMatchingConfig(config, event){
+  const destinations = config.destinations;
+  for (var i=0; i< destinations.length; i++){
+    var config = destinations[i]
     if (contextMatch(config, event)) {
         return config
     }

@@ -8,14 +8,19 @@
 ## Setting up the config json
 The config is read top to bottom. If a match is found, it stops. No fall-through, so in the example below if the path of the page starts with `/home/`, nothing will happen, because the statements block is an empty array.
 
-`"omni"` is just a name, nothing is keying off of it.
-The optional `"experiements"` block must have an `"operator"` with an `"include"` or `"exclude"` value and an `"ids"` array. The `"ids"` array can be empty.
+`"omni"` is just a name to use for organizing different destinations, nothing is keying off of it. Each of these top level keys must have a `"destinations"` attribute to specify an array of array of handlers for the main destination.
 
-`"statements"` is an array of statements to be executed. `"invoke"` is the statement to execute and `"with"` is the list of parameters for the statement. You can use `combination_id` and `experiment_id` in your statements.
+By default the `"destinations"` will apply for each evolv `confirmation` event. A `"source"` may be specified to read events from something other than evolv. 
+
+For each designation handler, the folloiwing are available attributes:
+- `"page"` (Optional): Specifies that the url must match a regular expression before the handler applies.
+- `"experiments"` (Optional): Must have an `"operator"` with an `"include"` or `"exclude"` value and an `"ids"` array. The `"ids"` array can be empty.
+- `"statements"`:  Is an array of statements to be executed. `"invoke"` is the statement to execute and `"with"` is the list of parameters for the statement. You can use `combination_id` and `experiment_id` in your statements.
 
 ```
 {
-    "omni": [
+    "omni": {
+      "destinations": [
         {
             "page": "^/home/",
             "statements": []
@@ -62,7 +67,8 @@ The optional `"experiements"` block must have an `"operator"` with an `"include"
                 }
             ]
         }
-    ],
+      ]
+    },
     "uniqueConfirmationsPerSession": true
 }
 ```

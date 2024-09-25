@@ -2,17 +2,25 @@ import { EventContext } from "./eventContext";
 import { getExpression, runStatement } from "./statement";
 
 export function processStatements(pageConfig, event_type, evolvEvent){
-  var statements = pageConfig.statements;
-  var eventContext = new EventContext({...evolvEvent, event_type});
-  eventContext.initializeAsync().then(()=>{
+  const event = new EventContext({...evolvEvent, event_type});
+
+  function applyStatements(event){
     try{
+      var statements = pageConfig.statements;
       statements.forEach(function(statement){
         if (statement.event_type === event_type || !statement.event_type) {
-          runStatement(statement, eventContext);
+          runStatement(statement, event);
         }
       })
     } catch(e){console.info('statement failed',e)}
-  });
+  }
+
+
+  if (evolvEvent.offline_event){
+      applyStatements(event);
+  } else {
+    event.initializeAsync().then(()=>applyStatements(event));
+  }
 }
 
 export function areStatementsReady(config){

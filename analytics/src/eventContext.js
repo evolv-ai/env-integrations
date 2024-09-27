@@ -3,6 +3,7 @@
 //Object to process event values
 export function EventContext(event){
   this.event = event;
+  this.cid = event.cid;
   this.localVars = {};
 }
 
@@ -10,7 +11,7 @@ EventContext.prototype.isLocalVar = function(key){
   return key.indexOf('@') === 0;
 }
 
-EventContext.prototype.initializeAsync = function(){
+EventContext.prototype.prepareProjectName = function(){
   let event = this.event;
   return new Promise((resolve,reject)=>
     getProjectName(event).then(projectName=>{
@@ -20,7 +21,7 @@ EventContext.prototype.initializeAsync = function(){
   );
 }
 
-function getProjectName(event){
+export function getProjectName(event){
   return new Promise((resolve,reject)=>{
     let cid = event.cid;
 		if (!cid) return '';

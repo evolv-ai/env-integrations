@@ -1,15 +1,14 @@
-import {extractAllocations} from './allocations.js';
 import {waitFor} from './waitFor.js';
-import { areStatementsReady, processStatements } from './statements.js';
 import { eventTracking } from './eventTracking.js';
 import { getSource } from './eventSource.js';
+import { isDestinationReady, processDestination } from './eventTarget.js';
 
 function listenToEvents(config){
   var poll = config.poll || {duration: 20000, interval:50};
-  var events = config.event_types || ['confirmed'];
   var emitCheck = config.check;
   var emit = config.emit;
   var pageOptions = config.pageOptions || {};
+  var events = pageOptions.event_types || ['confirmed'];
   let tracking = eventTracking(config.uniqueConfirmationsPerSession);
 
   function checkEvolv(){ return window.evolv}
@@ -60,17 +59,15 @@ function contextMatch(config, event) {
 }
 
 export function processAnalytics(config){
-  var {event_types,...baseConfig} = config;
-  var configKeys = Object.keys(baseConfig);
+  var configKeys = Object.keys(config);
   configKeys.forEach(function(key){
     try{
-      var pageOptions = baseConfig[key]
+      var pageOptions = config[key]
       listenToEvents({
         pageOptions: pageOptions,
-        check: areStatementsReady,
-        emit: processStatements,
-        event_types,
-        uniqueConfirmationsPerSession: baseConfig.uniqueConfirmationsPerSession
+        check: isDestinationReady,
+        emit: processDestination,
+        uniqueConfirmationsPerSession: config.uniqueConfirmationsPerSession
       });
     } catch(e){console.info('Evolv: Analytics not setup for', key)}
   })

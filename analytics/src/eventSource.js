@@ -1,5 +1,4 @@
-import { extractAllocations } from "./allocations";
-
+import { EventContext } from "./eventContext";
 
 const DefaultCookieKey = 'evolv-confirmation-events';
 const DefaultDomKey = 'body';
@@ -13,25 +12,31 @@ export function getSource(config){
                 async on(eventType, fnc){
                     if (eventType === 'confirmed'){
                         const events = await takeEventsFromCookie(key || DefaultCookieKey);
-                        events.forEach(fnc);
+                        events.forEach(ev=>fnc(new EventContext({...ev,  event_type: eventType})));
                     }
                 }
             };
          case 'dom': 
             return {
-                async on(eventType, fnc){
+                async on(eventType, fnc){   console.info('-- evolv eventType', eventType);
                     if (eventType === 'confirmed'){
                         const events = await getEventsFromDom(key || DefaultDomKey, attribute || DefaultDomAttribute);
-                        events.forEach(fnc);
+                        events.forEach(ev=>fnc(new EventContext({...ev,  event_type: eventType})));
                     }
                 }
             };
         default: 
             return {
                 on(eventType, fnc){
-                    window.evolv.client.on(eventType, ()=>{
-                        var allocations = extractAllocations(eventType);
-                        allocations.forEach(fnc);
+                    window.evolv.client.on(eventType, (_, name)=>{ console.info('-- evolv event', _, name)
+                        var events = extractEvents(eventType, name);
+                        events.forEach(async ev=>{
+                            const event = new EventContext({event_type: eventType, ...ev});
+                            if (!name){
+                                await event.prepareProjectName();
+                            }
+                            fnc(event)
+                        });
                     });
                 }
             }
@@ -51,7 +56,6 @@ function takeEventsFromCookie(key){
     if (!value) return [];
 
     const events = parseEvents(value);
-
     //clearCookieValue(key);
     return events;
 }
@@ -59,7 +63,7 @@ function takeEventsFromCookie(key){
 function getEventsFromDom(selector, attribute){
     return new Promise((resolve) => {
         const listener = (_, el) => {
-        const data = el.getAttribute(attribute);
+          const data = el.getAttribute(attribute);
           resolve(parseEvents(data));
         };
     
@@ -72,15 +76,35 @@ function parseEvents(value){
     const events = eventValues.map(event =>{
         const [ordinal, group_id, cid, project_name] = event.split(',');
         const eid = (cid || '').split(':')[1];
-        return {
-            cid,
-            eid,
-            ordinal,
-            group_id,
-            project_name,
+        return { 
+            cid, eid, ordinal, group_id, project_name,
+            event_type: "confirmed",
             uid: window.evolv.context.uid,
-            offline_event: true
         }
     })
     return events;
 }
+
+const eventKeys = {
+    confirmed: 'experiments.confirmations',
+    contaminated: 'experiments.contaminations'
+  };
+  
+  function findAllocation(cid) {
+    var allocations = window.evolv.context.get('experiments').allocations;
+    for (let i = 0; i < allocations.length; i++) {
+        if (allocations[i].cid === cid) return allocations[i];
+    }
+  }
+  
+  export function extractEvents(eventType, name) {
+    var eventKey = eventKeys[eventType];
+    if (eventKey){  
+      var candidates = window.evolv.context.get(eventKey) || [];
+      return candidates.map(function(candidate) {
+        return findAllocation(candidate.cid)
+      });
+    } else {
+      return [{event_type: name, uid: window.evolv.context.uid}]
+    }
+  }

@@ -1,22 +1,24 @@
 {
   "ga4-server": {
-        "source": {
+      "source": {
           "type": "dom"
-        },
-
+      },
       "destinations": [
           {
+            "comment": {},
+              "target":{ "type": "evolv"},
+            
             "statements": [ 
                   {
                       "invoke": "window.dataLayer.push",
-                      "with": [
+                      "with": [ 
                       {
                         "event": "evolv",
                         "evolvEventDetails": {
                           "cid": "${cid}",
                           "eid": "${eid}",
                           "excluded": false,
-                          "group_id": "${group_id}",
+                          "group_id": "Server",
                           "non_interaction": true,
                           "ordinal": "${combination_id}",
                           "projectName": "${project_name}",
@@ -34,13 +36,15 @@
           }
       ]
   },
+
   "ga4": {
+    "event_types": ["confirmed", "contaminated", "event.emitted"],
     "destinations": [
         {
           "statements": [ 
                 {
                     "invoke": "window.dataLayer.push",
-                    "with": [
+                    "with": [ 
                     {
                       "event": "evolv",
                       "evolvEventDetails": {
@@ -51,7 +55,7 @@
                         "non_interaction": true,
                         "ordinal": "${combination_id}",
                         "projectName": "${project_name}",
-                        "type": "confirmed",
+                        "type": "${event_type}",
                         "uid": "${uid}"
                       } 
                     }
@@ -64,5 +68,5 @@
             }
         }
     ]
-  }
+}
 }

@@ -2,15 +2,7 @@
 // {lastInteraction: 1718914875654, sentEvents}
 const StorageKey = 'evolv:event_tracking';
 
-let sentEvents = {//default values - to be updated from localStorage
-  confirmed: [],     //eids
-  contaminated: [],  //eids
-  others: []         //event tags
-};
-
-function eventList(eventType){
-  return sentEvents[eventType] || sentEvents.others;
-}
+let sentEvents = [];
 
 function loadSession(indicator){
   const SessionDuration = 30*60*1000;
@@ -33,13 +25,17 @@ function updateSession(){
 }
 
 function hasSent(eventType, allocation){
+  eventType = allocation.event_type || eventType;
   let cid = allocation.cid;
-  return eventList(eventType).includes(`${eventType}-${cid}`)
+
+  return sentEvents.includes(`${eventType}-${cid}`)
 }
 
 function markAsSentLocal(eventType, allocation){
+  eventType = allocation.event_type || eventType;
   let cid = allocation.cid;
-  return eventList(eventType).push(`${eventType}-${cid}`)
+
+  return sentEvents.push(`${eventType}-${cid}`)
 }
 
 function markAsSentSession(eventType, allocation){

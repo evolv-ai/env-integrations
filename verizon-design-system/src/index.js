@@ -20,11 +20,12 @@ export default (config) => {
   }
 
   waitFor(() => window.evolv?.utils?.init('verizon-design-system')).then(utils => {
-    const { log, debug, warn } = utils;
+    const { log, debug } = utils;
+    const { $mu } = window.evolv;
 
-    debug(`init verizon design system version ${version}`);
     window.evolv.vds ??= {};
     const { vds } = window.evolv;
+    let hasRun = false;
 
     vds.VZBase = class VZBase extends HTMLElement {
       constructor(config = {}) {
@@ -365,10 +366,17 @@ export default (config) => {
         'evolv-button': vds.Button,
       }
       Object.keys(components).forEach(name => {
-        if (!customElements.get(name)) {
-          debug(`register <${name}>`);
-          customElements.define(name, components[name]);
-        }
+        $mu(name, `vds-${name}`).customMutation((state, element) => {
+          if (!hasRun) {
+            log(`init verizon design system version ${version}`);
+            hasRun = true;
+          }
+
+          if (!customElements.get(name)) {
+            debug(`init <${name}>`);
+            customElements.define(name, components[name]);
+          }
+        })
       });
   });
 };

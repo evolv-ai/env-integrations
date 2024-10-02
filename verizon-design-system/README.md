@@ -70,5 +70,5 @@ window.evolv.vds.TextLink
 | `display` | Changes the display property of the Button. | `flex` | `flex`, `block`, `inline-block` |
 | `size` | Renders the Button in the correpsponding size. | `large` | `large`, `small` |
 | `use` | Black (primary) or white (secondary) Button. | `primary` | `primary`, `secondary` |
-| `width` | The width for rendering the Button. | `auto` | <string> or <number> |
+| `width` | The width for rendering the Button. | `auto` | `<number>` or `<css width>` |
 | `disabled` | Disables Button. | `false` | `true`, `false` |

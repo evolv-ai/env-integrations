@@ -40,20 +40,6 @@ export default (config) => {
           --evolv-color-gray-65: #a7a7a7;
           --evolv-color-gray-85: #d8dada;
           --evolv-color-gray-95: #f6f6f6;
-        
-          /* Body text small */
-          --evolv-font-family-sm: var(--evolv-font-family-etx);
-          --evolv-font-size-sm: 0.75rem;
-          --evolv-line-height-sm: 1rem;
-          --evolv-font-weight-sm: 400;
-          --evolv-letter-spacing-sm: normal;
-        
-          /* Body text large */
-          --evolv-font-family-lg: Verizon-NHG-eDS, Helvetica, Arial, sans-serif;
-          --evolv-font-size-lg: 1rem;
-          --evolv-line-height-lg: 1.25rem;
-          --evolv-font-weight-lg: 400;
-          --evolv-letter-spacing-lg: 0.03125rem;
         }`
   
         this.mixins = {
@@ -63,13 +49,15 @@ export default (config) => {
               font-size: 0.75rem;
               line-height: 1rem;
               font-weight: 400;
-              letter-spacing: normal;`,
+              letter-spacing: normal;
+              margin: 0;`,
             lg: () => `
               font-family: var(--evolv-font-family-eds);
               font-size: 1rem;
               line-height: 1.25rem;
               font-weight: 400;
-              letter-spacing: 0.03125rem;`
+              letter-spacing: 0.03125rem;
+              margin: 0;`
           },
         }
   
@@ -92,6 +80,115 @@ export default (config) => {
           
           ${ /* this.textSize ? this.textBody[this.textSize] : */ ''}
         </style>`
+      }
+    }
+
+    vds.Title = class Title extends vds.VZBase {
+      constructor() {
+        super();
+
+        this.size = this.getAttribute('size') || 'small';
+        this.primitive = this.getAttribute('primitive') || null;
+        this.breakpoint = this.getAttribute('breakpoint') || '768px';
+
+        if (this.size && !this.primitive) {
+          switch (this.size) {
+            case '2xlarge':
+              this.primitive = 'h1';
+              break;
+            case 'xlarge':
+              this.primitive = 'h1';
+              break;
+            case 'large':
+              this.primitive = 'h2';
+              break;
+            case 'medium':
+              this.primitive = 'h2';
+              break;
+            case 'small':
+              this.primitive = 'h3';
+            default:
+          }
+        }
+
+        const style = `
+          :host > * {
+            ${this.mixins.bodyText.lg()}
+            text-decoration: none;
+          }
+
+          :host([color="white"]) > * {
+            color: white;
+          }
+
+          :host([bold="true"]) > * {
+            font-weight: 700;
+          }
+
+          :host([size="medium"]) > * {
+            font-size: 1.25rem;
+            line-height: 1.5rem;
+          }
+
+          :host([size="large"]) > * {
+            font-size: 1.5rem;
+            line-height: 1.75;
+          }
+
+          :host([size="xlarge"]) > * {
+            font-size: 2rem;
+            font-weight: 300;
+            line-height: 2.25rem;
+            letter-spacing: 0.015625rem;
+          }
+
+          :host([size="2xlarge"]) > * {
+            font-size: 2.5rem;
+            font-weight: 300;
+            line-height: 2.5rem;
+          }
+
+          @media screen and (min-width: ${this.breakpoint}) {
+            :host([size="small"]) > * {
+              font-size: 1.25rem;
+              line-height: 1.5rem;
+            }
+
+            :host([size="medium"]) > * {
+              font-size: 1.5rem;
+              line-height: 1.75rem;
+            }
+
+            :host([size="large"]) > * {
+              font-size: 2rem;
+              font-weight: 300;
+              line-height: 2.25rem;
+              letter-spacing: 0.015625rem;
+            }
+
+            :host([size="xlarge"]) > * {
+              font-size: 3rem;
+              line-height: 3rem;
+            }
+
+            :host([size="2xlarge"]) > * {
+              font-size: 4rem;
+              line-height: 4rem;
+            }
+
+            :host([bold="true"]) > * {
+              font-weight: 700;
+            }
+          }
+        `
+
+        const template = `<${this.primitive}>
+          <slot></slot>
+        </${this.primitive}>`
+    
+        const styleElement = this.shadow.querySelector('style');
+        styleElement.textContent += style;
+        styleElement.insertAdjacentHTML('afterend', template);
       }
     }
     
@@ -126,7 +223,7 @@ export default (config) => {
             border-color: inherit;
           }
     
-          :host[type=standAlone] a {
+          :host([type=standAlone]) a {
             color: black;
             border-color: black;
           }
@@ -362,9 +459,11 @@ export default (config) => {
 
       // Register web components
       const components = {
+        'evolv-title': vds.Title,
         'evolv-text-link': vds.TextLink,
         'evolv-button': vds.Button,
       }
+      
       Object.keys(components).forEach(name => {
         $mu(name, `vds-${name}`).customMutation((state, element) => {
           if (!hasRun) {

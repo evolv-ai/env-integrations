@@ -1,6 +1,6 @@
 import { version } from '../package.json';
 
-module.exports = (config) => {
+export default (config) => {
   function waitFor(callback, timeout = 5000, interval = 25) {
     return new Promise((resolve, reject) => {
         let poll;
@@ -19,9 +19,7 @@ module.exports = (config) => {
     });
   }
 
-  waitFor(() => window.evolv?.utils).then(utilsGlobal => {
-    utilsGlobal.init('int-example');
-    const utils = utilsGlobal['int-example'];
+  waitFor(() => window.evolv?.utils?.init('int-example')).then(utils => {
     const { log, debug, warn } = utils;
     const { collect, mutate, $mu } = window.evolv;
     const sessionKey = 'evolv:example-value';

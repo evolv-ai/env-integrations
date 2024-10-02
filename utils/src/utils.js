@@ -29,11 +29,11 @@ class Utils {
   /**
    * An array of callbacks to be executed on context exit. Used by [.namespace](#Utils+namespace)
    * and can also be used for custom tear-down/clean-up functions if you have problems with
-   * elements persisting after SPA navigation changes. This does require the Evolv Client to
-   * have the current active keys transition to inactive to trigger, so in the Web Editor it
-   * won't fire in Edit mode. It also requires the `config` object to contain the context key
-   * as it matches in the YML. If your `config.contexts[0].id` is not the same you can add the
-   * following to the top level of `config`:
+   * elements persisting after SPA navigation changes. Reversion triggers when the current active
+   * key transitions to inactive, so in the Web Editor it won't fire in Edit mode. It also requires
+   * the `config` object to contain the context key as it matches in the YML. If `config.contexts[0].id`
+   * is not the same as the context key in the YML you can add the following to the top level of
+   * `config`:
    * ```js
    *  context_key: this.key,
    * ```

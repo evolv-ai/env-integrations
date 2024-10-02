@@ -70,12 +70,12 @@ class Utils {
           return;
         }
 
-        this.log(`active keys: init key watching for '${this.contextKey}'`);
+        this.log(`key watcher: init key watching for '${this.contextKey}'`);
 
         window.evolv.client.getActiveKeys(this.contextKey).listen((keys) => {
           // Determine if user is exiting the context
           if (keys.previous.length && !keys.current.length) {
-            this.log(`active keys: exit context '${this.contextKey}'`);
+            this.log(`key watcher: exit context '${this.contextKey}'`);
             let index = this.toRevert.length;
             while (index--) {
               this.toRevert[index]();
@@ -368,7 +368,7 @@ class Utils {
    */
   addClass = (element, className) => {
     if (!element.classList.contains(className)) {
-      this.debug(`add-class: '${className}' added`);
+      this.debug(`add class: '${className}' added`);
       element.classList.add(className);
     }
   };
@@ -380,7 +380,7 @@ class Utils {
    */
   removeClass = (element, className) => {
     if (element.classList.contains(className)) {
-      this.debug(`remove-class: '${className}' removed`);
+      this.debug(`remove class: '${className}' removed`);
       element.classList.remove(className);
     }
   };
@@ -392,7 +392,7 @@ class Utils {
    */
   updateText = (element, text) => {
     if (element.innerText !== text) {
-      this.debug(`update-text: text replaced with '${text}'`);
+      this.debug(`update text: text replaced with '${text}'`);
       /* eslint-disable-next-line no-param-reassign */
       element.innerText = text;
     }

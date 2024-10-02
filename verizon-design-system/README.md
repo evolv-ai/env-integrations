@@ -51,11 +51,46 @@ window.evolv.vds.Title
 
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
-| `color` | The text color of the title | `black` | `black`, `white` |
+| `color` | The text color of the title | `inherit` | See **Properties** |
 | `bold` | The weight of the title | `false` | `true`, `false` |
 | `size` | The font size of the title | `small` | `small`, `medium`, `large`, `xlarge`, `2xlarge` |
 | `primitive` | The base element for the title | Assigned based `size` *See note* | `h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `p`, `span` |
 | `breakpoint` | The screen width at which to transition to a larger font size | `768px` | `<css width>` |
+
+#### Notes
+
+The `primitive` attribute, if left blank, is assigned a default heading tag corresponding to its `size`:
+
+| `size` | `primitive` |
+| :----- | :---------- |
+| `small` | `h3` |
+| `medium` | `h2` |
+| `large` | `h2` |
+| `xlarge` | `h1` |
+| `2xlarge` | `h1` |
+
+### Icon
+
+#### Tag
+
+```html
+<evolv-icon name="trash-can" size="medium"></evolv-icon>
+```
+
+#### Class
+
+```js
+window.evolv.vds.Icon
+```
+
+#### Attributes
+
+| Name | Description | Default | Accepts |
+| :--- | :---------- | :------ | :------ |
+| `name` | The name of the icon | `pencil` | `pencil`, `down-caret`, `right-arrow`, `trash-can`, `phone`, `phone-plan`, `phone-protection`, `info`, `close` |
+| `color` | The text color of the icon | `inherit` | See **Properties** |
+| `size` | The font size of the icon | `small` | `small`, `medium`, `large`, `xlarge` |
+| `title` | The title to be passed to the icon, visible to assistive technologies | `<name>` | `<string>` |
 
 #### Notes
 
@@ -109,3 +144,21 @@ window.evolv.vds.TextLink
 | `use` | Black (primary) or white (secondary) Button. | `primary` | `primary`, `secondary` |
 | `width` | The width for rendering the Button. | `auto` | `<number>` or `<css width>` |
 | `disabled` | Disables Button. | `false` | `true`, `false` |
+
+## Properties
+
+### Color
+
+`color` is a property shared by multiple components. More colors can be added as needed. The default value is `inherit`.
+
+| Option | Hex |
+| :----- | :-- |
+| `black` | `#000000` |
+| `white` | `#ffffff` |
+| `red` | `#ee0000` |
+| `gray11` | `#1b1d1f` |
+| `gray20` | `#333333` |
+| `gray44` | `#6f7171` |
+| `gray65` | `#a7a7a7` |
+| `gray85` | `#d8dada` |
+| `gray95` | `#f6f6f6` |

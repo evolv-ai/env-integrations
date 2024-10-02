@@ -86,7 +86,6 @@ Appends an encoded (optionally) value to the specifiec cookie.
 document.cookie = 'throttle=|EnableTest1';
 utils.cookie.appendItem('|EnableTest2');
 document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
-;
 ```
 <a name="Utils"></a>
 
@@ -95,6 +94,7 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
 
 * [Utils](#Utils)
     * [new Utils(id, config)](#new_Utils_new)
+    * [.toRevert](#Utils+toRevert)
     * [.log](#Utils+log)
     * [.debug](#Utils+debug)
     * [.warn](#Utils+warn)
@@ -111,7 +111,7 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
     * [.slugify(string)](#Utils+slugify) ⇒ <code>string</code>
     * [.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
     * [.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code>
-    * [.$(selector)](#Utils+$) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
+    * [.$(selector)](#Utils+$) ⇒ <code>HTMLElement</code>
     * [.$$(selector)](#Utils+$$) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
 
 <a name="new_Utils_new"></a>
@@ -125,6 +125,21 @@ The utils object containing all helper functions
 | id | <code>string</code> | A unique key for referencing the utils sandbox |
 | config | <code>Object</code> | A configuration object that defines the project. Used by <code>describe()</code> |
 
+<a name="Utils+toRevert"></a>
+
+### utils.toRevert
+An array of callbacks to be executed on context exit. Used by [.namespace](#Utils+namespace)
+and can also be used for custom tear-down/clean-up functions if you have problems with
+elements persisting after SPA navigation changes. This does require the Evolv Client to
+have the current active keys transition to inactive to trigger, so in the Web Editor it
+won't fire in Edit mode. It also requires the `config` object to contain the context key
+as it matches in the YML. If your `config.contexts[0].id` is not the same you can add the
+following to the top level of `config`:
+```js
+ context_key: this.key,
+```
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
 <a name="Utils+log"></a>
 
 ### utils.log
@@ -270,7 +285,10 @@ Wraps an element or a group of elements with an HTML element defined by a string
 <a name="Utils+namespace"></a>
 
 ### utils.namespace
-Adds classes prefixed with `evolv-` to the body element.
+Adds classes prefixed with `evolv-` to the body element. Comma delimited arguments
+are separated by dashes. By default `namespace()` will observe classes on the body
+element and replace the class if it is removed. Automatically reverts classes on
+context exit if the context key is supplied in the `config` object. See [.toRevert](#Utils+toRevert)
 
 **Kind**: instance property of [<code>Utils</code>](#Utils)  
 
@@ -278,6 +296,13 @@ Adds classes prefixed with `evolv-` to the body element.
 | --- | --- | --- |
 | ...args | <code>string</code> \| <code>number</code> | The namespace |
 
+**Example**  
+```js
+namespace('new-experiment', 'c1');
+namespace('new-experiment', 'c1', 'v2');
+
+document.querySelector('body') // body.evolv-new-experiment-c1.evolv-new-experiment-c1-v2
+```
 <a name="Utils+throttle"></a>
 
 ### utils.throttle(callback, limit) ⇒ <code>function</code>
@@ -346,11 +371,11 @@ Creates an element from an HTML string and adds click handlers to the element.
 
 <a name="Utils+$"></a>
 
-### utils.$(selector) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
+### utils.$(selector) ⇒ <code>HTMLElement</code>
 Selects an element from the DOM or creates new element from an HTML string.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
-**Returns**: <code>Array.&lt;HTMLElement&gt;</code> - An array containing a single element  
+**Returns**: <code>HTMLElement</code> - A single element  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -362,7 +387,7 @@ Selects an element from the DOM or creates new element from an HTML string.
 Selects elements from the DOM or creates new elements from an HTML string.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
-**Returns**: <code>Array.&lt;HTMLElement&gt;</code> - The array of elements  
+**Returns**: <code>Array.&lt;HTMLElement&gt;</code> - An array of result elements  
 
 | Param | Type | Description |
 | --- | --- | --- |

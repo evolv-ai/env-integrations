@@ -7,7 +7,7 @@ import Utils from './utils.js';
  * @returns {Utils} A reference to the newly created Utils instance
  */
 function init(id, config) {
-  const utilsOld = window.evolv.utils?.[id];
+  const utilsOld = id ? window.evolv.utils?.[id] : window.evolv.utils;
   if (utilsOld) {
     return utilsOld;
   }

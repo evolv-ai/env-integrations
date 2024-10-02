@@ -1,6 +1,8 @@
 /* eslint-disable class-methods-use-this */
+/* eslint-disable no-plusplus */
 import { version } from '../package.json';
 import CookieMethods from './cookies.js';
+import initNamespace from './namespace.js';
 
 /***
  * Creates the prefix for a log message.
@@ -25,6 +27,20 @@ class Utils {
   #logPrefixDebug;
 
   /**
+   * An array of callbacks to be executed on context exit. Used by [.namespace](#Utils+namespace)
+   * and can also be used for custom tear-down/clean-up functions if you have problems with
+   * elements persisting after SPA navigation changes. Reversion triggers when the current active
+   * key transitions to inactive, so in the Web Editor it won't fire in Edit mode. It also requires
+   * the `config` object to contain the context key as it matches in the YML. If `config.contexts[0].id`
+   * is not the same as the context key in the YML you can add the following to the top level of
+   * `config`:
+   * ```js
+   *  context_key: this.key,
+   * ```
+   */
+  toRevert = [];
+
+  /**
    * The utils object containing all helper functions
    * @param {string} id A unique key for referencing the utils sandbox
    * @param {Object} config A configuration object that defines the project. Used by <code>describe()</code>
@@ -42,6 +58,32 @@ class Utils {
     this.#logPrefixDebug = getlogPrefix(id, 0.5);
 
     this.version = version;
+    this.contextKey = config?.context_key || config?.contexts?.[0]?.id || null;
+
+    if (this.contextKey) {
+      if (!this.contextKey.startsWith('web.')) {
+        this.contextKey = `web.${this.contextKey}`;
+      }
+
+      window.evolv.client.getActiveKeys(this.contextKey).then(({ current }) => {
+        if (!current.length) {
+          return;
+        }
+
+        this.log(`key watcher: init key watching for '${this.contextKey}'`);
+
+        window.evolv.client.getActiveKeys(this.contextKey).listen((keys) => {
+          // Determine if user is exiting the context
+          if (keys.previous.length && !keys.current.length) {
+            this.log(`key watcher: exit context '${this.contextKey}'`);
+            let index = this.toRevert.length;
+            while (index--) {
+              this.toRevert[index]();
+            }
+          }
+        });
+      });
+    }
   }
 
   /**
@@ -279,26 +321,18 @@ class Utils {
   /**
    * Selects an element from the DOM or creates new element from an HTML string.
    * @param {string} selector The CSS selector, XPath expression, or HTML string
-   * @returns {HTMLElement[]} An array containing a single element
+   * @returns {HTMLElement} A single element
    */
   $(selector) {
     switch (selector.charAt(0)) {
       case '/':
       case '(': {
-        const result = document.evaluate(
-          selector,
-          document,
-          null,
-          XPathResult.FIRST_ORDERED_NODE_TYPE,
-          null,
-        ).singleNodeValue;
-        return result ? [result] : [];
+        return document.evaluate(selector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
       }
       case '<':
-        return [this.makeElement(selector)];
+        return this.makeElement(selector);
       default: {
-        const result = document.querySelector(selector);
-        return result ? [result] : [];
+        return document.querySelector(selector);
       }
     }
   }
@@ -306,7 +340,7 @@ class Utils {
   /**
    * Selects elements from the DOM or creates new elements from an HTML string.
    * @param {string} selector The CSS selector, XPath expression, or HTML string
-   * @returns {HTMLElement[]} The array of elements
+   * @returns {HTMLElement[]} An array of result elements
    */
   $$(selector) {
     switch (selector.charAt(0)) {
@@ -334,7 +368,7 @@ class Utils {
    */
   addClass = (element, className) => {
     if (!element.classList.contains(className)) {
-      this.debug(`add-class: '${className}' added`);
+      this.debug(`add class: '${className}' added`);
       element.classList.add(className);
     }
   };
@@ -346,7 +380,7 @@ class Utils {
    */
   removeClass = (element, className) => {
     if (element.classList.contains(className)) {
-      this.debug(`remove-class: '${className}' removed`);
+      this.debug(`remove class: '${className}' removed`);
       element.classList.remove(className);
     }
   };
@@ -358,7 +392,7 @@ class Utils {
    */
   updateText = (element, text) => {
     if (element.innerText !== text) {
-      this.debug(`update-text: text replaced with '${text}'`);
+      this.debug(`update text: text replaced with '${text}'`);
       /* eslint-disable-next-line no-param-reassign */
       element.innerText = text;
     }
@@ -380,12 +414,18 @@ class Utils {
   };
 
   /**
-   * Adds classes prefixed with `evolv-` to the body element.
+   * Adds classes prefixed with `evolv-` to the body element. Comma delimited arguments
+   * are separated by dashes. By default `namespace()` will observe classes on the body
+   * element and replace the class if it is removed. Automatically reverts classes on
+   * context exit if the context key is supplied in the `config` object. See [.toRevert](#Utils+toRevert)
    * @param {...(string|number)} args The namespace
+   * @example
+   * namespace('new-experiment', 'c1');
+   * namespace('new-experiment', 'c1', 'v2');
+   *
+   * document.querySelector('body') // body.evolv-new-experiment-c1.evolv-new-experiment-c1-v2
    */
-  namespace = (...args) => {
-    this.addClass(document.body, ['evolv', ...args].join('-'));
-  };
+  namespace = initNamespace(this);
 }
 
 export default Utils;

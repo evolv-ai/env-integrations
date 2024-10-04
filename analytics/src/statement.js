@@ -9,7 +9,11 @@ function setExpression(exp, values, append, context){
   var key = tokens.pop();
   var obj = getExpression(tokens);
 
-  if (context.isLocalVar(key)) obj = context.localVars;
+  console.info('setExpression', values)
+
+  if (context.isLocalVar(key)){
+    obj = context.localVars;
+  }
 
   if (!obj) return;
 
@@ -17,6 +21,8 @@ function setExpression(exp, values, append, context){
     obj[key] += values;
   } else{
     obj[key] = values;
+    console.info('values bound', key, obj[key])
+
   }
 }
 

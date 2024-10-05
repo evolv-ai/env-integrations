@@ -29,6 +29,7 @@ Run `npm start` to host locally. To run in your browser inject the following int
     document.head.appendChild(script);
 })();
 ```
+---
 
 ## Components
 
@@ -51,7 +52,7 @@ window.evolv.vds.Title
 
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
-| `color` | The text color of the title | `inherit` | See **Properties** |
+| `color` | The text color of the title | `inherit` | See [Properties](#properties) |
 | `bold` | The weight of the title | `false` | `true`, `false` |
 | `size` | The font size of the title | `small` | `small`, `medium`, `large`, `xlarge`, `2xlarge` |
 | `primitive` | The base element for the title | Assigned based `size` *See note* | `h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `p`, `span` |
@@ -68,6 +69,8 @@ The `primitive` attribute, if left blank, is assigned a default heading tag corr
 | `large` | `h2` |
 | `xlarge` | `h1` |
 | `2xlarge` | `h1` |
+
+---
 
 ### Icon
 
@@ -87,22 +90,60 @@ window.evolv.vds.Icon
 
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
-| `name` | The name of the icon | `pencil` | `pencil`, `down-caret`, `right-arrow`, `trash-can`, `phone`, `phone-plan`, `phone-protection`, `info`, `close` |
-| `color` | The text color of the icon | `inherit` | See **Properties** |
-| `size` | The font size of the icon | `small` | `small`, `medium`, `large`, `xlarge` |
+| `name` | The name of the icon | `empty` | `pencil`, `down-caret`, `right-arrow`, `trash-can`, `phone`, `phone-plan`, `phone-protection`, `info`, `close` |
+| `color` | The text color of the icon | `inherit` | See [Properties](#properties) |
+| `size` | The font size of the icon | `small` | `small`, `medium`, `large`, `xlarge`, *Refer to Notes* |
 | `title` | The title to be passed to the icon, visible to assistive technologies | `<name>` | `<string>` |
 
 #### Notes
 
-The `primitive` attribute, if left blank, is assigned a default heading tag corresponding to its `size`:
-
-| `size` | `primitive` |
+| `size` | `width and height` |
 | :----- | :---------- |
-| `small` | `h3` |
-| `medium` | `h2` |
-| `large` | `h2` |
-| `xlarge` | `h1` |
-| `2xlarge` | `h1` |
+| `small` | `1rem` |
+| `medium` | `1.25rem` |
+| `large` | `1.5rem` |
+| `xlarge` | `1.75rem` |
+
+---
+
+### ButtonIcon
+
+#### Tag
+
+```html
+<!-- Can use <evolv-icon> built in icons -->
+<evolv-button-icon name="close"></evolv-button-icon>
+
+<!-- Or use custom SVG by omitting the 'name' attribute or specifying 'name="empty"' -->
+<evolv-button-icon>
+  <svg width="28" height="28" viewBox="0 0 28 28">
+    <circle cx="14" cy="14" r="14" fill="currentColor" />
+  </svg>
+</evolv-button-icon>
+```
+
+#### Class
+
+```js
+window.evolv.vds.ButtonIcon
+```
+
+#### Attributes
+
+| Name | Description | Default | Accepts |
+| :--- | :---------- | :------ | :------ |
+| `name` | The name of the icon | `empty` | `pencil`, `down-caret`, `right-arrow`, `trash-can`, `phone`, `phone-plan`, `phone-protection`, `info`, `close` |
+| `size` | The size of the icon | `small` | `small`, `large` *Refer to Notes* |
+| `title` | The title to be passed to the icon, visible to assistive technologies | `<name>` | `<string>` |
+
+#### Notes
+
+| `size` | `width and height` |
+| :----- | :---------- |
+| `small` | `1.25rem` |
+| `large` | `1.75rem` |
+
+---
 
 ### TextLink
 
@@ -127,11 +168,13 @@ window.evolv.vds.TextLink
 | `size` | Renders TextLink in corresponding size. Requires `type="standAlone"` to be set. | `large` | `small`, `large` |
 
 
+---
+
 ### Button
 
 #### Tag
 
-``` html
+```html
 <evolv-button use="secondary" width="50%">Click here</evolv-button>
 ```
 
@@ -144,6 +187,42 @@ window.evolv.vds.TextLink
 | `use` | Black (primary) or white (secondary) Button. | `primary` | `primary`, `secondary` |
 | `width` | The width for rendering the Button. | `auto` | `<number>` or `<css width>` |
 | `disabled` | Disables Button. | `false` | `true`, `false` |
+
+---
+
+### Accordion
+
+#### Tag
+
+```html
+<evolv-accordion title-size="medium">
+  <evolv-accordion-item>
+    <evolv-accordion-heading>Aries</evolv-accordion-heading>
+    <evolv-accordion-details>You're going to have a better day than usual.</evolv-accordion-details>
+  </evolv-accordion-item>
+  <evolv-accordion-item>
+    <evolv-accordion-heading>Taurus</evolv-accordion-heading>
+    <evolv-accordion-details>Yikes, it's not looking so good.</evolv-accordion-details>
+  </evolv-accordion-item>
+</evolv-accordion>
+```
+
+#### Attributes
+
+| Name | Description | Default | Accepts |
+| :--- | :---------- | :------ | :------ |
+| `breakpoint` | Used by `evolv-title` and `evolv-button-icon` elements to increase `size` above a certain screen width | `768px` | `<css width>` |
+| `duration` | Sets the animation duration for opening `evolv-details` panels | `0.33s` | `<css duration>` |
+| `padding` | The `padding` for `evolv-accordion-header` and `evolv-accordion-details` elements | `1.5rem` | `<css length>` |
+| `padding-large` | The `padding` for `evolv-accordion-header` and `evolv-accordion-details` elements on screens over `breakpoint` in width | `2rem` | `<css length>` |
+| `icon-size` | The `size` of the `evolv-button-icon` element,  | Based on `title-size` if present, otherwise `small` | `small`, `large` |
+| `id` | A name for the accordion, used for `data-track` attributes and aria ids. | `accordion-<index>` | `<valid id>` |
+| `open-first` | Sets the initial state of the first accordion item to open | `false` | `true`, `false` |
+| `title-size` | The `size` of the `evolv-title` elements to use. | `small` | `small`, `medium`, `large` |
+| `title-bold` | The `bold` option for `evolv-title` elements. | `false` | `true`, `false` |
+| `type` | `single` only allows one accordion item to be open at a time. `multi` allows multiple items open simultaneously | `multi` | `single`, `multi` |
+
+---
 
 ## Properties
 

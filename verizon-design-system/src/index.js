@@ -733,7 +733,7 @@ export default (config) => {
           this.titleSize = this.accordion?.getAttribute('title-size') || null;
           this.titleBold = this.accordion?.getAttribute('title-bold') || null;
           this.padding = this.accordion?.padding || '1.5rem';
-          this.paddingLarge = this.accordion?.paddingLarge || '2rem';
+          this.paddingTablet = this.accordion?.paddingTablet || '2rem';
 
           const buttonIconSizes = {
             'small': 'small',
@@ -795,7 +795,7 @@ export default (config) => {
 
             @media screen and (min-width: ${this.breakpoint}) {
               button {
-                padding: ${this.paddingLarge};
+                padding: ${this.paddingTablet};
               }
 
               .button-icon-wrap {
@@ -846,7 +846,7 @@ export default (config) => {
           this.durationCSS = this.accordion?.durationCSS || '0.33s';
           this.id = this.accordion?.accordionDetailsId(this.accordionItemIndex);
           this.padding = this.accordion?.padding || '1.5rem';
-          this.paddingLarge = this.accordion?.paddingLarge || '2rem';
+          this.paddingTablet = this.accordion?.paddingTablet || '2rem';
 
           // this.updateDuration = this.updateDuration.bind(this);
 
@@ -863,7 +863,7 @@ export default (config) => {
 
             @media screen and (min-width: ${this.breakpoint}) {
               div {
-                padding-bottom: ${this.paddingLarge};
+                padding-bottom: ${this.paddingTablet};
               }
             }
           `
@@ -933,7 +933,7 @@ export default (config) => {
           this.openFirst = (this.getAttribute('open-first') === 'true');
           this.padding = this.getAttribute('padding')
             || '1.5rem';
-          this.paddingLarge = this.getAttribute('padding-large')
+          this.paddingTablet = this.getAttribute('padding-tablet')
             || '2rem';
           this.type = this.getAttribute('type') === 'single' ? 'single' : 'multi';
 
@@ -1079,7 +1079,7 @@ export default (config) => {
           }
         }
 
-        #initEvents() {
+        initEvents() {
           this.accordionHeaders.forEach((accordionHeader, index) => {
             if (accordionHeader.dataset.init === 'true' ) { return }
 
@@ -1102,7 +1102,7 @@ export default (config) => {
             .map(accordionItem => accordionItem.querySelector('evolv-accordion-header'));
           this.accordionDetails = this.accordionItems
             .map(accordionItem => accordionItem.querySelector('evolv-accordion-details'));
-          this.#initEvents();
+          this.initEvents();
         }
       }
 

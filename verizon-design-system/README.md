@@ -117,6 +117,7 @@ window.evolv.vds.Icon
 <!-- Or use custom SVG by omitting the 'name' attribute or specifying 'name="empty"' -->
 <evolv-button-icon>
   <svg width="28" height="28" viewBox="0 0 28 28">
+    <!-- fill="currentColor" allows the SVG to inherit color the parent element -->
     <circle cx="14" cy="14" r="14" fill="currentColor" />
   </svg>
 </evolv-button-icon>
@@ -198,11 +199,20 @@ window.evolv.vds.TextLink
 <evolv-accordion title-size="medium">
   <evolv-accordion-item>
     <evolv-accordion-heading>Aries</evolv-accordion-heading>
-    <evolv-accordion-details>You're going to have a better day than usual.</evolv-accordion-details>
+    <evolv-accordion-details>It's going to be a regular day, nothing special.</evolv-accordion-details>
   </evolv-accordion-item>
   <evolv-accordion-item>
     <evolv-accordion-heading>Taurus</evolv-accordion-heading>
-    <evolv-accordion-details>Yikes, it's not looking so good.</evolv-accordion-details>
+    <evolv-accordion-details>Yikes. It's not looking so good, maybe stay home.</evolv-accordion-details>
+  </evolv-accordion-item>
+  <evolv-accordion-item>
+    <evolv-accordion-heading>Gemini</evolv-accordion-heading>
+    <evolv-accordion-details>This is it! The day you've been waiting for.</evolv-accordion-details>
+  </evolv-accordion-item>
+  <evolv-accordion-item>
+    <evolv-accordion-heading>Cancer</evolv-accordion-heading>
+    <evolv-accordion-details>Ominous winds blow from the east. Something nameless stirres that has has slept for ages.
+      Nothing will ever be the same. Highlight marital status.</evolv-accordion-details>
   </evolv-accordion-item>
 </evolv-accordion>
 ```
@@ -213,11 +223,11 @@ window.evolv.vds.TextLink
 | :--- | :---------- | :------ | :------ |
 | `breakpoint` | Used by `evolv-title` and `evolv-button-icon` elements to increase `size` above a certain screen width | `768px` | `<css width>` |
 | `duration` | Sets the animation duration for opening `evolv-details` panels | `0.33s` | `<css duration>` |
-| `padding` | The `padding` for `evolv-accordion-header` and `evolv-accordion-details` elements | `1.5rem` | `<css length>` |
-| `padding-large` | The `padding` for `evolv-accordion-header` and `evolv-accordion-details` elements on screens over `breakpoint` in width | `2rem` | `<css length>` |
 | `icon-size` | The `size` of the `evolv-button-icon` element,  | Based on `title-size` if present, otherwise `small` | `small`, `large` |
 | `id` | A name for the accordion, used for `data-track` attributes and aria ids. | `accordion-<index>` | `<valid id>` |
 | `open-first` | Sets the initial state of the first accordion item to open | `false` | `true`, `false` |
+| `padding` | The `padding` for `evolv-accordion-header` and `evolv-accordion-details` elements | `1.5rem` | `<css length>` |
+| `padding-tablet` | The `padding` for `evolv-accordion-header` and `evolv-accordion-details` elements on screens over `breakpoint` in width | `2rem` | `<css length>` |
 | `title-size` | The `size` of the `evolv-title` elements to use. | `small` | `small`, `medium`, `large` |
 | `title-bold` | The `bold` option for `evolv-title` elements. | `false` | `true`, `false` |
 | `type` | `single` only allows one accordion item to be open at a time. `multi` allows multiple items open simultaneously | `multi` | `single`, `multi` |

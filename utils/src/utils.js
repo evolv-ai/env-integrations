@@ -290,6 +290,13 @@ class Utils {
    * Sets Evolv remote context property and outputs log
    * @param {string} key The remote context key
    * @param {string} value The remote context value
+   * @example
+   * // For Snowflake monitoring. Sets initial t=0 to monitor load time
+   * utils.setContext('vz.cartDeviceEditModal', {
+   *   variant: `c8${variant}`,
+   *   loadTime: 0,
+   *   bodyClasses: null
+   * });
    */
   setContext(key, value) {
     this.log(`set context: set remote context key '${key}' to`, value);

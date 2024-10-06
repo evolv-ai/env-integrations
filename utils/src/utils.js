@@ -428,6 +428,7 @@ class Utils {
 
   /**
    * Checks if an element is currently visible on the screen
+   * @param {HTMLElement} element The element to check
    * @returns {boolean} `true` if the element is visible
    */
   isVisible(element) {
@@ -504,7 +505,7 @@ class Utils {
   /**
    * Gets all elements before the given element within the same parent
    * @param {HTMLElement} element The element
-   * @returns {[HTMLElement]} An array of elements
+   * @returns {HTMLElement[]} An array of elements
    * @example
    * mutate('order-summary-wrap').customMutation((state, orderSummaryWrap) => {
    *   utils.wrap(utils.getPrecedingSiblings(orderSummaryWrap), '<div class="evolv-psfec-cart-left"></div>');

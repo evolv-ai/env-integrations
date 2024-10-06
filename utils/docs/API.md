@@ -115,11 +115,11 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
     * [.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code>
     * [.$(selector)](#Utils+$) ⇒ <code>HTMLElement</code>
     * [.$$(selector)](#Utils+$$) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
-    * [.isVisible()](#Utils+isVisible) ⇒ <code>boolean</code>
+    * [.isVisible(element)](#Utils+isVisible) ⇒ <code>boolean</code>
     * [.fail(details, [reason])](#Utils+fail)
     * [.supportsIntersectionObserver()](#Utils+supportsIntersectionObserver) ⇒ <code>boolean</code>
     * [.getAncestor(element, [level])](#Utils+getAncestor)
-    * [.getPrecedingSiblings(element)](#Utils+getPrecedingSiblings)
+    * [.getPrecedingSiblings(element)](#Utils+getPrecedingSiblings) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
 
 <a name="new_Utils_new"></a>
 
@@ -430,11 +430,16 @@ Selects elements from the DOM or creates new elements from an HTML string.
 
 <a name="Utils+isVisible"></a>
 
-### utils.isVisible() ⇒ <code>boolean</code>
+### utils.isVisible(element) ⇒ <code>boolean</code>
 Checks if an element is currently visible on the screen
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
 **Returns**: <code>boolean</code> - `true` if the element is visible  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| element | <code>HTMLElement</code> | The element to check |
+
 <a name="Utils+fail"></a>
 
 ### utils.fail(details, [reason])
@@ -485,10 +490,11 @@ addClass(getAncestor(protectionText, 3), 'evolv-psfec-protection-text-outer');
 ```
 <a name="Utils+getPrecedingSiblings"></a>
 
-### utils.getPrecedingSiblings(element)
+### utils.getPrecedingSiblings(element) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
 Gets all elements before the given element within the same parent
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
+**Returns**: <code>Array.&lt;HTMLElement&gt;</code> - An array of elements  
 
 | Param | Type | Description |
 | --- | --- | --- |

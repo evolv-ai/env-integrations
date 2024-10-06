@@ -106,13 +106,20 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
     * [.updateText](#Utils+updateText)
     * [.wrap](#Utils+wrap) ⇒ <code>HTMLElement</code>
     * [.namespace](#Utils+namespace)
+    * [.getOutermost](#Utils+getOutermost)
     * [.throttle(callback, limit)](#Utils+throttle) ⇒ <code>function</code>
     * [.waitFor(callback, timeout, interval)](#Utils+waitFor) ⇒ <code>Promise</code>
     * [.slugify(string)](#Utils+slugify) ⇒ <code>string</code>
+    * [.setContext(key, value)](#Utils+setContext)
     * [.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
     * [.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code>
     * [.$(selector)](#Utils+$) ⇒ <code>HTMLElement</code>
     * [.$$(selector)](#Utils+$$) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
+    * [.isVisible()](#Utils+isVisible) ⇒ <code>boolean</code>
+    * [.fail(details, [reason])](#Utils+fail)
+    * [.supportsIntersectionObserver()](#Utils+supportsIntersectionObserver) ⇒ <code>boolean</code>
+    * [.getAncestor(element, [level])](#Utils+getAncestor)
+    * [.getPrecedingSiblings(element)](#Utils+getPrecedingSiblings)
 
 <a name="new_Utils_new"></a>
 
@@ -130,11 +137,11 @@ The utils object containing all helper functions
 ### utils.toRevert
 An array of callbacks to be executed on context exit. Used by [.namespace](#Utils+namespace)
 and can also be used for custom tear-down/clean-up functions if you have problems with
-elements persisting after SPA navigation changes. This does require the Evolv Client to
-have the current active keys transition to inactive to trigger, so in the Web Editor it
-won't fire in Edit mode. It also requires the `config` object to contain the context key
-as it matches in the YML. If your `config.contexts[0].id` is not the same you can add the
-following to the top level of `config`:
+elements persisting after SPA navigation changes. Reversion triggers when the current active
+key transitions to inactive, so in the Web Editor it won't fire in Edit mode. It also requires
+the `config` object to contain the context key as it matches in the YML. If `config.contexts[0].id`
+is not the same as the context key in the YML you can add the following to the top level of
+`config`:
 ```js
  context_key: this.key,
 ```
@@ -303,6 +310,22 @@ namespace('new-experiment', 'c1', 'v2');
 
 document.querySelector('body') // body.evolv-new-experiment-c1.evolv-new-experiment-c1-v2
 ```
+<a name="Utils+getOutermost"></a>
+
+### utils.getOutermost
+Gets the outermost element matching a selector
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| element | <code>HTMLElement</code> | The element |
+| selector | <code>string</code> | The selector to match |
+
+**Example**  
+```js
+const modalDialog = utils.getOutermost(iframe, 'div[class^="ModalDialogWrapper-VDS"]');
+```
 <a name="Utils+throttle"></a>
 
 ### utils.throttle(callback, limit) ⇒ <code>function</code>
@@ -342,6 +365,18 @@ Transforms a string into a slug.
 | Param | Type | Description |
 | --- | --- | --- |
 | string | <code>string</code> | The string to transform |
+
+<a name="Utils+setContext"></a>
+
+### utils.setContext(key, value)
+Sets Evolv remote context property and outputs log
+
+**Kind**: instance method of [<code>Utils</code>](#Utils)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| key | <code>string</code> | The remote context key |
+| value | <code>string</code> | The remote context value |
 
 <a name="Utils+makeElements"></a>
 
@@ -393,6 +428,78 @@ Selects elements from the DOM or creates new elements from an HTML string.
 | --- | --- | --- |
 | selector | <code>string</code> | The CSS selector, XPath expression, or HTML string |
 
+<a name="Utils+isVisible"></a>
+
+### utils.isVisible() ⇒ <code>boolean</code>
+Checks if an element is currently visible on the screen
+
+**Kind**: instance method of [<code>Utils</code>](#Utils)  
+**Returns**: <code>boolean</code> - `true` if the element is visible  
+<a name="Utils+fail"></a>
+
+### utils.fail(details, [reason])
+A wrapper for `evolv.client.contaminate` that logs a warning to the console.
+
+**Kind**: instance method of [<code>Utils</code>](#Utils)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| details | <code>string</code> |  | The specifics of the failure |
+| [reason] | <code>string</code> | <code>&quot;missing-requirements&quot;</code> | The type of failure |
+
+**Example**  
+```js
+if (!modalDialog) {
+  fail(`modalDialog not found`); // > fail: contaminating do to 'missing-requirements' - modalDialog not found
+}
+```
+<a name="Utils+supportsIntersectionObserver"></a>
+
+### utils.supportsIntersectionObserver() ⇒ <code>boolean</code>
+Checks for full IntersectionObserver support
+
+**Kind**: instance method of [<code>Utils</code>](#Utils)  
+**Returns**: <code>boolean</code> - `true` if browser supports IntersectionObserver  
+**Example**  
+```js
+if (!supportsIntersectionObserver()) {
+  fail('IntersectionObserver not supported'); // > fail: contaminating do to 'missing-requirements' -
+}                                             // IntersectionObserver not supported
+```
+<a name="Utils+getAncestor"></a>
+
+### utils.getAncestor(element, [level])
+Gets the nth ancestor or nth ancestor matching a selector for a given element
+
+**Kind**: instance method of [<code>Utils</code>](#Utils)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| element | <code>HTMLElement</code> |  | The element |
+| [level] | <code>number</code> | <code>1</code> | The number of ancestors to traverse |
+
+**Example**  
+```js
+addClass(getAncestor(protectionText, 3), 'evolv-psfec-protection-text-outer');
+// > add class: 'evolv-psfec-protection-text-outer' added
+```
+<a name="Utils+getPrecedingSiblings"></a>
+
+### utils.getPrecedingSiblings(element)
+Gets all elements before the given element within the same parent
+
+**Kind**: instance method of [<code>Utils</code>](#Utils)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| element | <code>HTMLElement</code> | The element |
+
+**Example**  
+```js
+mutate('order-summary-wrap').customMutation((state, orderSummaryWrap) => {
+  utils.wrap(utils.getPrecedingSiblings(orderSummaryWrap), '<div class="evolv-psfec-cart-left"></div>');
+});
+```
 <a name="init"></a>
 
 ## init(id, [config]) ⇒ [<code>Utils</code>](#Utils)

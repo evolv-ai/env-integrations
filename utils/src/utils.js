@@ -380,7 +380,7 @@ class Utils {
    * @param {string} className The class name
    */
   addClass = (element, className) => {
-    if (!element.classList.contains(className)) {
+    if (element && !element.classList.contains(className)) {
       this.debug(`add class: '${className}' added`);
       element.classList.add(className);
     }
@@ -392,7 +392,7 @@ class Utils {
    * @param {string} className The class name
    */
   removeClass = (element, className) => {
-    if (element.classList.contains(className)) {
+    if (element && element.classList.contains(className)) {
       this.debug(`remove class: '${className}' removed`);
       element.classList.remove(className);
     }
@@ -504,6 +504,7 @@ class Utils {
   /**
    * Gets all elements before the given element within the same parent
    * @param {HTMLElement} element The element
+   * @returns {[HTMLElement]} An array of elements
    * @example
    * mutate('order-summary-wrap').customMutation((state, orderSummaryWrap) => {
    *   utils.wrap(utils.getPrecedingSiblings(orderSummaryWrap), '<div class="evolv-psfec-cart-left"></div>');

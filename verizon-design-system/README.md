@@ -21,16 +21,53 @@ Run `npm start` to host locally. To run in your browser inject the following int
 (() => {
     if (window.self !== window.top) return;
     
-    console.log('[evolv-local] example-integration: inject')
+    console.log('[evolv-local] verizon design system: inject')
     
     const script = document.createElement('script');
     script.type = 'module';
-    script.text = 'import integration from "http://localhost:8080/index.js"; console.log("[evolv-local] example-integration: load"); integration()';
+    script.text = 'import integration from "http://localhost:8080/index.js"; console.log("[evolv-local] verizon design system: load"); integration()';
     document.head.appendChild(script);
 })();
 ```
 
 ## Components
+
+### Title
+
+#### Tag
+
+```html
+<evolv-title bold="true">Bold small title</evolv-title>
+<evolv-title size="medium" breakpoint="950px" primitive="h4">Medium title</evolv-title>
+```
+
+#### Class
+
+```js
+window.evolv.vds.Title
+```
+
+#### Attributes
+
+| Name | Description | Default | Accepts |
+| :--- | :---------- | :------ | :------ |
+| `color` | The text color of the title | `black` | `black`, `white` |
+| `bold` | The weight of the title | `false` | `true`, `false` |
+| `size` | The font size of the title | `small` | `small`, `medium`, `large`, `xlarge`, `2xlarge` |
+| `primitive` | The base element for the title | Assigned based `size` *See note* | `h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `p`, `span` |
+| `breakpoint` | The screen width at which to transition to a larger font size | `768px` | `<css width>` |
+
+#### Notes
+
+The `primitive` attribute, if left blank, is assigned a default heading tag corresponding to its `size`:
+
+| `size` | `primitive` |
+| :----- | :---------- |
+| `small` | `h3` |
+| `medium` | `h2` |
+| `large` | `h2` |
+| `xlarge` | `h1` |
+| `2xlarge` | `h1` |
 
 ### TextLink
 

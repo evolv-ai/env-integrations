@@ -378,6 +378,15 @@ Sets Evolv remote context property and outputs log
 | key | <code>string</code> | The remote context key |
 | value | <code>string</code> | The remote context value |
 
+**Example**  
+```js
+// For Snowflake monitoring. Sets initial t=0 to monitor load time
+utils.setContext('vz.cartDeviceEditModal', {
+  variant: `c8${variant}`,
+  loadTime: 0,
+  bodyClasses: null
+});
+```
 <a name="Utils+makeElements"></a>
 
 ### utils.makeElements(HTMLString, clickHandlers) ⇒ <code>Array.&lt;HTMLElement&gt;</code>

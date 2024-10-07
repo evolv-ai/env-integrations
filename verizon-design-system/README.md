@@ -211,8 +211,7 @@ window.evolv.vds.TextLink
   </evolv-accordion-item>
   <evolv-accordion-item>
     <evolv-accordion-heading>Cancer</evolv-accordion-heading>
-    <evolv-accordion-details>Ominous winds blow from the east. Something nameless stirres that has has slept for ages.
-      Nothing will ever be the same. Highlight marital status.</evolv-accordion-details>
+    <evolv-accordion-details>Ominous winds blow from the east. Something nameless stirres from its ancient slumber. Highlight marital status.</evolv-accordion-details>
   </evolv-accordion-item>
 </evolv-accordion>
 ```

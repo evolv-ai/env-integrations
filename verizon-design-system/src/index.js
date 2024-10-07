@@ -727,13 +727,13 @@ export default (config) => {
           this.accordion = this.closest('evolv-accordion') || null;
           this.accordionItem = this.closest('evolv-accordion-item') || null;
           this.accordionItemIndex = this.accordionItem?.getAttribute('index') || null;
-          this.breakpoint = this.accordion?.getAttribute('breakpoint') || '768px';
-          this.durationCSS = this.accordion?.durationCSS;
-          this.id = this.accordion.accordionHeaderId(this.accordionItemIndex);
+          this.breakpoint = this.getAttribute('breakpoint') || this.accordion?.getAttribute('breakpoint') || '768px';
+          this.durationCSS = this.getAttribute('duration') || this.accordion?.durationCSS;
+          this.id = this.id || this.accordion?.accordionHeaderId(this.accordionItemIndex);
           this.titleSize = this.accordion?.getAttribute('title-size') || null;
           this.titleBold = this.accordion?.getAttribute('title-bold') || null;
-          this.padding = this.accordion?.padding || '1.5rem';
-          this.paddingTablet = this.accordion?.paddingTablet || '2rem';
+          this.padding = this.getAttribute('padding') || this.accordion?.padding || '1.5rem';
+          this.paddingTablet = this.getAttribute('padding-tablet') || this.accordion?.paddingTablet || '2rem';
 
           const buttonIconSizes = {
             'small': 'small',
@@ -809,7 +809,7 @@ export default (config) => {
               <evolv-title
                 ${this.titleSize ? `size="${this.titleSize}"` : ''}
                 ${this.titleBold ? `bold="${this.titleBold}"` : ''}
-                ${this.breakpoint ? `breakpoint="${this.breakpoint}"` : ''}
+                breakpoint="${this.breakpoint}"
               ><slot></slot></evolv-title>
             </div>
             <div class="button-icon-wrap">
@@ -817,6 +817,7 @@ export default (config) => {
                 ${this.buttonIconSize ? `size="${this.buttonIconSize}"` : ''}
                 name="down-caret"
                 tabindex="-1"
+                breakpont="${this.breakpoint}"
               ></evolv-icon>
             </div>
             <slot name="right"></slot>

@@ -60,6 +60,9 @@ class Utils {
     this.version = version;
     this.contextKey = config?.context_key || config?.contexts?.[0]?.id || null;
 
+    this.setContext = this.setContext.bind(this);
+    this.fail = this.fail.bind(this);
+
     if (this.contextKey) {
       if (!this.contextKey.startsWith('web.')) {
         this.contextKey = `web.${this.contextKey}`;
@@ -284,6 +287,23 @@ class Utils {
   }
 
   /**
+   * Sets Evolv remote context property and outputs log
+   * @param {string} key The remote context key
+   * @param {string} value The remote context value
+   * @example
+   * // For Snowflake monitoring. Sets initial t=0 to monitor load time
+   * utils.setContext('vz.cartDeviceEditModal', {
+   *   variant: `c8${variant}`,
+   *   loadTime: 0,
+   *   bodyClasses: null
+   * });
+   */
+  setContext(key, value) {
+    this.log(`set context: set remote context key '${key}' to`, value);
+    window.evolv.context.set(key, value);
+  }
+
+  /**
    * Creates an array of elements from an HTML string and adds click handlers to the elements.
    * @param {string} HTMLString The HTML string
    * @param {Object} clickHandlers An object where the keys are CSS selectors and the values are click handlers
@@ -367,7 +387,7 @@ class Utils {
    * @param {string} className The class name
    */
   addClass = (element, className) => {
-    if (!element.classList.contains(className)) {
+    if (element && !element.classList.contains(className)) {
       this.debug(`add class: '${className}' added`);
       element.classList.add(className);
     }
@@ -379,7 +399,7 @@ class Utils {
    * @param {string} className The class name
    */
   removeClass = (element, className) => {
-    if (element.classList.contains(className)) {
+    if (element && element.classList.contains(className)) {
       this.debug(`remove class: '${className}' removed`);
       element.classList.remove(className);
     }
@@ -414,6 +434,15 @@ class Utils {
   };
 
   /**
+   * Checks if an element is currently visible on the screen
+   * @param {HTMLElement} element The element to check
+   * @returns {boolean} `true` if the element is visible
+   */
+  isVisible(element) {
+    return !(element.offsetParent === null);
+  }
+
+  /**
    * Adds classes prefixed with `evolv-` to the body element. Comma delimited arguments
    * are separated by dashes. By default `namespace()` will observe classes on the body
    * element and replace the class if it is removed. Automatically reverts classes on
@@ -426,6 +455,99 @@ class Utils {
    * document.querySelector('body') // body.evolv-new-experiment-c1.evolv-new-experiment-c1-v2
    */
   namespace = initNamespace(this);
+
+  /**
+   * A wrapper for `evolv.client.contaminate` that logs a warning to the console.
+   * @param {string} details The specifics of the failure
+   * @param {string} [reason=missing-requirements] The type of failure
+   * @example
+   * if (!modalDialog) {
+   *   fail(`modalDialog not found`); // > fail: contaminating do to 'missing-requirements' - modalDialog not found
+   * }
+   */
+  fail(details, reason = 'missing-requirements') {
+    this.warn(`fail: contaminating due to '${reason}' -`, details);
+    window.evolv.client.contaminate({ reason, details });
+  }
+
+  /**
+   * Checks for full IntersectionObserver support
+   * @returns {boolean} `true` if browser supports IntersectionObserver
+   * @example
+   * if (!supportsIntersectionObserver()) {
+   *   fail('IntersectionObserver not supported'); // > fail: contaminating do to 'missing-requirements' -
+   * }                                             // IntersectionObserver not supported
+   *
+   */
+  supportsIntersectionObserver() {
+    return (
+      'IntersectionObserver' in window &&
+      'IntersectionObserverEntry' in window &&
+      'intersectionRatio' in window.IntersectionObserverEntry.prototype &&
+      'isIntersecting' in window.IntersectionObserverEntry.prototype
+    );
+  }
+
+  /**
+   * Gets the nth ancestor or nth ancestor matching a selector for a given element
+   * @param {HTMLElement} element The element
+   * @param {number} [level=1] The number of ancestors to traverse
+   * @example
+   * addClass(getAncestor(protectionText, 3), 'evolv-psfec-protection-text-outer');
+   * // > add class: 'evolv-psfec-protection-text-outer' added
+   *
+   *
+   */
+  getAncestor(element, level = 1) {
+    let elementNew = element;
+    let counter = level;
+
+    while (counter--) {
+      elementNew = elementNew?.parentElement || null;
+    }
+
+    return elementNew;
+  }
+
+  /**
+   * Gets all elements before the given element within the same parent
+   * @param {HTMLElement} element The element
+   * @returns {HTMLElement[]} An array of elements
+   * @example
+   * mutate('order-summary-wrap').customMutation((state, orderSummaryWrap) => {
+   *   utils.wrap(utils.getPrecedingSiblings(orderSummaryWrap), '<div class="evolv-psfec-cart-left"></div>');
+   * });
+   */
+  getPrecedingSiblings(element) {
+    const result = [];
+    let precedingSibling = element.previousElementSibling;
+
+    while (precedingSibling) {
+      result.unshift(precedingSibling);
+      precedingSibling = precedingSibling.previousElementSibling;
+    }
+
+    return result;
+  }
+
+  /**
+   * Gets the outermost element matching a selector
+   * @param {HTMLElement} element The element
+   * @param {string} selector The selector to match
+   * @example
+   * const modalDialog = utils.getOutermost(iframe, 'div[class^="ModalDialogWrapper-VDS"]');
+   */
+  getOutermost = (element, selector) => {
+    let outerElement = element;
+    let outerElementPrevious;
+
+    while (outerElement) {
+      outerElementPrevious = outerElement;
+      outerElement = outerElement?.parentElement?.closest(selector);
+    }
+
+    return outerElementPrevious;
+  };
 }
 
 export default Utils;

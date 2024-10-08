@@ -9,7 +9,6 @@ function setExpression(exp, values, append, context){
   var key = tokens.pop();
   var obj = getExpression(tokens);
 
-  console.info('setExpression', values)
 
   if (context.isLocalVar(key)){
     obj = context.localVars;

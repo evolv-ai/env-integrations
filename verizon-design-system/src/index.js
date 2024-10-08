@@ -28,6 +28,7 @@ export default (config) => {
     if (vds.init) { return }
 
     vds.init = () => {
+      log('init verizon design system version', version);
       vds.version = version;
       vds.accordionIndex = 0;
       vds.accordionItemIndex = 0;
@@ -731,6 +732,7 @@ export default (config) => {
           this.accordionItemIndex = this.accordionItem?.getAttribute('index') || null;
           this.breakpoint = this.getAttribute('breakpoint') || this.accordion?.getAttribute('breakpoint') || '768px';
           this.durationCSS = this.getAttribute('duration') || this.accordion?.durationCSS;
+          this.handleAlign = this.getAttribute('handle-align') || this.accordion?.getAttribute('handle-align') || 'left';
           this.id = this.id || this.accordion?.accordionHeaderId(this.accordionItemIndex);
           this.titleSize = this.accordion?.getAttribute('title-size') || null;
           this.titleBold = this.accordion?.getAttribute('title-bold') || null;
@@ -748,7 +750,7 @@ export default (config) => {
           const style = `
             button {
               width: 100%;
-              display: grid;
+              display: flex;
               // grid-template-columns: auto min-content;
               overflow: visible;
               text-align: left;
@@ -783,7 +785,7 @@ export default (config) => {
               margin-right: auto;
             }
   
-            .button-icon-wrap[handle-align="right"] {
+            .handle-align-right .button-icon-wrap {
               margin-right: 0;
               margin-left: auto;
             }
@@ -812,7 +814,7 @@ export default (config) => {
             }
           `
   
-          const template = `<button class="unbutton">
+          const template = `<button class="unbutton handle-align-${this.handleAlign}">
             <div class="title-wrap">
               <evolv-title
                 ${this.titleSize ? `size="${this.titleSize}"` : ''}
@@ -1090,12 +1092,12 @@ export default (config) => {
   
         initEvents() {
           this.accordionHeaders.forEach((accordionHeader, index) => {
-            if (accordionHeader.dataset.init === 'true' ) { return }
+            if (!accordionHeader || accordionHeader.dataset.init === 'true' ) { return }
   
             accordionHeader.addEventListener('click', this.accordionClick);
             accordionHeader.addEventListener('keydown', this.navigate);
             this.accordionDetails[index].style.display = 'none';
-  
+            
             if (index === 0 && this.openFirst) {
               this.expand(index);
             } else {
@@ -1107,10 +1109,10 @@ export default (config) => {
         onSlotChange(e) {
           const slot = e.target;
           this.accordionItems = slot.assignedNodes();
-          this.accordionHeaders = this.accordionItems
-            .map(accordionItem => accordionItem.querySelector('evolv-accordion-header'));
-          this.accordionDetails = this.accordionItems
-            .map(accordionItem => accordionItem.querySelector('evolv-accordion-details'));
+          this.accordionItems.forEach((accordionItem, index) => {
+            this.accordionHeaders[index] = accordionItem.querySelector('evolv-accordion-header');
+            this.accordionDetails[index] = accordionItem.querySelector('evolv-accordion-details');
+          });
           this.initEvents();
         }
       }
@@ -1134,7 +1136,5 @@ export default (config) => {
         }
       })
     }
-
-    
   });
 };

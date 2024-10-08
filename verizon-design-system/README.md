@@ -198,19 +198,19 @@ window.evolv.vds.TextLink
 ```html
 <evolv-accordion title-size="medium">
   <evolv-accordion-item>
-    <evolv-accordion-heading>Aries</evolv-accordion-heading>
+    <evolv-accordion-header>Aries</evolv-accordion-header>
     <evolv-accordion-details>It's going to be a regular day, nothing special.</evolv-accordion-details>
   </evolv-accordion-item>
   <evolv-accordion-item>
-    <evolv-accordion-heading>Taurus</evolv-accordion-heading>
+    <evolv-accordion-header>Taurus</evolv-accordion-header>
     <evolv-accordion-details>Yikes. It's not looking so good, maybe stay home.</evolv-accordion-details>
   </evolv-accordion-item>
   <evolv-accordion-item>
-    <evolv-accordion-heading>Gemini</evolv-accordion-heading>
-    <evolv-accordion-details>This is it! The day you've been waiting for.</evolv-accordion-details>
+    <evolv-accordion-header>Gemini</evolv-accordion-header>
+    <evolv-accordion-details>This is it, the day you've been waiting for! Wear your good shirt.</evolv-accordion-details>
   </evolv-accordion-item>
   <evolv-accordion-item>
-    <evolv-accordion-heading>Cancer</evolv-accordion-heading>
+    <evolv-accordion-header>Cancer</evolv-accordion-header>
     <evolv-accordion-details>Ominous winds blow from the east. Something nameless stirres from its ancient slumber. Highlight marital status.</evolv-accordion-details>
   </evolv-accordion-item>
 </evolv-accordion>
@@ -220,8 +220,9 @@ window.evolv.vds.TextLink
 
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
-| `breakpoint` | Used by `evolv-title` and `evolv-button-icon` elements to increase `size` above a certain screen width | `768px` | `<css width>` |
+| `breakpoint` | Used by `evolv-title` and `evolv-button-icon` elements to increase `size` above a certain screen width | `768px` | `<css length>` |
 | `duration` | Sets the animation duration for opening `evolv-details` panels | `0.33s` | `<css duration>` |
+| `handle-align` | Whether the accordion handle is aligned left or right | `left` | `left`, `right`
 | `icon-size` | The `size` of the `evolv-button-icon` element,  | Based on `title-size` if present, otherwise `small` | `small`, `large` |
 | `id` | A name for the accordion, used for `data-track` attributes and aria ids. | `accordion-<index>` | `<valid id>` |
 | `open-first` | Sets the initial state of the first accordion item to open | `false` | `true`, `false` |

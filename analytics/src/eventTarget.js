@@ -1,4 +1,4 @@
-import { getExpression, runStatement } from "./statement";
+import { getExpression, runStatement, tokenizeExp } from "./statement";
 
 const DefaultEnvironment = document.querySelector("[data-evolv-environment]")?.getAttribute("data-evolv-environment");
 

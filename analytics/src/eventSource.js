@@ -11,14 +11,14 @@ export function getSource(config){
             return {
                 async on(eventType, fnc){
                     if (eventType === 'confirmed'){
-                        const events = await takeEventsFromCookie(key || DefaultCookieKey);
+                        const events = takeEventsFromCookie(key || DefaultCookieKey);
                         events.forEach(ev=>fnc(new EventContext({...ev,  event_type: eventType})));
                     }
                 }
             };
          case 'dom': 
             return {
-                async on(eventType, fnc){   console.info('-- evolv eventType', eventType);
+                async on(eventType, fnc){
                     if (eventType === 'confirmed'){
                         const events = await getEventsFromDom(key || DefaultDomKey, attribute || DefaultDomAttribute);
                         events.forEach(ev=>fnc(new EventContext({...ev,  event_type: eventType})));
@@ -28,7 +28,7 @@ export function getSource(config){
         default: 
             return {
                 on(eventType, fnc){
-                    window.evolv.client.on(eventType, (_, name)=>{ console.info('-- evolv event', _, name)
+                    window.evolv.client.on(eventType, (_, name)=>{
                         var events = extractEvents(eventType, name);
                         events.forEach(async ev=>{
                             const event = new EventContext({event_type: eventType, ...ev});
@@ -43,12 +43,20 @@ export function getSource(config){
     }
 }
 
-function getCookieValue(name) {
+export function getCookieValue(name) {
     var cookie = document.cookie.split(';')
         .find(function(item) {return item.trim().split('=')[0] === name });
     if (!cookie) return null;
 
     return cookie.split('=')[1];
+}
+
+const durationInMinutes = 60*30;
+
+export function setCookieValue(name, value){
+    // const val = encodeURIComponent(value);
+    const age = durationInMinutes*60; //age is session - todo: add option
+    document.cookie = `${name}=${value}; max-age="${age}"; path=/;`;
 }
 
 function takeEventsFromCookie(key){

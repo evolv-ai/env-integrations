@@ -4,6 +4,10 @@ const StorageKey = 'evolv:event_tracking';
 
 let sentEvents = [];
 
+export function clearTracking(){
+  sentEvents = [];
+}
+
 function loadSession(indicator){
   const SessionDuration = 30*60*1000;
   let data = localStorage.getItem(StorageKey);

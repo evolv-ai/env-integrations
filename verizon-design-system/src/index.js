@@ -213,7 +213,7 @@ export default (config) => {
             }
   
             @media screen and (min-width: ${this.breakpoint}) {
-              :host([size="small"]) > * {
+              :host > * {
                 font-size: 1.25rem;
                 line-height: 1.5rem;
               }

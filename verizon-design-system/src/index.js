@@ -886,13 +886,6 @@ export default (config) => {
   
         connectedCallback() {
           const details = this.shadow.querySelector('div');
-          // new ResizeObserver(() => {
-          //   const heightPrevious = details.getAttribute('details-height');
-          //   const heightCurrent = Math.round(details.getBoundingClientRect().height).toString();
-          //   if (!heightPrevious || (!(heightCurrent !== '0') && (heightCurrent !== heightPrevious))) {
-          //     this.setAttribute('details-height', heightCurrent);
-          //   }
-          // }).observe(details);
           this.setAttribute('aria-labelledby', this.accordion.accordionHeaderId(this.accordionItemIndex));
         }
       }
@@ -1089,8 +1082,6 @@ export default (config) => {
             accordionHeader.addEventListener('keydown', this.navigate);
 
             const accordionDetails = this.accordionDetails[index];
-            // const detailsHeight = accordionDetails.getBoundingClientRect().height;
-            // accordionDetails.setAttribute('details-height', detailsHeight);
             accordionDetails.style.display = 'none';
             
             if (index === 0 && this.openFirst) {

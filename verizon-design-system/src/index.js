@@ -889,7 +889,7 @@ export default (config) => {
           new ResizeObserver(() => {
             const heightPrevious = details.getAttribute('details-height');
             const heightCurrent = Math.round(details.getBoundingClientRect().height).toString();
-            if (heightCurrent !== heightPrevious) {
+            if (!heightPrevious || (!(heightCurrent !== '0') && (heightCurrent !== heightPrevious))) {
               this.setAttribute('details-height', heightCurrent);
             }
           }).observe(details);

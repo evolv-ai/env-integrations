@@ -13,6 +13,16 @@ A library of web components for experiments.
 | `npm start` | Same as `npm run dev` |
 | `npm run publish` | Build and publish to npm |
 
+## Using in a project
+
+Verizon Design System must be initialized for the web component definitions to be available. Because of dependencies it must be polled. To initialize add to your project:
+
+```js
+  const utils = window.evolv.utils.init('new-project');
+  const { waitFor } = utils;
+  waitFor(() => window.evolv?.vds?.init).then(init => init());
+```
+
 ## Local Hosting
 
 Run `npm start` to host locally. To run in your browser inject the following into your `<head>` tag using [Resource Override](https://chromewebstore.google.com/detail/resource-override/pkoacgokdfckfpndoffpifphamojphii)

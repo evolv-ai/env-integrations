@@ -751,7 +751,6 @@ export default (config) => {
             button {
               width: 100%;
               display: flex;
-              // grid-template-columns: auto min-content;
               overflow: visible;
               text-align: left;
               align-items: center;
@@ -772,12 +771,10 @@ export default (config) => {
             }
   
             .title-wrap {
-              // grid-area: 1 / 1 / 2 / 2;
               padding: ${this.padding} 0;    
             }
   
             .button-icon-wrap {
-              // grid-area: 1 / 2 / 2 / 3;
               display: flex;
               justify-content: center;
               align-items: center;
@@ -858,8 +855,6 @@ export default (config) => {
           this.id = this.accordion?.accordionDetailsId(this.accordionItemIndex);
           this.padding = this.accordion?.padding || '1.5rem';
           this.paddingTablet = this.accordion?.paddingTablet || '2rem';
-  
-          // this.updateDuration = this.updateDuration.bind(this);
   
           const style = `
             :host {

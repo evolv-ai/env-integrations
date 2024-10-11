@@ -886,13 +886,13 @@ export default (config) => {
   
         connectedCallback() {
           const details = this.shadow.querySelector('div');
-          new ResizeObserver(() => {
-            const heightPrevious = details.getAttribute('details-height');
-            const heightCurrent = Math.round(details.getBoundingClientRect().height).toString();
-            if (!heightPrevious || (!(heightCurrent !== '0') && (heightCurrent !== heightPrevious))) {
-              this.setAttribute('details-height', heightCurrent);
-            }
-          }).observe(details);
+          // new ResizeObserver(() => {
+          //   const heightPrevious = details.getAttribute('details-height');
+          //   const heightCurrent = Math.round(details.getBoundingClientRect().height).toString();
+          //   if (!heightPrevious || (!(heightCurrent !== '0') && (heightCurrent !== heightPrevious))) {
+          //     this.setAttribute('details-height', heightCurrent);
+          //   }
+          // }).observe(details);
           this.setAttribute('aria-labelledby', this.accordion.accordionHeaderId(this.accordionItemIndex));
         }
       }
@@ -973,10 +973,6 @@ export default (config) => {
           slot.addEventListener('slotchange', this.onSlotChange);
         }
   
-        getDetailsHeight(index) {
-          return Math.round(this.accordionDetails[index]?.getAttribute('details-height'));
-        }
-  
         trackValue(index, expanded) {
           return `{'type':'link','name':'${this.id}-${index}:${expanded ? 'expanded' : 'collapsed'}'}`;
         }
@@ -1003,7 +999,7 @@ export default (config) => {
           }
   
           setTimeout(() => {
-            details.style.maxHeight = `${this.getDetailsHeight(index)}px`;
+            details.style.maxHeight = `${details.scrollHeight}px`;
             details.style.opacity = '1';
           }, 0);
         }
@@ -1091,7 +1087,11 @@ export default (config) => {
   
             accordionHeader.addEventListener('click', this.accordionClick);
             accordionHeader.addEventListener('keydown', this.navigate);
-            this.accordionDetails[index].style.display = 'none';
+
+            const accordionDetails = this.accordionDetails[index];
+            // const detailsHeight = accordionDetails.getBoundingClientRect().height;
+            // accordionDetails.setAttribute('details-height', detailsHeight);
+            accordionDetails.style.display = 'none';
             
             if (index === 0 && this.openFirst) {
               this.expand(index);

@@ -4,24 +4,18 @@ A library of web components for experiments.
 
 ## NPM scripts
 
-| | |
+| Script | Description |
 | :------------ | :----------------|
 | `npm run build` | Builds `dist/../index.js` files |
 | `npm run watch` | Automatically builds on save of `src/index.js` |
 | `npm run serve` | Hosts `dist` folder on port `8080` |
 | `npm run dev` | Watch and serve |
+| `npm run ship` | Build and publish to npm |
 | `npm start` | Same as `npm run dev` |
-| `npm run publish` | Build and publish to npm |
 
 ## Using in a project
 
-Verizon Design System must be initialized for the web component definitions to be available. Because of dependencies it must be polled. To initialize add to your project:
-
-```js
-  const utils = window.evolv.utils.init('new-project');
-  const { waitFor } = utils;
-  waitFor(() => window.evolv?.vds?.init).then(init => init());
-```
+Verizon Design System components are automatically available anywhere the integration is active.
 
 ## Local Hosting
 

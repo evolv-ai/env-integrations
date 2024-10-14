@@ -1,6 +1,6 @@
 {
     "name": "@evolv-delivery/verizon-design-system",
-    "version": "0.2.15",
+    "version": "0.2.16",
     "description": "A library of web components for rapid experiment development. Built to be compatible with the Verizon Design System 3.0",
     "main": "dist/cjs/index.js",
     "files": [
@@ -14,7 +14,7 @@
         "serve": "http-server ./dist/es/ --cors",
         "dev": "npm-run-all -s clear -p watch serve",
         "start": "npm run dev",
-        "ship": "npm version patch; npm run build; npm publish;",
+        "ship": "npm run build && npm publish;",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {

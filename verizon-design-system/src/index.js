@@ -1,27 +1,10 @@
 import { version } from '../package.json';
 
 export default (config) => {
-  function waitFor(callback, timeout = 5000, interval = 25) {
-    return new Promise((resolve, reject) => {
-        let poll;
-        const timer = setTimeout(() => {
-            clearInterval(poll);
-            reject();
-        }, timeout);
-        poll = setInterval(() => {
-            const result = callback();
-            if (result) {
-                clearInterval(poll);
-                clearTimeout(timer);
-                resolve(result);
-            }
-        }, interval);
-    });
-  }
-
-  waitFor(() => window.evolv?.utils?.init('verizon-design-system')).then(utils => {
+  function init() {
+    const utils = window.evolv.utils.init('verizon-design-system');
     const { log, debug, makeElement } = utils;
-    const { $mu } = window.evolv;
+    log('init verizon design system version', version);
 
     window.evolv.vds ??= {};
     const { vds } = window.evolv;
@@ -210,7 +193,7 @@ export default (config) => {
           }
 
           @media screen and (min-width: ${this.breakpoint}) {
-            :host([size="small"]) > * {
+            :host > * {
               font-size: 1.25rem;
               line-height: 1.5rem;
             }
@@ -543,587 +526,586 @@ export default (config) => {
             }
           }`;
     
-          const template = `<a ${this.href ? `href="${this.href}"` : ''}>
-            <span class="hit-area"></span>
-            <span class="text">
-              <slot></slot>
-            </span>
-          </a>`
-    
-          const styleElement = this.shadow.querySelector('style');
-          styleElement.textContent += style;
-          styleElement.insertAdjacentHTML('afterend', template);
-        }
-
-        connectedCallback() {
-          if (!this.tabindex) {
-            this.setAttribute('tabindex', '0');
-          }
-        }
+        const template = `<a ${this.href ? `href="${this.href}"` : ''}>
+          <span class="hit-area"></span>
+          <span class="text">
+            <slot></slot>
+          </span>
+        </a>`
+  
+        const styleElement = this.shadow.querySelector('style');
+        styleElement.textContent += style;
+        styleElement.insertAdjacentHTML('afterend', template);
       }
 
-      vds.Button = class Button extends vds.VZBase {
-        static observedAttributes = ['width', 'disabled'];
+      connectedCallback() {
+        if (!this.tabindex) {
+          this.setAttribute('tabindex', '0');
+        }
+      }
+    }
+
+    vds.Button = class Button extends vds.VZBase {
+      static observedAttributes = ['width', 'disabled'];
+      
+      constructor() {
+        super();
+        this.width = this.getAttribute('width') || null;
+        this.disabled = this.getAttribute('disabled') === 'true' || false;
         
-        constructor() {
-          super();
-          this.width = this.getAttribute('width') || null;
-          this.disabled = this.getAttribute('disabled') === 'true' || false;
-          
-          const style = `
-            button {
-              ${this.mixins.bodyText.lg()}
-              pointer-events: auto;
-              padding: 0px;
-              margin: 0px;
-              border-radius: 2.75rem;
-              box-sizing: border-box;
-              cursor: pointer;
-              display: flex;
-              flex-direction: row;
-              -webkit-box-align: center;
-              align-items: center;
-              -webkit-box-pack: center;
-              justify-content: center;
-              height: auto;
-              position: relative;
-              text-align: center;
-              text-decoration: none;
-              touch-action: manipulation;
-              vertical-align: middle;
-              width: auto;
-              min-width: 4.75rem;
-              outline: none;
-              -webkit-tap-highlight-color: transparent;
-              white-space: nowrap;
-              font-weight: 700;
-              background-color: rgb(0, 0, 0);
-              border: 0.0625rem solid rgb(0, 0, 0);
-              color: rgb(255, 255, 255);
-            }
-
-            button:active {
-              color: rgb(255, 255, 255);
-              border-color: rgb(111, 113, 113);
-              box-shadow: rgb(111, 113, 113) 0px 0px 0px 0.0625rem;
-              background-color: rgb(111, 113, 113);
-            }
-
-            :host(:focus-visible) button {
-              outline: black dashed 0.0625rem;
-              outline-offset: 0.125rem;
-            }
-
-            button:hover:not(:active) {
-              outline: none;
-              box-shadow: rgb(0, 0, 0) 0px 0px 0px 0.0625rem;
-              transition: all 0.1s ease-out 0s;
-            }
-
-            .hit-area {
-              height: 2.75rem;
-              width: 100%;
-              left: 50%;
-              position: absolute;
-              transform: translate(-50%, -50%);
-              text-align: center;
-              top: 50%;
-              content: "";
-              display: inline-block;
-            }
-
-            .text {
-              position: relative;
-              max-width: 100%;
-              box-sizing: border-box;
-              display: inline-block;
-              vertical-align: middle;
-              -webkit-box-align: center;
-              background: transparent;
-              -webkit-box-pack: center;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              text-align: center;
-              -webkit-tap-highlight-color: transparent;
-              pointer-events: none;
-              padding: calc(-1px + 0.75rem) 1.5rem;
-            }
-
-            .text:focus {
-              outline: none;
-            }
-
-            .text:hover {
-              outline: none;
-            }
-            
-            :host([display=block]) button {
-              display: block;
-            }
-
-            :host([display=inline-block]) button {
-              display: inline-block;
-            }
-
-            :host([size=small]) button {
-              ${this.mixins.bodyText.sm()}
-              font-weight: 700
-              border-radius: 2rem;
-              min-width: revert;
-            }
-
-            :host([size=small]) button:focus-visible::before {
-              border-radius: 2rem;
-            }
-
-            :host([use=secondary]) button {
-              background-color: transparent;
-              color: black;
-            }
-
-            button[disabled] {
-              pointer-events: none;
-              cursor: default;
-              border: 0.0625rem solid var(--color-gray-85);
-              background-color: transparent;
-              color: var(--color-gray-85);
-            }
-
-            :host([use=secondary]) button[disabled] {
-              color: var(--color-gray-85);
-            }
-          `
-
-          const template = `<button ${this.disabled ? 'disabled' : ''} ${this.width ? `style="width: ${this.width};"` : ''}>
-            <span class=hit-area></span>
-            <span class=text>
-              <slot></slot>
-            </span>
-          </button>`
-
-          const styleElement = this.shadow.querySelector('style');
-          styleElement.textContent += style;
-          styleElement.insertAdjacentHTML('afterend', template);
-        }
-
-        attributeChangedCallback(name, oldValue, newValue) {
-          const button = this.shadow.querySelector('button')
-          switch (name) {
-            case 'disabled':
-              button.toggleAttribute('disabled', this.hasAttribute('disabled'));
-              break;
-            case 'width':
-              button.style.width = newValue;
-              break;
-            default:
+        const style = `
+          button {
+            ${this.mixins.bodyText.lg()}
+            pointer-events: auto;
+            padding: 0px;
+            margin: 0px;
+            border-radius: 2.75rem;
+            box-sizing: border-box;
+            cursor: pointer;
+            display: flex;
+            flex-direction: row;
+            -webkit-box-align: center;
+            align-items: center;
+            -webkit-box-pack: center;
+            justify-content: center;
+            height: auto;
+            position: relative;
+            text-align: center;
+            text-decoration: none;
+            touch-action: manipulation;
+            vertical-align: middle;
+            width: auto;
+            min-width: 4.75rem;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            white-space: nowrap;
+            font-weight: 700;
+            background-color: rgb(0, 0, 0);
+            border: 0.0625rem solid rgb(0, 0, 0);
+            color: rgb(255, 255, 255);
           }
-        }
+
+          button:active {
+            color: rgb(255, 255, 255);
+            border-color: rgb(111, 113, 113);
+            box-shadow: rgb(111, 113, 113) 0px 0px 0px 0.0625rem;
+            background-color: rgb(111, 113, 113);
+          }
+
+          :host(:focus-visible) button {
+            outline: black dashed 0.0625rem;
+            outline-offset: 0.125rem;
+          }
+
+          button:hover:not(:active) {
+            outline: none;
+            box-shadow: rgb(0, 0, 0) 0px 0px 0px 0.0625rem;
+            transition: all 0.1s ease-out 0s;
+          }
+
+          .hit-area {
+            height: 2.75rem;
+            width: 100%;
+            left: 50%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            top: 50%;
+            content: "";
+            display: inline-block;
+          }
+
+          .text {
+            position: relative;
+            max-width: 100%;
+            box-sizing: border-box;
+            display: inline-block;
+            vertical-align: middle;
+            -webkit-box-align: center;
+            background: transparent;
+            -webkit-box-pack: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+            pointer-events: none;
+            padding: calc(-1px + 0.75rem) 1.5rem;
+          }
+
+          .text:focus {
+            outline: none;
+          }
+
+          .text:hover {
+            outline: none;
+          }
+          
+          :host([display=block]) button {
+            display: block;
+          }
+
+          :host([display=inline-block]) button {
+            display: inline-block;
+          }
+
+          :host([size=small]) button {
+            ${this.mixins.bodyText.sm()}
+            font-weight: 700
+            border-radius: 2rem;
+            min-width: revert;
+          }
+
+          :host([size=small]) button:focus-visible::before {
+            border-radius: 2rem;
+          }
+
+          :host([use=secondary]) button {
+            background-color: transparent;
+            color: black;
+          }
+
+          button[disabled] {
+            pointer-events: none;
+            cursor: default;
+            border: 0.0625rem solid var(--color-gray-85);
+            background-color: transparent;
+            color: var(--color-gray-85);
+          }
+
+          :host([use=secondary]) button[disabled] {
+            color: var(--color-gray-85);
+          }
+        `
+
+        const template = `<button ${this.disabled ? 'disabled' : ''} ${this.width ? `style="width: ${this.width};"` : ''}>
+          <span class=hit-area></span>
+          <span class=text>
+            <slot></slot>
+          </span>
+        </button>`
+
+        const styleElement = this.shadow.querySelector('style');
+        styleElement.textContent += style;
+        styleElement.insertAdjacentHTML('afterend', template);
       }
 
-      vds.AccordionHeader = class AccordionHeader extends vds.VZBase {
-        constructor() {
-          super();
+      attributeChangedCallback(name, oldValue, newValue) {
+        const button = this.shadow.querySelector('button')
+        switch (name) {
+          case 'disabled':
+            button.toggleAttribute('disabled', this.hasAttribute('disabled'));
+            break;
+          case 'width':
+            button.style.width = newValue;
+            break;
+          default:
+        }
+      }
+    }
 
-          this.accordion = this.closest('evolv-accordion') || null;
-          this.accordionItem = this.closest('evolv-accordion-item') || null;
-          this.accordionItemIndex = this.accordionItem?.getAttribute('index') || null;
-          this.breakpoint = this.getAttribute('breakpoint') || this.accordion?.getAttribute('breakpoint') || '768px';
-          this.durationCSS = this.getAttribute('duration') || this.accordion?.durationCSS;
-          this.id = this.id || this.accordion?.accordionHeaderId(this.accordionItemIndex);
-          this.titleSize = this.accordion?.getAttribute('title-size') || null;
-          this.titleBold = this.accordion?.getAttribute('title-bold') || null;
-          this.padding = this.getAttribute('padding') || this.accordion?.padding || '1.5rem';
-          this.paddingTablet = this.getAttribute('padding-tablet') || this.accordion?.paddingTablet || '2rem';
+    vds.AccordionHeader = class AccordionHeader extends vds.VZBase {
+      constructor() {
+        super();
 
-          const buttonIconSizes = {
-            'small': 'small',
-            'medium': 'large',
-            'large': 'large'
+        this.accordion = this.closest('evolv-accordion') || null;
+        this.accordionItem = this.closest('evolv-accordion-item') || null;
+        this.accordionItemIndex = this.accordionItem?.getAttribute('index') || null;
+        this.breakpoint = this.getAttribute('breakpoint') || this.accordion?.getAttribute('breakpoint') || '768px';
+        this.durationCSS = this.getAttribute('duration') || this.accordion?.durationCSS;
+        this.handleAlign = this.getAttribute('handle-align') || this.accordion?.getAttribute('handle-align') || 'left';
+        this.id = this.id || this.accordion?.accordionHeaderId(this.accordionItemIndex);
+        this.titleSize = this.accordion?.getAttribute('title-size') || null;
+        this.titleBold = this.accordion?.getAttribute('title-bold') || null;
+        this.padding = this.getAttribute('padding') || this.accordion?.padding || '1.5rem';
+        this.paddingTablet = this.getAttribute('padding-tablet') || this.accordion?.paddingTablet || '2rem';
+
+        const buttonIconSizes = {
+          'small': 'small',
+          'medium': 'large',
+          'large': 'large'
+        }
+
+        this.buttonIconSize = buttonIconSizes[this.titleSize];
+
+        const style = `
+          button {
+            width: 100%;
+            display: flex;
+            overflow: visible;
+            text-align: left;
+            align-items: center;
+            gap: 1rem;
           }
 
-          this.buttonIconSize = buttonIconSizes[this.titleSize];
+          button:not([index="0"]) {
+            border-top: 1px solid var(--color-gray-85);
+          }
 
-          const style = `
+          button:hover {
+            outline: none;
+          }
+
+          button:focus-visible {
+            outline: 0.0625rem dashed black;
+            outline-offset: -1px;
+          }
+
+          .title-wrap {
+            padding: ${this.padding} 0;    
+          }
+
+          .button-icon-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 2rem;
+            margin-right: auto;
+          }
+
+          .handle-align-right .button-icon-wrap {
+            margin-right: 0;
+            margin-left: auto;
+          }
+
+          evolv-button-icon {
+            transition: transform ${this.durationCSS} ease;
+          }
+
+          :host([aria-expanded="true"]) evolv-button-icon {
+            transform: rotate(180deg);
+          }
+
+          ::slotted([slot="right"]) {
+            text-align: right;
+            justify-self: flex-end;
+          }
+
+          @media screen and (min-width: ${this.breakpoint}) {
             button {
-              width: 100%;
-              display: grid;
-              grid-template-columns: auto min-content;
-              overflow: visible;
-              text-align: left;
-              align-items: center;
-            }
-
-            button:not([index="0"]) {
-              border-top: 1px solid var(--color-gray-85);
-            }
-
-            button:hover {
-              outline: none;
-            }
-
-            button:focus-visible {
-              outline: 0.0625rem dashed black;
-              outline-offset: -1px;
-            }
-
-            .title-wrap {
-              grid-area: 1 / 1 / 2 / 2;
-              padding: ${this.padding} 0;    
+              padding: ${this.paddingTablet};
             }
 
             .button-icon-wrap {
-              grid-area: 1 / 2 / 2 / 3;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              width: 2rem;
+              flex-basis: 2.5rem;
             }
-
-            evolv-button-icon {
-              transition: transform ${this.durationCSS} ease;
-            }
-
-            :host([aria-expanded="true"]) evolv-button-icon {
-              transform: rotate(180deg);
-            }
-
-            // ::slotted() {
-            //   position: relative;
-            //   display: flex;
-            //   gap: 10px;
-            // }
-
-            @media screen and (min-width: ${this.breakpoint}) {
-              button {
-                padding: ${this.paddingTablet};
-              }
-
-              .button-icon-wrap {
-                flex-basis: 2.5rem;
-              }
-            }
-          `
-
-          const template = `<button class="unbutton">
-            <div class="title-wrap">
-              <evolv-title
-                ${this.titleSize ? `size="${this.titleSize}"` : ''}
-                ${this.titleBold ? `bold="${this.titleBold}"` : ''}
-                breakpoint="${this.breakpoint}"
-              ><slot></slot></evolv-title>
-            </div>
-            <div class="button-icon-wrap">
-              <evolv-button-icon 
-                ${this.buttonIconSize ? `size="${this.buttonIconSize}"` : ''}
-                name="down-caret"
-                tabindex="-1"
-                breakpont="${this.breakpoint}"
-              ></evolv-icon>
-            </div>
-            <slot name="right"></slot>
-          </button>`
-
-          const styleElement = this.shadow.querySelector('style');
-          styleElement.textContent += style;
-          styleElement.insertAdjacentHTML('afterend', template);
-        }
-
-        connectedCallback() {
-          if (this.accordionItemIndex) {
-            this.setAttribute('index', this.accordionItemIndex);
-            this.setAttribute('aria-controls', this.accordion.accordionDetailsId(this.accordionItemIndex));
           }
-        }
+        `
+
+        const template = `<button class="unbutton handle-align-${this.handleAlign}">
+          <div class="title-wrap">
+            <evolv-title
+              ${this.titleSize ? `size="${this.titleSize}"` : ''}
+              ${this.titleBold ? `bold="${this.titleBold}"` : ''}
+              breakpoint="${this.breakpoint}"
+            ><slot></slot></evolv-title>
+          </div>
+          <div class="button-icon-wrap">
+            <evolv-button-icon 
+              ${this.buttonIconSize ? `size="${this.buttonIconSize}"` : ''}
+              name="down-caret"
+              tabindex="-1"
+              breakpont="${this.breakpoint}"
+            ></evolv-icon>
+          </div>
+          <slot name="right"></slot>
+        </button>`
+
+        const styleElement = this.shadow.querySelector('style');
+        styleElement.textContent += style;
+        styleElement.insertAdjacentHTML('afterend', template);
       }
 
-      vds.AccordionDetails = class AccordionDetails extends vds.VZBase {
-        constructor() {
-          super();
-
-          this.accordion = this.closest('evolv-accordion') || null;
-          this.accordionItem = this.closest('evolv-accordion-item');
-          this.accordionItemIndex = this.accordionItem?.accordionItemIndex;
-          this.breakpoint = this.accordion?.breakpoint || '768px';
-          this.durationCSS = this.accordion?.durationCSS || '0.33s';
-          this.id = this.accordion?.accordionDetailsId(this.accordionItemIndex);
-          this.padding = this.accordion?.padding || '1.5rem';
-          this.paddingTablet = this.accordion?.paddingTablet || '2rem';
-
-          // this.updateDuration = this.updateDuration.bind(this);
-
-          const style = `
-            :host {
-              --duration: ${this.durationCSS};
-              transition: all var(--duration) ease;
-              overflow: hidden;
-            }
-
-            div {
-              padding: 0 0 ${this.padding};
-            }
-
-            @media screen and (min-width: ${this.breakpoint}) {
-              div {
-                padding-bottom: ${this.paddingTablet};
-              }
-            }
-          `
-
-          const template = `
-            <div>
-              <slot></slot>
-            </div>`
-
-          const styleElement = this.shadow.querySelector('style');
-          styleElement.textContent += style;
-          styleElement.insertAdjacentHTML('afterend', template);
-        }
-
-        connectedCallback() {
-          const details = this.shadow.querySelector('div');
-          new ResizeObserver(() => {
-            const heightPrevious = details.getAttribute('details-height');
-            const heightCurrent = Math.round(details.getBoundingClientRect().height).toString();
-            if (heightCurrent !== heightPrevious) {
-              this.setAttribute('details-height', heightCurrent);
-            }
-          }).observe(details);
-          this.setAttribute('aria-labelledby', this.accordion.accordionHeaderId(this.accordionItemIndex));
-        }
-      }
-
-      vds.AccordionItem = class AccordionItem extends vds.VZBase {
-        constructor() {
-          super();
-
-          this.accordionIndex = vds.accordionIndex;
-          this.accordionItemIndex = vds.accordionItemIndex;
-
-          const style = `
-            
-          `
-
-          const template = `
-            <div>
-                <slot></slot>
-            </div>`
-
-          const styleElement = this.shadow.querySelector('style');
-          styleElement.textContent += style;
-          styleElement.insertAdjacentHTML('afterend', template);
-
-          vds.accordionItemIndex += 1;
-        }
-
-        connectedCallback() {
-          this.setAttribute('slot', 'accordion');
+      connectedCallback() {
+        if (this.accordionItemIndex) {
           this.setAttribute('index', this.accordionItemIndex);
+          this.setAttribute('aria-controls', this.accordion.accordionDetailsId(this.accordionItemIndex));
         }
       }
+    }
 
-      vds.Accordion = class Accordion extends vds.VZBase {
-        constructor() {
-          super();
+    vds.AccordionDetails = class AccordionDetails extends vds.VZBase {
+      constructor() {
+        super();
 
-          this.accordionIndex = vds.accordionIndex;
-          this.id = this.getAttribute('id') || `accordion-${this.accordionIndex}`;
+        this.accordion = this.closest('evolv-accordion') || null;
+        this.accordionItem = this.closest('evolv-accordion-item');
+        this.accordionItemIndex = this.accordionItem?.accordionItemIndex;
+        this.breakpoint = this.accordion?.breakpoint || '768px';
+        this.durationCSS = this.accordion?.durationCSS || '0.33s';
+        this.id = this.accordion?.accordionDetailsId(this.accordionItemIndex);
+        this.padding = this.accordion?.padding || '1.5rem';
+        this.paddingTablet = this.accordion?.paddingTablet || '2rem';
 
-          this.adobeTrack = this.getAttribute('adobe-track') === 'false' ? false : true;
-          this.durationCSS = this.getAttribute('duration') || '0.33s';
-          this.durationJS = (parseFloat(this.durationCSS) * 1000) || 330;
-          this.openFirst = (this.getAttribute('open-first') === 'true');
-          this.padding = this.getAttribute('padding')
-            || '1.5rem';
-          this.paddingTablet = this.getAttribute('padding-tablet')
-            || '2rem';
-          this.type = this.getAttribute('type') === 'single' ? 'single' : 'multi';
+        const style = `
+          :host {
+            --duration: ${this.durationCSS};
+            transition: all var(--duration) ease;
+            overflow: hidden;
+          }
 
-          this.accordionItems = [];
-          this.accordionDetails = [];
-          this.accordionHeaders = [];
+          div {
+            padding: 0 0 ${this.padding};
+          }
 
-          this.onSlotChange = this.onSlotChange.bind(this);
-          this.accordionHeaderId = this.accordionHeaderId.bind(this);
-          this.accordionDetailsId = this.accordionDetailsId.bind(this);
-          this.accordionClick = this.accordionClick.bind(this);
-          this.navigate = this.navigate.bind(this);
-          this.expand = this.expand.bind(this);
-          this.collapse = this.collapse.bind(this);
+          @media screen and (min-width: ${this.breakpoint}) {
+            div {
+              padding-bottom: ${this.paddingTablet};
+            }
+          }
+        `
+
+        const template = `
+          <div>
+            <slot></slot>
+          </div>`
+
+        const styleElement = this.shadow.querySelector('style');
+        styleElement.textContent += style;
+        styleElement.insertAdjacentHTML('afterend', template);
+      }
+
+      connectedCallback() {
+        const details = this.shadow.querySelector('div');
+        this.setAttribute('aria-labelledby', this.accordion.accordionHeaderId(this.accordionItemIndex));
+      }
+    }
+
+    vds.AccordionItem = class AccordionItem extends vds.VZBase {
+      constructor() {
+        super();
+
+        this.accordionIndex = vds.accordionIndex;
+        this.accordionItemIndex = vds.accordionItemIndex;
+
+        const style = `
           
-          const style = `
-          `;
-          const template = `
-            <div>
-              <slot name="accordion"></slot>
-            </div>`
+        `
 
-          vds.accordionIndex += 1;
-          vds.accordionItemIndex = 0;
+        const template = `
+          <div>
+              <slot></slot>
+          </div>`
 
-          const styleElement = this.shadow.querySelector('style');
-          styleElement.textContent += style;
-          styleElement.insertAdjacentHTML('afterend', template);
+        const styleElement = this.shadow.querySelector('style');
+        styleElement.textContent += style;
+        styleElement.insertAdjacentHTML('afterend', template);
 
-          const slot = this.shadow.querySelector('slot');
-          slot.addEventListener('slotchange', this.onSlotChange);
+        vds.accordionItemIndex += 1;
+      }
+
+      connectedCallback() {
+        this.setAttribute('slot', 'accordion');
+        this.setAttribute('index', this.accordionItemIndex);
+      }
+    }
+
+    vds.Accordion = class Accordion extends vds.VZBase {
+      constructor() {
+        super();
+
+        this.accordionIndex = vds.accordionIndex;
+        this.id = this.getAttribute('id') || `accordion-${this.accordionIndex}`;
+
+        this.adobeTrack = this.getAttribute('adobe-track') === 'false' ? false : true;
+        this.durationCSS = this.getAttribute('duration') || '0.33s';
+        this.durationJS = (parseFloat(this.durationCSS) * 1000) || 330;
+        this.openFirst = (this.getAttribute('open-first') === 'true');
+        this.padding = this.getAttribute('padding')
+          || '1.5rem';
+        this.paddingTablet = this.getAttribute('padding-tablet')
+          || '2rem';
+        this.type = this.getAttribute('type') === 'single' ? 'single' : 'multi';
+
+        this.accordionItems = [];
+        this.accordionDetails = [];
+        this.accordionHeaders = [];
+
+        this.onSlotChange = this.onSlotChange.bind(this);
+        this.accordionHeaderId = this.accordionHeaderId.bind(this);
+        this.accordionDetailsId = this.accordionDetailsId.bind(this);
+        this.accordionClick = this.accordionClick.bind(this);
+        this.navigate = this.navigate.bind(this);
+        this.expand = this.expand.bind(this);
+        this.collapse = this.collapse.bind(this);
+        
+        const style = `
+        `;
+        const template = `
+          <div>
+            <slot name="accordion"></slot>
+          </div>`
+
+        vds.accordionIndex += 1;
+        vds.accordionItemIndex = 0;
+
+        const styleElement = this.shadow.querySelector('style');
+        styleElement.textContent += style;
+        styleElement.insertAdjacentHTML('afterend', template);
+
+        const slot = this.shadow.querySelector('slot');
+        slot.addEventListener('slotchange', this.onSlotChange);
+      }
+
+      trackValue(index, expanded) {
+        return `{'type':'link','name':'${this.id}-${index}:${expanded ? 'expanded' : 'collapsed'}'}`;
+      }
+
+      accordionHeaderId (index) {
+        return `${this.id}-header-${index}`
+      }
+
+      accordionDetailsId (index) {
+        return `${this.id}-details-${index}`
+      }
+
+      expand(index) {
+        const item = this.accordionItems[index];
+        const header = this.accordionHeaders[index];
+        const details = this.accordionDetails[index];
+        item.setAttribute('expanded', 'true');
+        header.setAttribute('aria-expanded', 'true');
+        details.toggleAttribute('active', true);
+        details.style.display = 'block';
+
+        if (this.adobeTrack) {
+          header.dataset.track = this.trackValue(index, false);
         }
 
-        getDetailsHeight(index) {
-          return Math.round(this.accordionDetails[index]?.getAttribute('details-height'));
+        setTimeout(() => {
+          details.style.maxHeight = `${details.scrollHeight}px`;
+          details.style.opacity = '1';
+        }, 0);
+      }
+
+      collapse(index) {
+        const item = this.accordionItems[index];
+        const header = this.accordionHeaders[index];
+        const details = this.accordionDetails[index];
+        item.setAttribute('expanded', 'false');
+        header.setAttribute('aria-expanded', 'false');
+        details.toggleAttribute('active', false);
+        details.style.maxHeight = '0';
+        details.style.opacity = '0';
+
+        if (this.adobeTrack) {
+          header.dataset.track = this.trackValue(index, true);
         }
 
-        trackValue(index, expanded) {
-          return `{'type':'link','name':'${this.id}-${index}:${expanded ? 'expanded' : 'collapsed'}'}`;
-        }
-
-        accordionHeaderId (index) {
-          return `${this.id}-header-${index}`
-        }
-
-        accordionDetailsId (index) {
-          return `${this.id}-details-${index}`
-        }
-
-        expand(index) {
-          const item = this.accordionItems[index];
-          const header = this.accordionHeaders[index];
-          const details = this.accordionDetails[index];
-          item.setAttribute('expanded', 'true');
-          header.setAttribute('aria-expanded', 'true');
-          details.toggleAttribute('active', true);
-          details.style.display = 'block';
-
-          if (this.adobeTrack) {
-            header.dataset.track = this.trackValue(index, false);
+        setTimeout(() => {
+          if (item.getAttribute('expanded') === 'false') {
+            details.style.display = 'none';
           }
+        }, this.durationJS);
+      }
 
-          setTimeout(() => {
-            details.style.maxHeight = `${this.getDetailsHeight(index)}px`;
-            details.style.opacity = '1';
-          }, 0);
-        }
+      accordionClick(e) {
+        // Store index of item being clicked
+        const index = this.accordionHeaders.indexOf(e.currentTarget);
 
-        collapse(index) {
-          const item = this.accordionItems[index];
-          const header = this.accordionHeaders[index];
-          const details = this.accordionDetails[index];
-          item.setAttribute('expanded', 'false');
-          header.setAttribute('aria-expanded', 'false');
-          details.toggleAttribute('active', false);
-          details.style.maxHeight = '0';
-          details.style.opacity = '0';
+        // Determine if opening or closing
+        const method = (this.accordionHeaders[index].getAttribute('aria-expanded') === 'true' ? 'collapse' : 'expand');
 
-          if (this.adobeTrack) {
-            header.dataset.track = this.trackValue(index, true);
+        // Loop through headers
+        this.accordionHeaders.forEach((accordionHeader, accordionItemIndex) => {
+          if (accordionItemIndex === index && method === 'expand') {
+            this.expand(accordionItemIndex);
+          } else if (accordionItemIndex === index && method === 'collapse') {
+            this.collapse(accordionItemIndex);
+          } else if (accordionItemIndex !== index && this.type === 'single') {
+            this.collapse(accordionItemIndex);
           }
+        })
+      }
 
-          setTimeout(() => {
-            if (item.getAttribute('expanded') === 'false') {
-              details.style.display = 'none';
-            }
-          }, this.durationJS);
-        }
+      navigate(e) {
+        // Store key value of keypress
+        const key = e.which.toString();
+          
+        // 38 = Up, 40 = Down
+        // 33 = Page Up, 34 = Page Down
+        const ctrlModifier = (e.ctrlKey && key.match(/33|34/));
 
-        accordionClick(e) {
-          // Store index of item being clicked
+        // Up/Down arrow and Control + Page Up/Page Down keyboard operations
+        if (key.match(/38|40/) || ctrlModifier) {
           const index = this.accordionHeaders.indexOf(e.currentTarget);
+          const direction = (key.match(/34|40/)) ? 1 : -1;
+          const length = this.accordionHeaders.length;
+          const newIndex = (index + length + direction) % length;
+          this
+            .accordionHeaders[newIndex]
+            .shadow
+            .querySelector('button')
+            .focus();
 
-          // Determine if opening or closing
-          const method = (this.accordionHeaders[index].getAttribute('aria-expanded') === 'true' ? 'collapse' : 'expand');
-
-          // Loop through headers
-          this.accordionHeaders.forEach((accordionHeader, accordionItemIndex) => {
-            if (accordionItemIndex === index && method === 'expand') {
-              this.expand(accordionItemIndex);
-            } else if (accordionItemIndex === index && method === 'collapse') {
-              this.collapse(accordionItemIndex);
-            } else if (accordionItemIndex !== index && this.type === 'single') {
-              this.collapse(accordionItemIndex);
-            }
-          })
-        }
-
-        navigate(e) {
-          // Store key value of keypress
-          const key = e.which.toString();
-            
-          // 38 = Up, 40 = Down
-          // 33 = Page Up, 34 = Page Down
-          const ctrlModifier = (e.ctrlKey && key.match(/33|34/));
-
-          // Up/Down arrow and Control + Page Up/Page Down keyboard operations
-          if (key.match(/38|40/) || ctrlModifier) {
-            const index = this.accordionHeaders.indexOf(e.currentTarget);
-            const direction = (key.match(/34|40/)) ? 1 : -1;
-            const length = this.accordionHeaders.length;
-            const newIndex = (index + length + direction) % length;
-            this
-              .accordionHeaders[newIndex]
-              .shadow
-              .querySelector('button')
-              .focus();
-
-            e.preventDefault();
-          } else if (key.match(/35|36/)) {
-            // 35 = End, 36 = Home keyboard operations
-            switch (key) {
-            // Go to first accordion
-            case '36':
-              this.accordionHeaders[0].focus();
-              break;
-              // Go to last accordion
-            case '35':
-              this.accordionHeaders[this.accordionHeaders.length - 1].focus();
-              break;
-            }
-            e.preventDefault();
+          e.preventDefault();
+        } else if (key.match(/35|36/)) {
+          // 35 = End, 36 = Home keyboard operations
+          switch (key) {
+          // Go to first accordion
+          case '36':
+            this.accordionHeaders[0].focus();
+            break;
+            // Go to last accordion
+          case '35':
+            this.accordionHeaders[this.accordionHeaders.length - 1].focus();
+            break;
           }
-        }
-
-        initEvents() {
-          this.accordionHeaders.forEach((accordionHeader, index) => {
-            if (accordionHeader.dataset.init === 'true' ) { return }
-
-            accordionHeader.addEventListener('click', this.accordionClick);
-            accordionHeader.addEventListener('keydown', this.navigate);
-            this.accordionDetails[index].style.display = 'none';
-
-            if (index === 0 && this.openFirst) {
-              this.expand(index);
-            } else {
-              this.collapse(index);
-            }
-          });
-        }
-
-        onSlotChange(e) {
-          const slot = e.target;
-          this.accordionItems = slot.assignedNodes();
-          this.accordionHeaders = this.accordionItems
-            .map(accordionItem => accordionItem.querySelector('evolv-accordion-header'));
-          this.accordionDetails = this.accordionItems
-            .map(accordionItem => accordionItem.querySelector('evolv-accordion-details'));
-          this.initEvents();
+          e.preventDefault();
         }
       }
 
-      // Register web components
-      const components = {
-        'evolv-title': vds.Title,
-        'evolv-icon': vds.Icon,
-        'evolv-button-icon': vds.ButtonIcon,
-        'evolv-text-link': vds.TextLink,
-        'evolv-button': vds.Button,
-        'evolv-accordion': vds.Accordion,
-        'evolv-accordion-item': vds.AccordionItem,
-        'evolv-accordion-header': vds.AccordionHeader,
-        'evolv-accordion-details': vds.AccordionDetails,
+      initEvents() {
+        this.accordionHeaders.forEach((accordionHeader, index) => {
+          if (!accordionHeader || accordionHeader.dataset.init === 'true' ) { return }
+
+          accordionHeader.addEventListener('click', this.accordionClick);
+          accordionHeader.addEventListener('keydown', this.navigate);
+
+          const accordionDetails = this.accordionDetails[index];
+          accordionDetails.style.display = 'none';
+          
+          if (index === 0 && this.openFirst) {
+            this.expand(index);
+          } else {
+            this.collapse(index);
+          }
+        });
       }
-      
-      Object.keys(components).forEach(name => {
-        if (!customElements.get(name)) {
-          customElements.define(name, components[name]);
-        }
-      })
-  });
+
+      onSlotChange(e) {
+        const slot = e.target;
+        this.accordionItems = slot.assignedNodes();
+        this.accordionItems.forEach((accordionItem, index) => {
+          this.accordionHeaders[index] = accordionItem.querySelector('evolv-accordion-header');
+          this.accordionDetails[index] = accordionItem.querySelector('evolv-accordion-details');
+        });
+        this.initEvents();
+      }
+    }
+
+    // Register web components
+    const components = {
+      'evolv-title': vds.Title,
+      'evolv-icon': vds.Icon,
+      'evolv-button-icon': vds.ButtonIcon,
+      'evolv-text-link': vds.TextLink,
+      'evolv-button': vds.Button,
+      'evolv-accordion': vds.Accordion,
+      'evolv-accordion-item': vds.AccordionItem,
+      'evolv-accordion-header': vds.AccordionHeader,
+      'evolv-accordion-details': vds.AccordionDetails,
+    }
+    
+    Object.keys(components).forEach(name => {
+      if (!customElements.get(name)) {
+        customElements.define(name, components[name]);
+      }
+    });
+  };
+
+  if (window.evolv?.utils) {
+    init();
+  } else {
+    document.documentElement.addEventListener('evolvutilsinit', init);
+  }
 };

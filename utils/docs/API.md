@@ -224,7 +224,7 @@ If the timeout is reached and no callback has been fired, the catch callback is 
 | --- | --- | --- | --- |
 | testCondition | <code>function</code> |  | The callback function to poll |
 | [exitCondition] | <code>number</code> \| <code>function</code> | <code>5000</code> | A number will be treated as a timeout in milliseconds. If a callback is provided, the subscription will terminate when the callback evaluates to `true`. |
-| interval | <code>number</code> |  | The interval in milliseconds, defaults to 25 |
+| [interval] | <code>number</code> | <code>25</code> | The interval in milliseconds |
 
 **Example**  
 ```js

@@ -214,7 +214,7 @@ class Utils {
    * If the timeout is reached and no callback has been fired, the catch callback is called.
    * @param {function} testCondition The callback function to poll
    * @param {number|function} [exitCondition=5000] A number will be treated as a timeout in milliseconds. If a callback is provided, the subscription will terminate when the callback evaluates to `true`.
-   * @param {number} interval The interval in milliseconds, defaults to 25
+   * @param {number} [interval=25] The interval in milliseconds
    * @returns {Object} An object with a then() function that takes a listener callback followed by a catch()
    *  function accepts a catch callback.
    * @example

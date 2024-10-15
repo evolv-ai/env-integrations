@@ -212,8 +212,8 @@ class Utils {
   /**
    * Polls a callback function at the specified interval. When its return value changes, the listener is called.
    * If the timeout is reached and no callback has been fired, the catch callback is called.
-   * @param {function} callback The callback function to poll
-   * @param {number} timeout The timeout in milliseconds, defaults to 5000
+   * @param {function} testCondition The callback function to poll
+   * @param {number|function} [exitCondition=5000] A number will be treated as a timeout in milliseconds. If a callback is provided, the subscription will terminate when the callback evaluates to `true`.
    * @param {number} interval The interval in milliseconds, defaults to 25
    * @returns {Object} An object with a then() function that takes a listener callback followed by a catch()
    *  function accepts a catch callback.
@@ -231,22 +231,31 @@ class Utils {
    * });
    */
 
-  subscribe = (testCondition, duration = 5000, interval = 25) => {
+  subscribe = (testCondition, exitCondition = 5000, interval = 25) => {
     let fired;
     let poll;
     let previousState;
     let catcherA;
     let callbackA = () => {};
+    const exitConditionType = typeof exitCondition;
 
-    setTimeout(() => {
-      clearInterval(poll);
-      if (catcherA && !fired) {
-        this.debug('subscribe: timed out');
-        catcherA();
-      }
-    }, duration);
+    if (exitConditionType === 'number') {
+      setTimeout(() => {
+        clearInterval(poll);
+        if (catcherA && !fired) {
+          this.debug(`subscribe: timed out at ${exitCondition}ms`);
+          catcherA();
+        }
+      }, exitCondition);
+    }
 
     poll = setInterval(() => {
+      if (exitConditionType === 'function' && exitCondition()) {
+        this.debug('subscribe: exit condition met');
+        clearInterval(poll);
+        return;
+      }
+
       const currentState = testCondition();
 
       if (currentState !== previousState) {

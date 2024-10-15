@@ -220,11 +220,11 @@ If the timeout is reached and no callback has been fired, the catch callback is 
 **Returns**: <code>Object</code> - An object with a then() function that takes a listener callback followed by a catch()
  function accepts a catch callback.  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| callback | <code>function</code> | The callback function to poll |
-| timeout | <code>number</code> | The timeout in milliseconds, defaults to 5000 |
-| interval | <code>number</code> | The interval in milliseconds, defaults to 25 |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| testCondition | <code>function</code> |  | The callback function to poll |
+| [exitCondition] | <code>number</code> \| <code>function</code> | <code>5000</code> | A number will be treated as a timeout in milliseconds. If a callback is provided, the subscription will terminate when the callback evaluates to `true`. |
+| interval | <code>number</code> |  | The interval in milliseconds, defaults to 25 |
 
 **Example**  
 ```js

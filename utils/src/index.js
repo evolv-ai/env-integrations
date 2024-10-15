@@ -22,8 +22,8 @@ function init(id, config) {
 
 function processConfig() {
   window.evolv ??= {};
-  window.evolv.utils = init();
-  window.evolv.utils.init = init;
+  window.evolv.utils ??= init();
+  window.evolv.utils.init ??= init;
   document.documentElement.dispatchEvent(new CustomEvent('evolvutilsinit'));
 }
 

@@ -50,7 +50,7 @@ describe('homepage');
 
 ## Local hosting
 
-To host locally, inject the following script using [ResourceOverride](https://chromewebstore.google.com/detail/resource-override/pkoacgokdfckfpndoffpifphamojphii?hl=en&pli=1).
+To host locally, inject the following script using [ResourceOverride](https://chromewebstore.google.com/detail/resource-override/pkoacgokdfckfpndoffpifphamojphii?hl=en&pli=1). The first instance of Utils to load gets priority.
 
 ```js
 (() => {

@@ -62,6 +62,7 @@ class Utils {
 
     this.setContext = this.setContext.bind(this);
     this.fail = this.fail.bind(this);
+    this.makeElement = this.makeElement.bind(this);
 
     if (this.contextKey) {
       if (!this.contextKey.startsWith('web.')) {
@@ -316,7 +317,7 @@ class Utils {
    * Creates an array of elements from an HTML string and adds click handlers to the elements.
    * @param {string} HTMLString The HTML string
    * @param {Object} clickHandlers An object where the keys are CSS selectors and the values are click handlers
-   * @returns {HTMLElement[]|undefined} The array of elements
+   * @returns {HTMLElement[]} The array of elements
    */
   makeElements(HTMLString, clickHandlers = {}) {
     const template = document.createElement('template');
@@ -334,17 +335,10 @@ class Utils {
    * Creates an element from an HTML string and adds click handlers to the element.
    * @param {string} HTMLString The HTML string
    * @param {Object} clickHandlers An object where the keys are CSS selectors and the values are click handlers
-   * @returns {HTMLElement|undefined} A single element
+   * @returns {HTMLElement} A single element
    */
   makeElement(HTMLString, clickHandlers = {}) {
-    const template = document.createElement('template');
-    template.innerHTML = HTMLString;
-
-    Object.keys(clickHandlers).forEach((key) => {
-      template.content.querySelector(key)?.addEventListener('click', clickHandlers[key]);
-    });
-
-    return template.content.firstElementChild;
+    return this.makeElements(HTMLString, clickHandlers)[0];
   }
 
   /**

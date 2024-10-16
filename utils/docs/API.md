@@ -111,8 +111,8 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
     * [.waitFor(callback, timeout, interval)](#Utils+waitFor) ⇒ <code>Promise</code>
     * [.slugify(string)](#Utils+slugify) ⇒ <code>string</code>
     * [.setContext(key, value)](#Utils+setContext)
-    * [.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;HTMLElement&gt;</code> \| <code>undefined</code>
-    * [.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code> \| <code>undefined</code>
+    * [.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
+    * [.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code>
     * [.$(selector)](#Utils+$) ⇒ <code>HTMLElement</code>
     * [.$$(selector)](#Utils+$$) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
     * [.isVisible(element)](#Utils+isVisible) ⇒ <code>boolean</code>
@@ -389,11 +389,11 @@ utils.setContext('vz.cartDeviceEditModal', {
 ```
 <a name="Utils+makeElements"></a>
 
-### utils.makeElements(HTMLString, clickHandlers) ⇒ <code>Array.&lt;HTMLElement&gt;</code> \| <code>undefined</code>
+### utils.makeElements(HTMLString, clickHandlers) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
 Creates an array of elements from an HTML string and adds click handlers to the elements.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
-**Returns**: <code>Array.&lt;HTMLElement&gt;</code> \| <code>undefined</code> - The array of elements  
+**Returns**: <code>Array.&lt;HTMLElement&gt;</code> - The array of elements  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -402,11 +402,11 @@ Creates an array of elements from an HTML string and adds click handlers to the 
 
 <a name="Utils+makeElement"></a>
 
-### utils.makeElement(HTMLString, clickHandlers) ⇒ <code>HTMLElement</code> \| <code>undefined</code>
+### utils.makeElement(HTMLString, clickHandlers) ⇒ <code>HTMLElement</code>
 Creates an element from an HTML string and adds click handlers to the element.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
-**Returns**: <code>HTMLElement</code> \| <code>undefined</code> - A single element  
+**Returns**: <code>HTMLElement</code> - A single element  
 
 | Param | Type | Description |
 | --- | --- | --- |

@@ -2,6 +2,8 @@ import { version } from '../package.json';
 
 export default (config) => {
   function init() {
+    if (window.evolv?.vds) { return }
+
     const utils = window.evolv.utils.init('verizon-design-system');
     const { log, debug, makeElement } = utils;
     log('init verizon design system version', version);
@@ -835,6 +837,9 @@ export default (config) => {
         this.id = this.accordion?.accordionDetailsId(this.accordionItemIndex);
         this.padding = this.accordion?.padding || '1.5rem';
         this.paddingTablet = this.accordion?.paddingTablet || '2rem';
+        this.detailsHeightProp = '--details-height';
+
+        this.updateDetailsHeight = this.updateDetailsHeight.bind(this);
 
         const style = `
           :host {
@@ -865,8 +870,25 @@ export default (config) => {
       }
 
       connectedCallback() {
-        const details = this.shadow.querySelector('div');
         this.setAttribute('aria-labelledby', this.accordion.accordionHeaderId(this.accordionItemIndex));
+
+        const contents = this.shadow.querySelector('div');
+        const observer = new ResizeObserver(this.updateDetailsHeight);
+        observer.observe(contents);
+      }
+
+      get detailsHeightPrevious() {
+        return this.style.getPropertyValue(this.detailsHeightProp);
+      }
+
+      get detailsHeightCurrent() {
+        return `${this.scrollHeight}px`;
+      }
+
+      updateDetailsHeight() {
+        const { detailsHeightPrevious, detailsHeightCurrent } = this;
+        if (detailsHeightCurrent === detailsHeightPrevious) { return }
+        this.style.setProperty(this.detailsHeightProp, detailsHeightCurrent);
       }
     }
 
@@ -951,12 +973,13 @@ export default (config) => {
       }
 
       accordionHeaderId (index) {
-        return `${this.id}-header-${index}`
+        return `${this.id}-header-${index}`;
       }
 
       accordionDetailsId (index) {
-        return `${this.id}-details-${index}`
+        return `${this.id}-details-${index}`;
       }
+
 
       expand(index) {
         const item = this.accordionItems[index];
@@ -972,7 +995,8 @@ export default (config) => {
         }
 
         setTimeout(() => {
-          details.style.maxHeight = `${details.scrollHeight}px`;
+          details.updateDetailsHeight();
+          details.style.maxHeight = `var(${details.detailsHeightProp})`;
           details.style.opacity = '1';
         }, 0);
       }

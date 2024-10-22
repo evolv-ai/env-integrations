@@ -730,6 +730,10 @@ export default (config) => {
         this.buttonIconSize = buttonIconSizes[this.titleSize];
 
         const style = `
+          :host(:not([index="0"])) button {
+            border-top: 1px solid var(--color-gray-85);
+          }
+
           button {
             width: 100%;
             display: flex;
@@ -737,10 +741,6 @@ export default (config) => {
             text-align: left;
             align-items: center;
             gap: 1rem;
-          }
-
-          button:not([index="0"]) {
-            border-top: 1px solid var(--color-gray-85);
           }
 
           button:hover {

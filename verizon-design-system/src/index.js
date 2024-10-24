@@ -2,6 +2,8 @@ import { version } from '../package.json';
 
 export default (config) => {
   function init() {
+    if (window.evolv?.vds) { return }
+
     const utils = window.evolv.utils.init('verizon-design-system');
     const { log, debug, makeElement } = utils;
     log('init verizon design system version', version);
@@ -98,6 +100,10 @@ export default (config) => {
             color: white;
           }
 
+          :host([color="black"]) {
+            color: black;
+          }
+
           :host([color="red"]) {
             color: var(--color-red);
           }
@@ -155,6 +161,8 @@ export default (config) => {
               break;
             case 'small':
               this.primitive = 'h3';
+            case 'xsmall':
+              this.primitive = 'h4';
             default:
           }
         }
@@ -163,6 +171,11 @@ export default (config) => {
           :host > * {
             ${this.mixins.bodyText.lg()}
             text-decoration: none;
+          }
+
+          :host([size="xsmall"]) > * {
+            font-size: 0.875rem;
+            line-height: 1.25rem;
           }
 
           :host([size="medium"]) > * {
@@ -198,6 +211,11 @@ export default (config) => {
               line-height: 1.5rem;
             }
 
+            :host([size="xsmall"]) > * {
+              font-size: 1rem;
+              line-height: 1.25rem;
+            }
+
             :host([size="medium"]) > * {
               font-size: 1.5rem;
               line-height: 1.75rem;
@@ -223,8 +241,7 @@ export default (config) => {
             :host([bold="true"]) > * {
               font-weight: 700;
             }
-          }
-        `
+          }`
 
         const template = `<${this.primitive}>
           <slot></slot>
@@ -273,7 +290,8 @@ export default (config) => {
             --icon-size: 1.75rem;
           }
 
-          @media screen and (min-width: ${this.breakpoint}) {
+          ${ this.breakpoint ? `
+            @media screen and (min-width: ${this.breakpoint}) {
             :host([breakpoint]) {
               --icon-size: 1.25rem;
             }
@@ -289,7 +307,7 @@ export default (config) => {
             :host([size="xlarge"][breakpoint]) {
               --icon-size: 2rem;
             }
-          }
+          }` : ''}
         `
 
         const icons = {
@@ -359,6 +377,7 @@ export default (config) => {
         this.disabled = this.getAttribute('disabled') || false;
         this.size = this.getAttribute('size') || 'small';
         this.breakpoint = this.getAttribute('breakpoint') || '768px';
+        this.color = this.getAttribute('color') || 'black';
 
         switch (this.size) {
           case 'large':
@@ -410,6 +429,20 @@ export default (config) => {
             background-color: transparent;
             color: var(--color-gray-85);
           }
+
+          ${ this.breakpoint ? `
+            @media screen and (min-width: ${this.breakpoint}) {
+              button {
+                width: 2.75rem;
+                height: 2.75rem;
+              }
+
+              :host([size="large"]) button {
+                width: 3.75rem;
+                height: 3.75rem;
+              }
+            }` : ''}
+          
         `
 
         const template = `
@@ -418,6 +451,7 @@ export default (config) => {
               name="${ this.name }"
               size="${ this.iconSize }"
               breakpoint="${ this.breakpoint }"
+              color: "${ this.color }"
             >
               <slot></slot>
             </evolv-icon>
@@ -716,6 +750,7 @@ export default (config) => {
         this.id = this.id || this.accordion?.accordionHeaderId(this.accordionItemIndex);
         this.titleSize = this.accordion?.getAttribute('title-size') || null;
         this.titleBold = this.accordion?.getAttribute('title-bold') || null;
+        this.titleColor = this.accordion?.getAttribute('title-color') || 'black';
         this.padding = this.getAttribute('padding') || this.accordion?.padding || '1.5rem';
         this.paddingTablet = this.getAttribute('padding-tablet') || this.accordion?.paddingTablet || '2rem';
 
@@ -728,6 +763,10 @@ export default (config) => {
         this.buttonIconSize = buttonIconSizes[this.titleSize];
 
         const style = `
+          :host(:not([index="0"])) button {
+            border-top: 1px solid var(--color-gray-85);
+          }
+
           button {
             width: 100%;
             display: flex;
@@ -735,10 +774,6 @@ export default (config) => {
             text-align: left;
             align-items: center;
             gap: 1rem;
-          }
-
-          button:not([index="0"]) {
-            border-top: 1px solid var(--color-gray-85);
           }
 
           button:hover {
@@ -796,6 +831,7 @@ export default (config) => {
             <evolv-title
               ${this.titleSize ? `size="${this.titleSize}"` : ''}
               ${this.titleBold ? `bold="${this.titleBold}"` : ''}
+              color="${this.titleColor}"
               breakpoint="${this.breakpoint}"
             ><slot></slot></evolv-title>
           </div>
@@ -804,7 +840,7 @@ export default (config) => {
               ${this.buttonIconSize ? `size="${this.buttonIconSize}"` : ''}
               name="down-caret"
               tabindex="-1"
-              breakpont="${this.breakpoint}"
+              breakpoint="${this.breakpoint}"
             ></evolv-icon>
           </div>
           <slot name="right"></slot>
@@ -835,6 +871,9 @@ export default (config) => {
         this.id = this.accordion?.accordionDetailsId(this.accordionItemIndex);
         this.padding = this.accordion?.padding || '1.5rem';
         this.paddingTablet = this.accordion?.paddingTablet || '2rem';
+        this.detailsHeightProp = '--details-height';
+
+        this.updateDetailsHeight = this.updateDetailsHeight.bind(this);
 
         const style = `
           :host {
@@ -865,8 +904,25 @@ export default (config) => {
       }
 
       connectedCallback() {
-        const details = this.shadow.querySelector('div');
         this.setAttribute('aria-labelledby', this.accordion.accordionHeaderId(this.accordionItemIndex));
+
+        const contents = this.shadow.querySelector('div');
+        const observer = new ResizeObserver(this.updateDetailsHeight);
+        observer.observe(contents);
+      }
+
+      get detailsHeightPrevious() {
+        return this.style.getPropertyValue(this.detailsHeightProp);
+      }
+
+      get detailsHeightCurrent() {
+        return `${this.scrollHeight}px`;
+      }
+
+      updateDetailsHeight() {
+        const { detailsHeightPrevious, detailsHeightCurrent } = this;
+        if (detailsHeightCurrent === detailsHeightPrevious) { return }
+        this.style.setProperty(this.detailsHeightProp, detailsHeightCurrent);
       }
     }
 
@@ -951,12 +1007,13 @@ export default (config) => {
       }
 
       accordionHeaderId (index) {
-        return `${this.id}-header-${index}`
+        return `${this.id}-header-${index}`;
       }
 
       accordionDetailsId (index) {
-        return `${this.id}-details-${index}`
+        return `${this.id}-details-${index}`;
       }
+
 
       expand(index) {
         const item = this.accordionItems[index];
@@ -972,7 +1029,8 @@ export default (config) => {
         }
 
         setTimeout(() => {
-          details.style.maxHeight = `${details.scrollHeight}px`;
+          details.updateDetailsHeight();
+          details.style.maxHeight = `var(${details.detailsHeightProp})`;
           details.style.opacity = '1';
         }, 0);
       }

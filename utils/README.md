@@ -48,6 +48,24 @@ log('init:', config.name, config.version);
 describe('homepage');
 ```
 
+## Local hosting
+
+To host locally, inject the following script using [ResourceOverride](https://chromewebstore.google.com/detail/resource-override/pkoacgokdfckfpndoffpifphamojphii?hl=en&pli=1). The first instance of Utils to load gets priority.
+
+```js
+(() => {
+  if (window.self !== window.top) { return }
+  
+  console.log('[evolv-local] utils-local: inject');
+  
+  const script = document.createElement('script');
+  script.type = 'module';
+  script.text = 'import processConfig from "http://localhost:8082/index.raw.js"; console.log("[evolv-local] utils: load"); processConfig()';
+  
+  document.head.appendChild(script);
+})();
+```
+
 ## API
 
 For API documentation refer to [Utils API](docs/API.md)

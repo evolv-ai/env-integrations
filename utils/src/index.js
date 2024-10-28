@@ -16,13 +16,15 @@ function init(id, config) {
   if (id) {
     window.evolv.utils[id] = utilsNew;
   }
+
   return utilsNew;
 }
 
 function processConfig() {
   window.evolv ??= {};
-  window.evolv.utils = init();
-  window.evolv.utils.init = init;
+  window.evolv.utils ??= init();
+  window.evolv.utils.init ??= init;
+  document.documentElement.dispatchEvent(new CustomEvent('evolvutilsinit'));
 }
 
 export default processConfig;

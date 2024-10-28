@@ -58,7 +58,7 @@ window.evolv.vds.Title
 | :--- | :---------- | :------ | :------ |
 | `color` | The text color of the title | `inherit` | See [Properties](#properties) |
 | `bold` | The weight of the title | `false` | `true`, `false` |
-| `size` | The font size of the title | `small` | `small`, `medium`, `large`, `xlarge`, `2xlarge` |
+| `size` | The font size of the title | `small` | `xsmall`, `small`, `medium`, `large`, `xlarge`, `2xlarge` |
 | `primitive` | The base element for the title | Assigned based `size` *See note* | `h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `p`, `span` |
 | `breakpoint` | The screen width at which to transition to a larger font size | `768px` | `<css width>` |
 
@@ -68,6 +68,7 @@ The `primitive` attribute, if left blank, is assigned a default heading tag corr
 
 | `size` | `primitive` |
 | :----- | :---------- |
+| `xsmall` | `h4` |
 | `small` | `h3` |
 | `medium` | `h2` |
 | `large` | `h2` |
@@ -234,6 +235,7 @@ window.evolv.vds.TextLink
 | `padding-tablet` | The `padding` for `evolv-accordion-header` and `evolv-accordion-details` elements on screens over `breakpoint` in width | `2rem` | `<css length>` |
 | `title-size` | The `size` of the `evolv-title` elements to use. | `small` | `small`, `medium`, `large` |
 | `title-bold` | The `bold` option for `evolv-title` elements. | `false` | `true`, `false` |
+| `title-color` | The `color` option for `evolv-title` elements. | `black` | See [Properties](#properties) |
 | `type` | `single` only allows one accordion item to be open at a time. `multi` allows multiple items open simultaneously | `multi` | `single`, `multi` |
 
 ---

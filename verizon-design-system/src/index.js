@@ -1004,7 +1004,6 @@ export default (config) => {
 
       trackValue(index, expanded) {
         const header = this.accordionHeaders[index];
-        log(header.getAttribute('track-name'))
         const trackName = header.getAttribute('track-name')
           || (this.trackName ? `${`${this.trackName} ${index}`}` : null)
           || `${this.id}-${index}`;

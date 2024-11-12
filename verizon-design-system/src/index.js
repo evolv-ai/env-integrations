@@ -748,11 +748,10 @@ export default (config) => {
         this.durationCSS = this.getAttribute('duration') || this.accordion?.durationCSS;
         this.handleAlign = this.getAttribute('handle-align') || this.accordion?.getAttribute('handle-align') || 'left';
         this.id = this.id || this.accordion?.accordionHeaderId(this.accordionItemIndex);
-        this.titleSize = this.accordion?.getAttribute('title-size') || null;
+        this.padding = this.getAttribute('padding') || this.accordion?.padding || '1.5rem';
+        this.paddingTablet = this.getAttribute('padding-tablet') || this.accordion?.paddingTablet || '2rem';this.titleSize = this.accordion?.getAttribute('title-size') || null;
         this.titleBold = this.accordion?.getAttribute('title-bold') || null;
         this.titleColor = this.accordion?.getAttribute('title-color') || 'black';
-        this.padding = this.getAttribute('padding') || this.accordion?.padding || '1.5rem';
-        this.paddingTablet = this.getAttribute('padding-tablet') || this.accordion?.paddingTablet || '2rem';
 
         const buttonIconSizes = {
           'small': 'small',
@@ -767,32 +766,29 @@ export default (config) => {
             border-top: 1px solid var(--color-gray-85);
           }
 
-          button {
+          .header-button {
+            display: block;
             width: 100%;
             display: flex;
             overflow: visible;
             text-align: left;
             align-items: center;
             gap: 1rem;
+            padding: ${this.padding} 0;    
           }
 
-          button:hover {
+          .header-button:hover {
             outline: none;
           }
 
-          button:focus-visible {
+          .header-button:focus-visible {
             outline: 0.0625rem dashed black;
             outline-offset: -1px;
           }
 
-          .title-wrap {
-            padding: ${this.padding} 0;    
-          }
-
           .button-icon-wrap {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: relative;
+            display: inline-block;
             width: 2rem;
             margin-right: auto;
           }
@@ -803,11 +799,13 @@ export default (config) => {
           }
 
           evolv-button-icon {
+            position: absolute;
+            transform: translateY(-50%);
             transition: transform ${this.durationCSS} ease;
           }
 
           :host([aria-expanded="true"]) evolv-button-icon {
-            transform: rotate(180deg);
+            transform: translateY(-50%) rotate(180deg);
           }
 
           ::slotted([slot="right"]) {
@@ -816,35 +814,35 @@ export default (config) => {
           }
 
           @media screen and (min-width: ${this.breakpoint}) {
-            button {
-              padding: ${this.paddingTablet};
+            .header-button {
+              padding: ${this.paddingTablet} 0;
             }
 
             .button-icon-wrap {
-              flex-basis: 2.5rem;
+              width: 2.5rem;
             }
           }
         `
 
-        const template = `<button class="unbutton handle-align-${this.handleAlign}">
-          <div class="title-wrap">
+        const template = `
+          <button class="header-button unbutton handle-align-${this.handleAlign}">
             <evolv-title
               ${this.titleSize ? `size="${this.titleSize}"` : ''}
               ${this.titleBold ? `bold="${this.titleBold}"` : ''}
               color="${this.titleColor}"
               breakpoint="${this.breakpoint}"
             ><slot></slot></evolv-title>
-          </div>
-          <div class="button-icon-wrap">
-            <evolv-button-icon 
-              ${this.buttonIconSize ? `size="${this.buttonIconSize}"` : ''}
-              name="down-caret"
-              tabindex="-1"
-              breakpoint="${this.breakpoint}"
-            ></evolv-icon>
-          </div>
-          <slot name="right"></slot>
-        </button>`
+            <div class="button-icon-wrap">
+              <evolv-button-icon 
+                ${this.buttonIconSize ? `size="${this.buttonIconSize}"` : ''}
+                name="down-caret"
+                tabindex="-1"
+                breakpoint="${this.breakpoint}"
+              ></evolv-icon>
+            </div>
+            <slot name="right"></slot>
+          </button>
+        `
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
@@ -963,6 +961,7 @@ export default (config) => {
         this.id = this.getAttribute('id') || `accordion-${this.accordionIndex}`;
 
         this.adobeTrack = this.getAttribute('adobe-track') === 'false' ? false : true;
+        this.trackName = this.getAttribute('track-name') || null;
         this.durationCSS = this.getAttribute('duration') || '0.33s';
         this.durationJS = (parseFloat(this.durationCSS) * 1000) || 330;
         this.openFirst = (this.getAttribute('open-first') === 'true');
@@ -976,6 +975,7 @@ export default (config) => {
         this.accordionDetails = [];
         this.accordionHeaders = [];
 
+        this.trackValue = this.trackValue.bind(this);
         this.onSlotChange = this.onSlotChange.bind(this);
         this.accordionHeaderId = this.accordionHeaderId.bind(this);
         this.accordionDetailsId = this.accordionDetailsId.bind(this);
@@ -1003,7 +1003,11 @@ export default (config) => {
       }
 
       trackValue(index, expanded) {
-        return `{'type':'link','name':'${this.id}-${index}:${expanded ? 'expanded' : 'collapsed'}'}`;
+        const header = this.accordionHeaders[index];
+        const trackName = header.getAttribute('track-name')
+          || (this.trackName ? `${`${this.trackName} ${index}`}` : null)
+          || `${this.id}-${index}`;
+        return `{'type':'link','name':'${trackName}:${expanded ? 'expanded' : 'collapsed'}'}`;
       }
 
       accordionHeaderId (index) {

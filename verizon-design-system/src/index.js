@@ -2,7 +2,9 @@ import { version } from '../package.json';
 
 export default (config) => {
   function init() {
-    if (window.evolv?.vds) { return }
+    if (window.evolv?.vds) {
+      return;
+    }
 
     const utils = window.evolv.utils.init('verizon-design-system');
     const { log, debug, makeElement } = utils;
@@ -17,17 +19,19 @@ export default (config) => {
     vds.accordions = [];
 
     utils.toCamelCase = (string) => {
-      return string.replace(/[^a-zA-Z0-9]+(.)/g, (match, chr) => chr.toUpperCase());
-    }
+      return string.replace(/[^a-zA-Z0-9]+(.)/g, (match, chr) =>
+        chr.toUpperCase()
+      );
+    };
 
     utils.capitalizeFirstLetter = (string) => {
       return string.charAt(0).toUpperCase() + string.slice(1);
-    } 
+    };
 
     vds.VZBase = class VZBase extends HTMLElement {
       constructor(config = {}) {
         super();
-  
+
         const designTokens = `:host {
           --font-family-etx: Verizon-NHG-eTX, Helvetica, Arial, sans-serif;
           --font-family-eds: Verizon-NHG-eDS, Helvetica, Arial, sans-serif;
@@ -38,8 +42,8 @@ export default (config) => {
           --color-gray-85: #d8dada;
           --color-gray-95: #f6f6f6;
           --color-red: #ee0000;
-        }`
-  
+        }`;
+
         this.mixins = {
           bodyText: {
             sm: () => `
@@ -57,12 +61,12 @@ export default (config) => {
               font-weight: 400;
               letter-spacing: 0.03125rem;
               margin: 0;
-              padding: 0;`
+              padding: 0;`,
           },
-        }
-  
+        };
+
         this.shadow = this.attachShadow({ mode: 'open' });
-        
+
         this.shadow.innerHTML = `<style>
           ${designTokens}
 
@@ -85,8 +89,8 @@ export default (config) => {
           }
         </style>`;
       }
-    }
-    
+    };
+
     vds.ColorOptionBase = class ColorOptionBase extends vds.VZBase {
       constructor() {
         super();
@@ -130,12 +134,12 @@ export default (config) => {
 
           :host([color="gray95"]) {
             color: var(--color-gray-95);
-          }`
+          }`;
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
       }
-    }
+    };
 
     vds.Title = class Title extends vds.ColorOptionBase {
       constructor() {
@@ -241,26 +245,27 @@ export default (config) => {
             :host([bold="true"]) > * {
               font-weight: 700;
             }
-          }`
+          }`;
 
         const template = `<${this.primitive}>
           <slot></slot>
-        </${this.primitive}>`
-    
+        </${this.primitive}>`;
+
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
         styleElement.insertAdjacentHTML('afterend', template);
       }
-    }
+    };
 
     vds.Icon = class Icon extends vds.ColorOptionBase {
       constructor() {
         super();
 
         this.name = this.getAttribute('name') || 'empty';
-        this.iconTitle = this.getAttribute('title')
-          || `${utils.capitalizeFirstLetter(this.name.replaceAll('-', ' '))} icon`;
-        this.ariaHidden = (this.getAttribute('aria-hidden') === 'true');
+        this.iconTitle =
+          this.getAttribute('title') ||
+          `${utils.capitalizeFirstLetter(this.name.replaceAll('-', ' '))} icon`;
+        this.ariaHidden = this.getAttribute('aria-hidden') === 'true';
         this.breakpoint = this.getAttribute('breakpoint') || '768px';
 
         const style = `
@@ -290,7 +295,9 @@ export default (config) => {
             --icon-size: 1.75rem;
           }
 
-          ${ this.breakpoint ? `
+          ${
+            this.breakpoint
+              ? `
             @media screen and (min-width: ${this.breakpoint}) {
             :host([breakpoint]) {
               --icon-size: 1.25rem;
@@ -307,8 +314,10 @@ export default (config) => {
             :host([size="xlarge"][breakpoint]) {
               --icon-size: 2rem;
             }
-          }` : ''}
-        `
+          }`
+              : ''
+          }
+        `;
 
         const icons = {
           empty: ``,
@@ -324,7 +333,7 @@ export default (config) => {
           'trash-can': `<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M6.71481 25.6666H21.2981V8.16665H6.71481V25.6666ZM8.16667 9.63146H19.8333V24.2148H8.16667V9.63146ZM16.9167 5.24998V2.33331H11.0833V5.24998H5.25V6.71479H22.75V5.24998H16.9167ZM15.4648 5.24998H12.5481V3.79813H15.4648V5.24998ZM10.6815 21.2981H12.1333V12.5481H10.6815V21.2981ZM15.8667 21.2981H17.3185V12.5481H15.8667V21.2981Z" fill="currentColor"/>
           </svg>`,
-          phone:  `<svg width="15" height="24" viewBox="0 0 15 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          phone: `<svg width="15" height="24" viewBox="0 0 15 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 0V24H15V0H0ZM13.5 18.75H1.5V1.5H13.5V18.75ZM1.5 22.5V20.25H6.00001V21.75H9.00002V20.25H13.5V22.5H1.5Z" fill="currentColor"/>
           </svg>
           `,
@@ -336,13 +345,13 @@ export default (config) => {
           'phone-protection': `<svg width="15" height="24" viewBox="0 0 15 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M3 6V9.37402C3.07574 10.8026 3.53105 12.1858 4.32031 13.3828C5.10955 14.5799 6.20448 15.5486 7.49316 16.1895C8.78454 15.5471 9.88225 14.5772 10.6738 13.3779C11.4653 12.1786 11.9226 10.7929 12 9.36133V6H3ZM4.5 7.5H10.5V9.31055C10.4354 10.4754 10.0665 11.6029 9.42578 12.5801V12.5811C8.92847 13.3389 8.24737 13.9397 7.49316 14.4375C6.74194 13.9411 6.06365 13.3418 5.56836 12.5859C4.92961 11.6112 4.56316 10.487 4.5 9.3252V7.5ZM0 0V24H15V0H0ZM1.5 1.5H13.5V18.75H1.5V1.5ZM1.5 20.25H6V21.75H9V20.25H13.5V22.5H1.5V20.25Z" fill="currentColor"/>
           </svg>`,
-          info:  `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          info: `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M13.6666 6.99998C13.6666 5.68144 13.2756 4.39251 12.5431 3.29618C11.8105 2.19985 10.7693 1.34537 9.55114 0.840786C8.33297 0.336202 6.99253 0.204179 5.69932 0.461414C4.40611 0.718649 3.21823 1.35359 2.28588 2.28594C1.35353 3.21829 0.718588 4.40617 0.461353 5.69938C0.204118 6.99259 0.336141 8.33303 0.840725 9.5512C1.34531 10.7694 2.19979 11.8106 3.29612 12.5431C4.39245 13.2757 5.68138 13.6666 6.99992 13.6666C8.7674 13.6646 10.4619 12.9615 11.7117 11.7117C12.9615 10.462 13.6645 8.76746 13.6666 6.99998ZM12.8333 6.99998C12.8333 8.15373 12.4912 9.28156 11.8502 10.2409C11.2092 11.2002 10.2982 11.9478 9.23226 12.3894C8.16634 12.8309 6.99344 12.9464 5.86186 12.7213C4.73029 12.4962 3.69087 11.9406 2.87505 11.1248C2.05923 10.309 1.50365 9.26959 1.27857 8.13801C1.05349 7.00644 1.16901 5.83353 1.61053 4.76761C2.05205 3.70169 2.79974 2.79064 3.75904 2.14965C4.71834 1.50867 5.84618 1.16654 6.99992 1.16655C8.5465 1.16831 10.0292 1.78348 11.1228 2.87708C12.2164 3.97067 12.8316 5.4534 12.8333 6.99998H12.8333ZM7.61103 4.52481H6.37029V3.28407H7.61103V4.52481ZM6.37647 5.75303H7.62955V10.7159H6.37647V5.75303Z" fill="currentColor"/>
           </svg>`,
-          close:  `<svg viewBox="0 0 21.6 21.6" fill="none">
+          close: `<svg viewBox="0 0 21.6 21.6" fill="none">
             <path d="M11.59,10.8l7.11,7.1-.8.8-7.1-7.11L3.7,18.7l-.8-.8L10,10.8,2.9,3.7l.8-.8L10.8,10,17.9,2.9l.8.8Z" stroke="none" fill="currentColor"></path>
-          </svg>`
-        }
+          </svg>`,
+        };
 
         const template = `
           <div>
@@ -354,7 +363,10 @@ export default (config) => {
         this.svg = icon.querySelector('svg');
 
         if (this.title && svg) {
-          this.svg.insertAdjacentHTML('afterbegin', `<title>${this.title}</title>`);
+          this.svg.insertAdjacentHTML(
+            'afterbegin',
+            `<title>${this.title}</title>`
+          );
         }
 
         if (this.ariaHidden) {
@@ -362,12 +374,12 @@ export default (config) => {
         } else {
           this.svg.setAttribute('role', 'img');
         }
-        
+
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
         styleElement.after(icon);
       }
-    }
+    };
 
     vds.ButtonIcon = class ButtonIcon extends vds.VZBase {
       constructor() {
@@ -430,7 +442,9 @@ export default (config) => {
             color: var(--color-gray-85);
           }
 
-          ${ this.breakpoint ? `
+          ${
+            this.breakpoint
+              ? `
             @media screen and (min-width: ${this.breakpoint}) {
               button {
                 width: 2.75rem;
@@ -441,22 +455,24 @@ export default (config) => {
                 width: 3.75rem;
                 height: 3.75rem;
               }
-            }` : ''}
+            }`
+              : ''
+          }
           
-        `
+        `;
 
         const template = `
           <button class="unbutton">
             <evolv-icon 
-              name="${ this.name }"
-              size="${ this.iconSize }"
-              breakpoint="${ this.breakpoint }"
-              color: "${ this.color }"
+              name="${this.name}"
+              size="${this.iconSize}"
+              breakpoint="${this.breakpoint}"
+              color: "${this.color}"
             >
               <slot></slot>
             </evolv-icon>
           </button>
-        `
+        `;
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
@@ -464,7 +480,7 @@ export default (config) => {
       }
 
       attributeChangedCallback(attribute, oldValue, newValue) {
-        const button = this.shadow.querySelector('button')
+        const button = this.shadow.querySelector('button');
         switch (attribute) {
           case 'disabled':
             button.toggleAttribute('disabled', this.hasAttribute('disabled'));
@@ -472,18 +488,169 @@ export default (config) => {
           default:
         }
       }
-    }
-    
+    };
+
+    vds.Tooltip = class Tooltip extends vds.VZBase {
+      constructor() {
+        super();
+
+        this.name = this.getAttribute('name') || 'empty';
+        this.size = this.getAttribute('size') || 'small';
+        this.type = this.getAttribute('type') || 'inline';
+        this.ariaLabel = this.getAttribute('aria-label');
+        this.color = this.getAttribute('color') || 'black';
+
+        switch (this.size) {
+          case 'large':
+            this.iconSize = 'large';
+            break;
+          case 'small':
+          default:
+            this.iconSize = 'medium';
+        }
+
+        const style = `
+          @keyframes tooltipFadeIn {
+            from {
+              opacity: 0;
+            }
+
+            to {
+              opacity: 1;
+            }
+          }
+
+          .tooltip, :host([type=inline]) .tooltip {
+            border-bottom: 1px dotted;
+            color: blue;
+            display: inline-flex;
+            justify-content: center;
+            flex-direction: column;
+            position: relative;
+          }
+
+          .tooltip-dropdown {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            padding-top: 32px;
+          }
+
+          .tooltip-dropdown__content {
+            color: white;
+            background-color: black;
+            border-radius: 4px;
+            padding: 8px 12px;
+            width: 300px;
+            text-align: left;
+          }
+
+          .tooltip--open {
+            .tooltip-dropdown {
+              animation: tooltipFadeIn 0.15s;
+              display: block;
+            }
+          }
+
+          :host([size="large"]) .tooltip {
+            width: 2.75rem;
+            height: 2.75rem;
+          }
+
+          .tooltip[disabled] {
+            pointer-events: none;
+            cursor: default;
+            background-color: transparent;
+            color: var(--color-gray-85);
+          }
+          
+        `;
+
+        const template = `
+          <div class="tooltip">
+            <evolv-icon 
+              name="${this.name}"
+              size="${this.iconSize}"
+              color="${this.color}"
+            >
+              <slot></slot>
+            </evolv-icon>
+          </div>
+        `;
+
+        const styleElement = this.shadow.querySelector('style');
+        styleElement.textContent += style;
+        styleElement.insertAdjacentHTML('afterend', template);
+      }
+      handleDropdownPosition() {
+        const screenPadding = 16;
+
+        const placeholderRect = this.placeholder.getBoundingClientRect();
+        const dropdownRect = this.dropdown.getBoundingClientRect();
+
+        const dropdownRightX = dropdownRect.x + dropdownRect.width;
+        const placeholderRightX = placeholderRect.x + placeholderRect.width;
+
+        if (dropdownRect.x < 0) {
+          this.dropdown.style.left = '0';
+          this.dropdown.style.right = 'auto';
+          this.dropdown.style.transform = `translateX(${
+            -placeholderRect.x + screenPadding
+          }px)`;
+        } else if (dropdownRightX > window.outerWidth) {
+          this.dropdown.style.left = 'auto';
+          this.dropdown.style.right = '0';
+          this.dropdown.style.transform = `translateX(${
+            window.outerWidth - placeholderRightX - screenPadding
+          }px)`;
+        }
+      }
+
+      toggle() {
+        if (this.classList.contains('tooltip--open')) {
+          this.close();
+        } else {
+          this.open();
+        }
+      }
+
+      open() {
+        this.classList.add('tooltip--open');
+        this.handleDropdownPosition();
+      }
+
+      close() {
+        this.classList.remove('tooltip--open');
+      }
+
+      setup() {
+        this.placeholder = this.querySelector('[data-tooltip-placeholder]');
+        this.dropdown = this.querySelector('[data-tooltip-dropdown]');
+
+        this.placeholder.addEventListener('mouseover', () =>
+          this.handleDropdownPosition()
+        );
+        this.placeholder.addEventListener('touchstart', () => this.toggle());
+      }
+
+      connectedCallback() {
+        this.setup();
+      }
+    };
+
     vds.TextLink = class TextLink extends vds.VZBase {
       constructor() {
         super();
-  
+
         this.size = this.getAttribute('size') || 'large';
         this.href = this.getAttribute('href') || null;
         this.type = this.getAttribute('type') || 'inline';
         this.ariaLabel = this.getAttribute('aria-label');
         this.tabindex = this.getAttribute('tabindex');
-        
+
         const style = `
           a, :host([type=inline]) a {
             font-family: inherit;
@@ -559,14 +726,14 @@ export default (config) => {
               ${this.mixins.bodyText.lg()}
             }
           }`;
-    
+
         const template = `<a ${this.href ? `href="${this.href}"` : ''}>
           <span class="hit-area"></span>
           <span class="text">
             <slot></slot>
           </span>
-        </a>`
-  
+        </a>`;
+
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
         styleElement.insertAdjacentHTML('afterend', template);
@@ -577,16 +744,16 @@ export default (config) => {
           this.setAttribute('tabindex', '0');
         }
       }
-    }
+    };
 
     vds.Button = class Button extends vds.VZBase {
       static observedAttributes = ['width', 'disabled'];
-      
+
       constructor() {
         super();
         this.width = this.getAttribute('width') || null;
         this.disabled = this.getAttribute('disabled') === 'true' || false;
-        
+
         const style = `
           button {
             ${this.mixins.bodyText.lg()}
@@ -709,14 +876,16 @@ export default (config) => {
           :host([use=secondary]) button[disabled] {
             color: var(--color-gray-85);
           }
-        `
+        `;
 
-        const template = `<button ${this.disabled ? 'disabled' : ''} ${this.width ? `style="width: ${this.width};"` : ''}>
+        const template = `<button ${this.disabled ? 'disabled' : ''} ${
+          this.width ? `style="width: ${this.width};"` : ''
+        }>
           <span class=hit-area></span>
           <span class=text>
             <slot></slot>
           </span>
-        </button>`
+        </button>`;
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
@@ -724,7 +893,7 @@ export default (config) => {
       }
 
       attributeChangedCallback(name, oldValue, newValue) {
-        const button = this.shadow.querySelector('button')
+        const button = this.shadow.querySelector('button');
         switch (name) {
           case 'disabled':
             button.toggleAttribute('disabled', this.hasAttribute('disabled'));
@@ -735,7 +904,7 @@ export default (config) => {
           default:
         }
       }
-    }
+    };
 
     vds.AccordionHeader = class AccordionHeader extends vds.VZBase {
       constructor() {
@@ -743,21 +912,36 @@ export default (config) => {
 
         this.accordion = this.closest('evolv-accordion') || null;
         this.accordionItem = this.closest('evolv-accordion-item') || null;
-        this.accordionItemIndex = this.accordionItem?.getAttribute('index') || null;
-        this.breakpoint = this.getAttribute('breakpoint') || this.accordion?.getAttribute('breakpoint') || '768px';
-        this.durationCSS = this.getAttribute('duration') || this.accordion?.durationCSS;
-        this.handleAlign = this.getAttribute('handle-align') || this.accordion?.getAttribute('handle-align') || 'left';
-        this.id = this.id || this.accordion?.accordionHeaderId(this.accordionItemIndex);
-        this.padding = this.getAttribute('padding') || this.accordion?.padding || '1.5rem';
-        this.paddingTablet = this.getAttribute('padding-tablet') || this.accordion?.paddingTablet || '2rem';this.titleSize = this.accordion?.getAttribute('title-size') || null;
+        this.accordionItemIndex =
+          this.accordionItem?.getAttribute('index') || null;
+        this.breakpoint =
+          this.getAttribute('breakpoint') ||
+          this.accordion?.getAttribute('breakpoint') ||
+          '768px';
+        this.durationCSS =
+          this.getAttribute('duration') || this.accordion?.durationCSS;
+        this.handleAlign =
+          this.getAttribute('handle-align') ||
+          this.accordion?.getAttribute('handle-align') ||
+          'left';
+        this.id =
+          this.id || this.accordion?.accordionHeaderId(this.accordionItemIndex);
+        this.padding =
+          this.getAttribute('padding') || this.accordion?.padding || '1.5rem';
+        this.paddingTablet =
+          this.getAttribute('padding-tablet') ||
+          this.accordion?.paddingTablet ||
+          '2rem';
+        this.titleSize = this.accordion?.getAttribute('title-size') || null;
         this.titleBold = this.accordion?.getAttribute('title-bold') || null;
-        this.titleColor = this.accordion?.getAttribute('title-color') || 'black';
+        this.titleColor =
+          this.accordion?.getAttribute('title-color') || 'black';
 
         const buttonIconSizes = {
-          'small': 'small',
-          'medium': 'large',
-          'large': 'large'
-        }
+          small: 'small',
+          medium: 'large',
+          large: 'large',
+        };
 
         this.buttonIconSize = buttonIconSizes[this.titleSize];
 
@@ -822,10 +1006,12 @@ export default (config) => {
               width: 2.5rem;
             }
           }
-        `
+        `;
 
         const template = `
-          <button class="header-button unbutton handle-align-${this.handleAlign}">
+          <button class="header-button unbutton handle-align-${
+            this.handleAlign
+          }">
             <evolv-title
               ${this.titleSize ? `size="${this.titleSize}"` : ''}
               ${this.titleBold ? `bold="${this.titleBold}"` : ''}
@@ -842,7 +1028,7 @@ export default (config) => {
             </div>
             <slot name="right"></slot>
           </button>
-        `
+        `;
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
@@ -852,10 +1038,13 @@ export default (config) => {
       connectedCallback() {
         if (this.accordionItemIndex) {
           this.setAttribute('index', this.accordionItemIndex);
-          this.setAttribute('aria-controls', this.accordion.accordionDetailsId(this.accordionItemIndex));
+          this.setAttribute(
+            'aria-controls',
+            this.accordion.accordionDetailsId(this.accordionItemIndex)
+          );
         }
       }
-    }
+    };
 
     vds.AccordionDetails = class AccordionDetails extends vds.VZBase {
       constructor() {
@@ -889,12 +1078,12 @@ export default (config) => {
               padding-bottom: ${this.paddingTablet};
             }
           }
-        `
+        `;
 
         const template = `
           <div>
             <slot></slot>
-          </div>`
+          </div>`;
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
@@ -902,7 +1091,10 @@ export default (config) => {
       }
 
       connectedCallback() {
-        this.setAttribute('aria-labelledby', this.accordion.accordionHeaderId(this.accordionItemIndex));
+        this.setAttribute(
+          'aria-labelledby',
+          this.accordion.accordionHeaderId(this.accordionItemIndex)
+        );
 
         const contents = this.shadow.querySelector('div');
         const observer = new ResizeObserver(this.updateDetailsHeight);
@@ -919,10 +1111,12 @@ export default (config) => {
 
       updateDetailsHeight() {
         const { detailsHeightPrevious, detailsHeightCurrent } = this;
-        if (detailsHeightCurrent === detailsHeightPrevious) { return }
+        if (detailsHeightCurrent === detailsHeightPrevious) {
+          return;
+        }
         this.style.setProperty(this.detailsHeightProp, detailsHeightCurrent);
       }
-    }
+    };
 
     vds.AccordionItem = class AccordionItem extends vds.VZBase {
       constructor() {
@@ -933,12 +1127,12 @@ export default (config) => {
 
         const style = `
           
-        `
+        `;
 
         const template = `
           <div>
               <slot></slot>
-          </div>`
+          </div>`;
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
@@ -951,7 +1145,7 @@ export default (config) => {
         this.setAttribute('slot', 'accordion');
         this.setAttribute('index', this.accordionItemIndex);
       }
-    }
+    };
 
     vds.Accordion = class Accordion extends vds.VZBase {
       constructor() {
@@ -960,15 +1154,14 @@ export default (config) => {
         this.accordionIndex = vds.accordionIndex;
         this.id = this.getAttribute('id') || `accordion-${this.accordionIndex}`;
 
-        this.adobeTrack = this.getAttribute('adobe-track') === 'false' ? false : true;
+        this.adobeTrack =
+          this.getAttribute('adobe-track') === 'false' ? false : true;
         this.trackName = this.getAttribute('track-name') || null;
         this.durationCSS = this.getAttribute('duration') || '0.33s';
-        this.durationJS = (parseFloat(this.durationCSS) * 1000) || 330;
-        this.openFirst = (this.getAttribute('open-first') === 'true');
-        this.padding = this.getAttribute('padding')
-          || '1.5rem';
-        this.paddingTablet = this.getAttribute('padding-tablet')
-          || '2rem';
+        this.durationJS = parseFloat(this.durationCSS) * 1000 || 330;
+        this.openFirst = this.getAttribute('open-first') === 'true';
+        this.padding = this.getAttribute('padding') || '1.5rem';
+        this.paddingTablet = this.getAttribute('padding-tablet') || '2rem';
         this.type = this.getAttribute('type') === 'single' ? 'single' : 'multi';
 
         this.accordionItems = [];
@@ -983,13 +1176,13 @@ export default (config) => {
         this.navigate = this.navigate.bind(this);
         this.expand = this.expand.bind(this);
         this.collapse = this.collapse.bind(this);
-        
+
         const style = `
         `;
         const template = `
           <div>
             <slot name="accordion"></slot>
-          </div>`
+          </div>`;
 
         vds.accordionIndex += 1;
         vds.accordionItemIndex = 0;
@@ -1004,20 +1197,22 @@ export default (config) => {
 
       trackValue(index, expanded) {
         const header = this.accordionHeaders[index];
-        const trackName = header.getAttribute('track-name')
-          || (this.trackName ? `${`${this.trackName} ${index}`}` : null)
-          || `${this.id}-${index}`;
-        return `{'type':'link','name':'${trackName}:${expanded ? 'expanded' : 'collapsed'}'}`;
+        const trackName =
+          header.getAttribute('track-name') ||
+          (this.trackName ? `${`${this.trackName} ${index}`}` : null) ||
+          `${this.id}-${index}`;
+        return `{'type':'link','name':'${trackName}:${
+          expanded ? 'expanded' : 'collapsed'
+        }'}`;
       }
 
-      accordionHeaderId (index) {
+      accordionHeaderId(index) {
         return `${this.id}-header-${index}`;
       }
 
-      accordionDetailsId (index) {
+      accordionDetailsId(index) {
         return `${this.id}-details-${index}`;
       }
-
 
       expand(index) {
         const item = this.accordionItems[index];
@@ -1065,7 +1260,10 @@ export default (config) => {
         const index = this.accordionHeaders.indexOf(e.currentTarget);
 
         // Determine if opening or closing
-        const method = (this.accordionHeaders[index].getAttribute('aria-expanded') === 'true' ? 'collapse' : 'expand');
+        const method =
+          this.accordionHeaders[index].getAttribute('aria-expanded') === 'true'
+            ? 'collapse'
+            : 'expand';
 
         // Loop through headers
         this.accordionHeaders.forEach((accordionHeader, accordionItemIndex) => {
@@ -1076,26 +1274,24 @@ export default (config) => {
           } else if (accordionItemIndex !== index && this.type === 'single') {
             this.collapse(accordionItemIndex);
           }
-        })
+        });
       }
 
       navigate(e) {
         // Store key value of keypress
         const key = e.which.toString();
-          
+
         // 38 = Up, 40 = Down
         // 33 = Page Up, 34 = Page Down
-        const ctrlModifier = (e.ctrlKey && key.match(/33|34/));
+        const ctrlModifier = e.ctrlKey && key.match(/33|34/);
 
         // Up/Down arrow and Control + Page Up/Page Down keyboard operations
         if (key.match(/38|40/) || ctrlModifier) {
           const index = this.accordionHeaders.indexOf(e.currentTarget);
-          const direction = (key.match(/34|40/)) ? 1 : -1;
+          const direction = key.match(/34|40/) ? 1 : -1;
           const length = this.accordionHeaders.length;
           const newIndex = (index + length + direction) % length;
-          this
-            .accordionHeaders[newIndex]
-            .shadow
+          this.accordionHeaders[newIndex].shadow
             .querySelector('button')
             .focus();
 
@@ -1103,14 +1299,14 @@ export default (config) => {
         } else if (key.match(/35|36/)) {
           // 35 = End, 36 = Home keyboard operations
           switch (key) {
-          // Go to first accordion
-          case '36':
-            this.accordionHeaders[0].focus();
-            break;
+            // Go to first accordion
+            case '36':
+              this.accordionHeaders[0].focus();
+              break;
             // Go to last accordion
-          case '35':
-            this.accordionHeaders[this.accordionHeaders.length - 1].focus();
-            break;
+            case '35':
+              this.accordionHeaders[this.accordionHeaders.length - 1].focus();
+              break;
           }
           e.preventDefault();
         }
@@ -1118,14 +1314,16 @@ export default (config) => {
 
       initEvents() {
         this.accordionHeaders.forEach((accordionHeader, index) => {
-          if (!accordionHeader || accordionHeader.dataset.init === 'true' ) { return }
+          if (!accordionHeader || accordionHeader.dataset.init === 'true') {
+            return;
+          }
 
           accordionHeader.addEventListener('click', this.accordionClick);
           accordionHeader.addEventListener('keydown', this.navigate);
 
           const accordionDetails = this.accordionDetails[index];
           accordionDetails.style.display = 'none';
-          
+
           if (index === 0 && this.openFirst) {
             this.expand(index);
           } else {
@@ -1138,32 +1336,37 @@ export default (config) => {
         const slot = e.target;
         this.accordionItems = slot.assignedNodes();
         this.accordionItems.forEach((accordionItem, index) => {
-          this.accordionHeaders[index] = accordionItem.querySelector('evolv-accordion-header');
-          this.accordionDetails[index] = accordionItem.querySelector('evolv-accordion-details');
+          this.accordionHeaders[index] = accordionItem.querySelector(
+            'evolv-accordion-header'
+          );
+          this.accordionDetails[index] = accordionItem.querySelector(
+            'evolv-accordion-details'
+          );
         });
         this.initEvents();
       }
-    }
+    };
 
     // Register web components
     const components = {
       'evolv-title': vds.Title,
       'evolv-icon': vds.Icon,
       'evolv-button-icon': vds.ButtonIcon,
+      'evolv-tooltip': vds.Tooltip,
       'evolv-text-link': vds.TextLink,
       'evolv-button': vds.Button,
       'evolv-accordion': vds.Accordion,
       'evolv-accordion-item': vds.AccordionItem,
       'evolv-accordion-header': vds.AccordionHeader,
       'evolv-accordion-details': vds.AccordionDetails,
-    }
-    
-    Object.keys(components).forEach(name => {
+    };
+
+    Object.keys(components).forEach((name) => {
       if (!customElements.get(name)) {
         customElements.define(name, components[name]);
       }
     });
-  };
+  }
 
   if (window.evolv?.utils) {
     init();

@@ -791,6 +791,7 @@ export default (config) => {
             display: inline-block;
             width: 2rem;
             margin-right: auto;
+            flex-shrink: 0;
           }
 
           .handle-align-right .button-icon-wrap {

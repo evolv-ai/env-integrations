@@ -22,7 +22,18 @@ export default (config) => {
 
     utils.capitalizeFirstLetter = (string) => {
       return string.charAt(0).toUpperCase() + string.slice(1);
-    } 
+    }
+
+    utils.updateProperty = (property, value, element = document.documentElement) => {
+      if (!element || !property) { return }
+      const valuePrevious = element.style.getPropertyValue(property);
+      const valueCurrent = utils.cleanString(value);
+    
+      if (valueCurrent == valuePrevious) { return }
+    
+      debug(`update property: change '${property}' from '${valuePrevious}' to '${valueCurrent}'`)
+      element.style.setProperty(property, valueCurrent);
+    };
 
     vds.VZBase = class VZBase extends HTMLElement {
       constructor(config = {}) {
@@ -277,6 +288,10 @@ export default (config) => {
             width: var(--icon-size);
             min-height: var(--icon-size);
             min-width: var(--icon-size);
+          }
+
+          :host([type="inline"]) div {
+            display: inline-flex;
           }
 
           :host([size="medium"]) {
@@ -1161,10 +1176,50 @@ export default (config) => {
           }
             
           #tooltip-contents {
+            --leftPosition: calc(50% + 2px);
+            --transformValue: translate(-50%);
+            --tooltipWidth: 14rem;
             position: absolute;
             display: none;
             opacity: 0;
-            height: 0;
+            background-color: rgb(255, 255, 255);
+            box-sizing: border-box;
+            border-radius: 4px;
+            border: 0.0625rem solid rgb(0, 0, 0);
+            bottom: 2.275rem;
+            color: rgb(0, 0, 0);
+            left: var(--leftPosition);
+            max-height: 12.75rem;
+            max-width:  var(--tooltipWidth);
+            min-height: 2.5rem;
+            position: absolute;
+            outline: none;
+            overflow: visible;
+            padding: 0.75rem 0px 0.75rem 0.75rem;
+            text-align: left;
+            transform: translateX(calc(-50% + var(--offset)));
+            visibility: visible;
+            width:  var(--tooltipWidth);
+            will-change: transform, left;
+            z-index: 998;
+          }
+
+          #tooltip-contents::before {
+            background: rgb(255, 255, 255);
+            bottom: -0.28125rem;
+            height: 0.53125rem;
+            color: rgb(0, 0, 0);
+            content: "";
+            box-sizing: border-box;
+            border-right: 0.0625rem solid rgb(0, 0, 0);
+            border-bottom: 0.0625rem solid rgb(0, 0, 0);
+            height: 0.53125rem;
+            left: calc(var(--leftPosition) - var(--tooltipWidth) + 1rem);
+            position: absolute;
+            transform: var(--transformValue) rotate(45deg);
+            width: 0.53125rem;
+            will-change: transform, left;
+            z-index: -1;
           }
 
           #tooltip-button:hover + #tooltip-contents,
@@ -1186,13 +1241,16 @@ export default (config) => {
             text-align: center;
             transform: translate(-50%, -50%);
           }
+
         `;
         const template = `
           <span class="tooltip-wrap">
             <evolv-button-icon id="tooltip-button" name="info" aria-expanded="false" aria-controls="tooltip-contents"></evolv-button-icon>
             <div class="hit-area"></div>
             <span id="tooltip-contents" aria-live="assertive" aria-relevant="all">
-              <slot></slot>
+              <div class="tooltip-contents-inner">
+                <slot></slot>
+              </div>
               <div class="tooltip-scrollbar"></div>
             </span>
           </span>`;
@@ -1205,13 +1263,42 @@ export default (config) => {
       }
 
       connectedCallback() {
-        debugger
+        // debugger
         const { shadow } = this
         const tooltipWrap = shadow.querySelector('.tooltip-wrap');
         const hitArea = shadow.querySelector('.hit-area');
-        shadow.getElementById('tooltip-button').addEventListener('click', this.toggleExpanded);
-        hitArea.addEventListener('mouseenter', () => tooltipWrap.classList.add('hover'));
-        hitArea.addEventListener('mouseleave', () => tooltipWrap.classList.remove('hover'));
+        this.addEventListener('click', this.toggleExpanded);
+        tooltipWrap.addEventListener('mouseenter', () => {
+          tooltipWrap.classList.add('hover');
+          this.handleTooltipPosition();
+        });
+        tooltipWrap.addEventListener('mouseleave', () => tooltipWrap.classList.remove('hover'));
+      }
+
+      handleTooltipPosition() {
+        debugger
+        const { shadow } = this;
+        const screenPadding = 16;
+        const icon = shadow.querySelector('#tooltip-button');
+        const modal = shadow.querySelector('#tooltip-contents');
+        const iconRect = icon.getBoundingClientRect();
+        const modalRect = modal.getBoundingClientRect();
+        const iconCenter = iconRect.x + (iconRect.width / 2);
+
+        const modalRightX = modalRect.right;
+        const iconRightX = iconRect.right;
+
+        if (iconCenter - (modalRect.width / 2) < 0) {
+          modal.style.left = '0';
+          modal.style.right = 'auto';
+          const modalOffset = `-${iconRect.x + screenPadding}px`;
+          // modal.style.transform = `translateX(${-iconRect.x + screenPadding}px)`;
+          utils.updateProperty('offset', modalOffset, modal);
+        } else if (modalRightX > window.outerWidth) {
+          modal.style.left = 'auto';
+          modal.style.right = '0';
+          modal.style.transform = `translateX(${(window.outerWidth - iconRightX) - screenPadding}px)`;
+        }
       }
 
       toggleExpanded() {
@@ -1223,6 +1310,7 @@ export default (config) => {
         if (expanded === "false") {
           button.setAttribute('aria-expanded', 'true');
           wrap.classList.add('expanded');
+          this.handleTooltipPosition();
         } else {
           button.setAttribute('aria-expanded', 'false');
           wrap.classList.remove('expanded');

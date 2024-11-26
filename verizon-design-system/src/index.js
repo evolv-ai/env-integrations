@@ -258,6 +258,7 @@ export default (config) => {
         super();
 
         this.name = this.getAttribute('name') || 'empty';
+        this.type = this.getAttribute('type') || 'standAlone';
         this.iconTitle = this.getAttribute('title')
           || `${utils.capitalizeFirstLetter(this.name.replaceAll('-', ' '))} icon`;
         this.ariaHidden = (this.getAttribute('aria-hidden') === 'true');
@@ -315,7 +316,7 @@ export default (config) => {
           pencil: `<svg width="14" height="18" viewBox="0 0 14 18" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M9.86568 0.685059L1.53234 12.6202L0.717529 17.3147L4.87494 15.0091L13.2823 3.07395L9.86568 0.685059ZM4.18975 14.2128L2.11568 15.3702L2.48605 13.0184L8.0416 5.08321L9.75457 6.27765L4.18975 14.2128ZM8.65271 4.23135L10.1157 2.1295L11.8286 3.33321L10.3564 5.4258L8.65271 4.23135Z" fill="currentColor"/>
           </svg>`,
-          'down-caret': `<svg width="24" height="25" viewBox="0 0 24 25" xmlns="http://www.w3.org/2000/svg">
+          'down-caret': `<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 17.9555L2 7.95554L2.91111 7.04443L12 16.1333L21.0889 7.04443L22 7.95554L12 17.9555Z" fill="currentColor"/>
           </svg>`,
           'right-arrow': `<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -336,9 +337,14 @@ export default (config) => {
           'phone-protection': `<svg width="15" height="24" viewBox="0 0 15 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M3 6V9.37402C3.07574 10.8026 3.53105 12.1858 4.32031 13.3828C5.10955 14.5799 6.20448 15.5486 7.49316 16.1895C8.78454 15.5471 9.88225 14.5772 10.6738 13.3779C11.4653 12.1786 11.9226 10.7929 12 9.36133V6H3ZM4.5 7.5H10.5V9.31055C10.4354 10.4754 10.0665 11.6029 9.42578 12.5801V12.5811C8.92847 13.3389 8.24737 13.9397 7.49316 14.4375C6.74194 13.9411 6.06365 13.3418 5.56836 12.5859C4.92961 11.6112 4.56316 10.487 4.5 9.3252V7.5ZM0 0V24H15V0H0ZM1.5 1.5H13.5V18.75H1.5V1.5ZM1.5 20.25H6V21.75H9V20.25H13.5V22.5H1.5V20.25Z" fill="currentColor"/>
           </svg>`,
-          info:  `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M13.6666 6.99998C13.6666 5.68144 13.2756 4.39251 12.5431 3.29618C11.8105 2.19985 10.7693 1.34537 9.55114 0.840786C8.33297 0.336202 6.99253 0.204179 5.69932 0.461414C4.40611 0.718649 3.21823 1.35359 2.28588 2.28594C1.35353 3.21829 0.718588 4.40617 0.461353 5.69938C0.204118 6.99259 0.336141 8.33303 0.840725 9.5512C1.34531 10.7694 2.19979 11.8106 3.29612 12.5431C4.39245 13.2757 5.68138 13.6666 6.99992 13.6666C8.7674 13.6646 10.4619 12.9615 11.7117 11.7117C12.9615 10.462 13.6645 8.76746 13.6666 6.99998ZM12.8333 6.99998C12.8333 8.15373 12.4912 9.28156 11.8502 10.2409C11.2092 11.2002 10.2982 11.9478 9.23226 12.3894C8.16634 12.8309 6.99344 12.9464 5.86186 12.7213C4.73029 12.4962 3.69087 11.9406 2.87505 11.1248C2.05923 10.309 1.50365 9.26959 1.27857 8.13801C1.05349 7.00644 1.16901 5.83353 1.61053 4.76761C2.05205 3.70169 2.79974 2.79064 3.75904 2.14965C4.71834 1.50867 5.84618 1.16654 6.99992 1.16655C8.5465 1.16831 10.0292 1.78348 11.1228 2.87708C12.2164 3.97067 12.8316 5.4534 12.8333 6.99998H12.8333ZM7.61103 4.52481H6.37029V3.28407H7.61103V4.52481ZM6.37647 5.75303H7.62955V10.7159H6.37647V5.75303Z" fill="currentColor"/>
-          </svg>`,
+          // info:  `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          //   <path d="M13.6666 6.99998C13.6666 5.68144 13.2756 4.39251 12.5431 3.29618C11.8105 2.19985 10.7693 1.34537 9.55114 0.840786C8.33297 0.336202 6.99253 0.204179 5.69932 0.461414C4.40611 0.718649 3.21823 1.35359 2.28588 2.28594C1.35353 3.21829 0.718588 4.40617 0.461353 5.69938C0.204118 6.99259 0.336141 8.33303 0.840725 9.5512C1.34531 10.7694 2.19979 11.8106 3.29612 12.5431C4.39245 13.2757 5.68138 13.6666 6.99992 13.6666C8.7674 13.6646 10.4619 12.9615 11.7117 11.7117C12.9615 10.462 13.6645 8.76746 13.6666 6.99998ZM12.8333 6.99998C12.8333 8.15373 12.4912 9.28156 11.8502 10.2409C11.2092 11.2002 10.2982 11.9478 9.23226 12.3894C8.16634 12.8309 6.99344 12.9464 5.86186 12.7213C4.73029 12.4962 3.69087 11.9406 2.87505 11.1248C2.05923 10.309 1.50365 9.26959 1.27857 8.13801C1.05349 7.00644 1.16901 5.83353 1.61053 4.76761C2.05205 3.70169 2.79974 2.79064 3.75904 2.14965C4.71834 1.50867 5.84618 1.16654 6.99992 1.16655C8.5465 1.16831 10.0292 1.78348 11.1228 2.87708C12.2164 3.97067 12.8316 5.4534 12.8333 6.99998H12.8333ZM7.61103 4.52481H6.37029V3.28407H7.61103V4.52481ZM6.37647 5.75303H7.62955V10.7159H6.37647V5.75303Z" fill="currentColor"/>
+          // </svg>`,
+          info: `
+            <svg role="img" aria-hidden="false" aria-label="info icon" viewBox="0 0 21.6 21.6" fill="#000000">
+              <title>info icon</title>
+              <path d="M19.8,10.8a9,9,0,1,0-9,9A9.01054,9.01054,0,0,0,19.8,10.8Zm-1.12488,0A7.87513,7.87513,0,1,1,10.8,2.92486,7.88411,7.88411,0,0,1,18.67509,10.8ZM11.625,7.45852H9.95v-1.675h1.675ZM9.95834,9.11662H11.65v6.6999H9.95834Z" />
+            </svg>`,
           close:  `<svg viewBox="0 0 21.6 21.6" fill="none">
             <path d="M11.59,10.8l7.11,7.1-.8.8-7.1-7.11L3.7,18.7l-.8-.8L10,10.8,2.9,3.7l.8-.8L10.8,10,17.9,2.9l.8.8Z" stroke="none" fill="currentColor"></path>
           </svg>`
@@ -1146,6 +1152,85 @@ export default (config) => {
       }
     }
 
+    vds.Tooltip = class Tooltip extends vds.ColorOptionBase {
+      constructor () {
+        super();
+        const style = `
+          .tooltip-wrap {
+            position: relative;
+            display: inline-block;
+          }
+            
+          #tooltip-contents {
+            position: absolute;
+            display: none;
+            opacity: 0;
+            height: 0;
+          }
+
+          #tooltip-button:hover + #tooltip-contents,
+          .tooltip-wrap.expanded #tooltip-contents,
+          .tooltip-wrap.hover #tooltip-contents {
+            display: inline-flex;
+            transition: opacity 0s linear .5s;
+            opacity: 1;
+          }
+
+          .hit-area {
+            height: 2.75rem;
+            width: 2.75rem;
+            display: inline-block;
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            transform: translate(-50%, -50%);
+          }
+        `;
+        const template = `
+          <span class="tooltip-wrap">
+            <evolv-button-icon id="tooltip-button" name="info" aria-expanded="false" aria-controls="tooltip-contents"></evolv-button-icon>
+            <div class="hit-area"></div>
+            <span id="tooltip-contents" aria-live="assertive" aria-relevant="all">
+              <slot></slot>
+              <div class="tooltip-scrollbar"></div>
+            </span>
+          </span>`;
+
+        this.toggleExpanded = this.toggleExpanded.bind(this);
+
+        const styleElement = this.shadow.querySelector('style');
+        styleElement.textContent += style;
+        styleElement.insertAdjacentHTML('afterend', template);
+      }
+
+      connectedCallback() {
+        debugger
+        const { shadow } = this
+        const tooltipWrap = shadow.querySelector('.tooltip-wrap');
+        const hitArea = shadow.querySelector('.hit-area');
+        shadow.getElementById('tooltip-button').addEventListener('click', this.toggleExpanded);
+        hitArea.addEventListener('mouseenter', () => tooltipWrap.classList.add('hover'));
+        hitArea.addEventListener('mouseleave', () => tooltipWrap.classList.remove('hover'));
+      }
+
+      toggleExpanded() {
+        debugger
+
+        const button = this.shadow.getElementById('tooltip-button');
+        const wrap = this.shadow.querySelector('.tooltip-wrap');
+        const expanded = button.getAttribute('aria-expanded');
+        if (expanded === "false") {
+          button.setAttribute('aria-expanded', 'true');
+          wrap.classList.add('expanded');
+        } else {
+          button.setAttribute('aria-expanded', 'false');
+          wrap.classList.remove('expanded');
+        }
+      }
+    }
+
     // Register web components
     const components = {
       'evolv-title': vds.Title,
@@ -1157,6 +1242,7 @@ export default (config) => {
       'evolv-accordion-item': vds.AccordionItem,
       'evolv-accordion-header': vds.AccordionHeader,
       'evolv-accordion-details': vds.AccordionDetails,
+      'evolv-tooltip': vds.Tooltip,
     }
     
     Object.keys(components).forEach(name => {

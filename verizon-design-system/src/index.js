@@ -1197,6 +1197,7 @@ export default (config) => {
         this.delay = parseInt(this.getAttribute('delay')) || 300;
         this.offsetY = '2.275rem';
         this.maxHeight = this.getAttribute('max-height') || '12.75rem';
+        this.color = this.getAttribute('color') || 'black';
 
         this.toggleExpanded = this.toggleExpanded.bind(this);
 
@@ -1331,7 +1332,7 @@ export default (config) => {
           <span class="tooltip-wrap">
             <button class="unbutton" id="tooltip-button" name="info" aria-expanded="false" aria-controls="tooltip-contents">
               <div class="tooltip-hit-area"></div>
-              <evolv-icon name="info" type="inline"></evolv-icon>
+              <evolv-icon name="info" type="inline" color="${color}"></evolv-icon>
             </button>
             <span id="tooltip-contents" aria-live="assertive" aria-relevant="all">
               <div class="tooltip-contents-inner">

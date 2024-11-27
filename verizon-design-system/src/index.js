@@ -379,7 +379,7 @@ export default (config) => {
           //   <path d="M13.6666 6.99998C13.6666 5.68144 13.2756 4.39251 12.5431 3.29618C11.8105 2.19985 10.7693 1.34537 9.55114 0.840786C8.33297 0.336202 6.99253 0.204179 5.69932 0.461414C4.40611 0.718649 3.21823 1.35359 2.28588 2.28594C1.35353 3.21829 0.718588 4.40617 0.461353 5.69938C0.204118 6.99259 0.336141 8.33303 0.840725 9.5512C1.34531 10.7694 2.19979 11.8106 3.29612 12.5431C4.39245 13.2757 5.68138 13.6666 6.99992 13.6666C8.7674 13.6646 10.4619 12.9615 11.7117 11.7117C12.9615 10.462 13.6645 8.76746 13.6666 6.99998ZM12.8333 6.99998C12.8333 8.15373 12.4912 9.28156 11.8502 10.2409C11.2092 11.2002 10.2982 11.9478 9.23226 12.3894C8.16634 12.8309 6.99344 12.9464 5.86186 12.7213C4.73029 12.4962 3.69087 11.9406 2.87505 11.1248C2.05923 10.309 1.50365 9.26959 1.27857 8.13801C1.05349 7.00644 1.16901 5.83353 1.61053 4.76761C2.05205 3.70169 2.79974 2.79064 3.75904 2.14965C4.71834 1.50867 5.84618 1.16654 6.99992 1.16655C8.5465 1.16831 10.0292 1.78348 11.1228 2.87708C12.2164 3.97067 12.8316 5.4534 12.8333 6.99998H12.8333ZM7.61103 4.52481H6.37029V3.28407H7.61103V4.52481ZM6.37647 5.75303H7.62955V10.7159H6.37647V5.75303Z" fill="currentColor"/>
           // </svg>`,
           info: `
-            <svg role="img" aria-hidden="false" aria-label="info icon" viewBox="0 0 21.6 21.6" fill="#000000">
+            <svg role="img" aria-hidden="false" aria-label="info icon" viewBox="0 0 21.6 21.6" fill="currentColor">
               <title>info icon</title>
               <path d="M19.8,10.8a9,9,0,1,0-9,9A9.01054,9.01054,0,0,0,19.8,10.8Zm-1.12488,0A7.87513,7.87513,0,1,1,10.8,2.92486,7.88411,7.88411,0,0,1,18.67509,10.8ZM11.625,7.45852H9.95v-1.675h1.675ZM9.95834,9.11662H11.65v6.6999H9.95834Z" />
             </svg>`,
@@ -1195,7 +1195,7 @@ export default (config) => {
         super();
 
         this.breakpoint = this.getAttribute('breakpoint') || '768px';
-        this.delay = parseInt(this.getAttribute('delay')) || 300;
+        this.delay = parseInt(this.getAttribute('delay')) || 500;
         this.offsetY = '2.275rem';
         this.maxHeight = this.getAttribute('max-height') || '12.75rem';
         this.color = this.getAttribute('color') || 'black';
@@ -1333,7 +1333,7 @@ export default (config) => {
           <span class="tooltip-wrap">
             <button class="unbutton" id="tooltip-button" name="info" aria-expanded="false" aria-controls="tooltip-contents">
               <div class="tooltip-hit-area"></div>
-              <evolv-icon name="info" type="inline" color="${color}"></evolv-icon>
+              <evolv-icon name="info" type="inline" color="${this.color}"></evolv-icon>
             </button>
             <span id="tooltip-contents" aria-live="assertive" aria-relevant="all">
               <div class="tooltip-contents-inner">

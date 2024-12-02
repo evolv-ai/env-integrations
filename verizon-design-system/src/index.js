@@ -2,7 +2,9 @@ import { version } from '../package.json';
 
 export default (config) => {
   function init() {
-    if (window.evolv?.vds) { return }
+    if (window.evolv?.vds) {
+      return;
+    }
 
     const utils = window.evolv.utils.init('verizon-design-system');
     const { log, debug, makeElement } = utils;
@@ -17,21 +19,25 @@ export default (config) => {
     vds.accordions = [];
 
     utils.toCamelCase = (string) => {
-      return string.replace(/[^a-zA-Z0-9]+(.)/g, (match, chr) => chr.toUpperCase());
-    }
+      return string.replace(/[^a-zA-Z0-9]+(.)/g, (match, chr) =>
+        chr.toUpperCase()
+      );
+    };
 
     utils.capitalizeFirstLetter = (string) => {
       return string.charAt(0).toUpperCase() + string.slice(1);
-    }
+    };
 
     utils.remToPx = (remString) => {
       const rems = parseFloat(remString);
-      const oneRem = parseFloat(window.getComputedStyle(document.documentElement).fontSize);
+      const oneRem = parseFloat(
+        window.getComputedStyle(document.documentElement).fontSize
+      );
       return rems * oneRem;
-    }
+    };
 
     utils.cleanString = (value) => {
-      let valueCurrent
+      let valueCurrent;
       if (value === null || typeof value === 'undefined') {
         valueCurrent = '';
       } else if (typeof value !== 'string') {
@@ -39,24 +45,32 @@ export default (config) => {
       } else {
         valueCurrent = value;
       }
-    
-      return valueCurrent;
-    }
 
-    utils.updateProperty = (property, value, element = document.documentElement) => {
-      if (!element || !property) { return }
+      return valueCurrent;
+    };
+
+    utils.updateProperty = (
+      property,
+      value,
+      element = document.documentElement
+    ) => {
+      if (!element || !property) {
+        return;
+      }
       const valuePrevious = element.style.getPropertyValue(property);
       const valueCurrent = utils.cleanString(value);
-    
-      if (valueCurrent == valuePrevious) { return }
-    
+
+      if (valueCurrent == valuePrevious) {
+        return;
+      }
+
       element.style.setProperty(property, valueCurrent);
     };
 
     vds.VZBase = class VZBase extends HTMLElement {
       constructor(config = {}) {
         super();
-  
+
         const designTokens = `:host {
           --font-family-etx: Verizon-NHG-eTX, Helvetica, Arial, sans-serif;
           --font-family-eds: Verizon-NHG-eDS, Helvetica, Arial, sans-serif;
@@ -67,8 +81,8 @@ export default (config) => {
           --color-gray-85: #d8dada;
           --color-gray-95: #f6f6f6;
           --color-red: #ee0000;
-        }`
-  
+        }`;
+
         this.mixins = {
           bodyText: {
             sm: () => `
@@ -87,12 +101,12 @@ export default (config) => {
               font-weight: 400;
               letter-spacing: 0.03125rem;
               margin: 0;
-              padding: 0;`
+              padding: 0;`,
           },
-        }
-  
+        };
+
         this.shadow = this.attachShadow({ mode: 'open' });
-        
+
         this.shadow.innerHTML = `<style>
           ${designTokens}
 
@@ -119,8 +133,8 @@ export default (config) => {
           }
         </style>`;
       }
-    }
-    
+    };
+
     vds.ColorOptionBase = class ColorOptionBase extends vds.VZBase {
       constructor() {
         super();
@@ -164,12 +178,12 @@ export default (config) => {
 
           :host([color="gray95"]) {
             color: var(--color-gray-95);
-          }`
+          }`;
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
       }
-    }
+    };
 
     vds.Title = class Title extends vds.ColorOptionBase {
       constructor() {
@@ -275,17 +289,17 @@ export default (config) => {
             :host([bold="true"]) > * {
               font-weight: 700;
             }
-          }`
+          }`;
 
         const template = `<${this.primitive}>
           <slot></slot>
-        </${this.primitive}>`
-    
+        </${this.primitive}>`;
+
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
         styleElement.insertAdjacentHTML('afterend', template);
       }
-    }
+    };
 
     vds.Icon = class Icon extends vds.ColorOptionBase {
       constructor() {
@@ -293,9 +307,10 @@ export default (config) => {
 
         this.name = this.getAttribute('name') || 'empty';
         this.type = this.getAttribute('type') || 'standAlone';
-        this.iconTitle = this.getAttribute('title')
-          || `${utils.capitalizeFirstLetter(this.name.replaceAll('-', ' '))} icon`;
-        this.ariaHidden = (this.getAttribute('aria-hidden') === 'true');
+        this.iconTitle =
+          this.getAttribute('title') ||
+          `${utils.capitalizeFirstLetter(this.name.replaceAll('-', ' '))} icon`;
+        this.ariaHidden = this.getAttribute('aria-hidden') === 'true';
         this.breakpoint = this.getAttribute('breakpoint') || '768px';
 
         const style = `
@@ -329,7 +344,9 @@ export default (config) => {
             --icon-size: 1.75rem;
           }
 
-          ${ this.breakpoint ? `
+          ${
+            this.breakpoint
+              ? `
             @media screen and (min-width: ${this.breakpoint}) {
             :host([breakpoint]) {
               --icon-size: 1.25rem;
@@ -346,8 +363,10 @@ export default (config) => {
             :host([size="xlarge"][breakpoint]) {
               --icon-size: 2rem;
             }
-          }` : ''}
-        `
+          }`
+              : ''
+          }
+        `;
 
         const icons = {
           empty: ``,
@@ -363,7 +382,7 @@ export default (config) => {
           'trash-can': `<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M6.71481 25.6666H21.2981V8.16665H6.71481V25.6666ZM8.16667 9.63146H19.8333V24.2148H8.16667V9.63146ZM16.9167 5.24998V2.33331H11.0833V5.24998H5.25V6.71479H22.75V5.24998H16.9167ZM15.4648 5.24998H12.5481V3.79813H15.4648V5.24998ZM10.6815 21.2981H12.1333V12.5481H10.6815V21.2981ZM15.8667 21.2981H17.3185V12.5481H15.8667V21.2981Z" fill="currentColor"/>
           </svg>`,
-          phone:  `<svg width="15" height="24" viewBox="0 0 15 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          phone: `<svg width="15" height="24" viewBox="0 0 15 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 0V24H15V0H0ZM13.5 18.75H1.5V1.5H13.5V18.75ZM1.5 22.5V20.25H6.00001V21.75H9.00002V20.25H13.5V22.5H1.5Z" fill="currentColor"/>
           </svg>
           `,
@@ -383,10 +402,10 @@ export default (config) => {
               <title>info icon</title>
               <path d="M19.8,10.8a9,9,0,1,0-9,9A9.01054,9.01054,0,0,0,19.8,10.8Zm-1.12488,0A7.87513,7.87513,0,1,1,10.8,2.92486,7.88411,7.88411,0,0,1,18.67509,10.8ZM11.625,7.45852H9.95v-1.675h1.675ZM9.95834,9.11662H11.65v6.6999H9.95834Z" />
             </svg>`,
-          close:  `<svg viewBox="0 0 21.6 21.6" fill="none">
+          close: `<svg viewBox="0 0 21.6 21.6" fill="none">
             <path d="M11.59,10.8l7.11,7.1-.8.8-7.1-7.11L3.7,18.7l-.8-.8L10,10.8,2.9,3.7l.8-.8L10.8,10,17.9,2.9l.8.8Z" stroke="none" fill="currentColor"></path>
-          </svg>`
-        }
+          </svg>`,
+        };
 
         const template = `
           <div>
@@ -398,7 +417,10 @@ export default (config) => {
         this.svg = icon.querySelector('svg');
 
         if (this.title && svg) {
-          this.svg.insertAdjacentHTML('afterbegin', `<title>${this.title}</title>`);
+          this.svg.insertAdjacentHTML(
+            'afterbegin',
+            `<title>${this.title}</title>`
+          );
         }
 
         if (this.ariaHidden) {
@@ -406,12 +428,12 @@ export default (config) => {
         } else {
           this.svg.setAttribute('role', 'img');
         }
-        
+
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
         styleElement.after(icon);
       }
-    }
+    };
 
     vds.ButtonIcon = class ButtonIcon extends vds.VZBase {
       constructor() {
@@ -474,7 +496,9 @@ export default (config) => {
             color: var(--color-gray-85);
           }
 
-          ${ this.breakpoint ? `
+          ${
+            this.breakpoint
+              ? `
             @media screen and (min-width: ${this.breakpoint}) {
               button {
                 width: 2.75rem;
@@ -485,22 +509,24 @@ export default (config) => {
                 width: 3.75rem;
                 height: 3.75rem;
               }
-            }` : ''}
+            }`
+              : ''
+          }
           
-        `
+        `;
 
         const template = `
           <button class="unbutton">
             <evolv-icon 
-              name="${ this.name }"
-              size="${ this.iconSize }"
-              breakpoint="${ this.breakpoint }"
-              color: "${ this.color }"
+              name="${this.name}"
+              size="${this.iconSize}"
+              breakpoint="${this.breakpoint}"
+              color: "${this.color}"
             >
               <slot></slot>
             </evolv-icon>
           </button>
-        `
+        `;
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
@@ -508,7 +534,7 @@ export default (config) => {
       }
 
       attributeChangedCallback(attribute, oldValue, newValue) {
-        const button = this.shadow.querySelector('button')
+        const button = this.shadow.querySelector('button');
         switch (attribute) {
           case 'disabled':
             button.toggleAttribute('disabled', this.hasAttribute('disabled'));
@@ -516,18 +542,18 @@ export default (config) => {
           default:
         }
       }
-    }
-    
+    };
+
     vds.TextLink = class TextLink extends vds.VZBase {
       constructor() {
         super();
-  
+
         this.size = this.getAttribute('size') || 'large';
         this.href = this.getAttribute('href') || null;
         this.type = this.getAttribute('type') || 'inline';
         this.ariaLabel = this.getAttribute('aria-label');
         this.tabindex = this.getAttribute('tabindex');
-        
+
         const style = `
           a, :host([type=inline]) a {
             font-family: inherit;
@@ -603,14 +629,14 @@ export default (config) => {
               ${this.mixins.bodyText.lg()}
             }
           }`;
-    
+
         const template = `<a ${this.href ? `href="${this.href}"` : ''}>
           <span class="hit-area"></span>
           <span class="text">
             <slot></slot>
           </span>
-        </a>`
-  
+        </a>`;
+
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
         styleElement.insertAdjacentHTML('afterend', template);
@@ -621,16 +647,16 @@ export default (config) => {
           this.setAttribute('tabindex', '0');
         }
       }
-    }
+    };
 
     vds.Button = class Button extends vds.VZBase {
       static observedAttributes = ['width', 'disabled'];
-      
+
       constructor() {
         super();
         this.width = this.getAttribute('width') || null;
         this.disabled = this.getAttribute('disabled') === 'true' || false;
-        
+
         const style = `
           button {
             ${this.mixins.bodyText.lg()}
@@ -753,14 +779,16 @@ export default (config) => {
           :host([use=secondary]) button[disabled] {
             color: var(--color-gray-85);
           }
-        `
+        `;
 
-        const template = `<button ${this.disabled ? 'disabled' : ''} ${this.width ? `style="width: ${this.width};"` : ''}>
+        const template = `<button ${this.disabled ? 'disabled' : ''} ${
+          this.width ? `style="width: ${this.width};"` : ''
+        }>
           <span class=hit-area></span>
           <span class=text>
             <slot></slot>
           </span>
-        </button>`
+        </button>`;
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
@@ -768,7 +796,7 @@ export default (config) => {
       }
 
       attributeChangedCallback(name, oldValue, newValue) {
-        const button = this.shadow.querySelector('button')
+        const button = this.shadow.querySelector('button');
         switch (name) {
           case 'disabled':
             button.toggleAttribute('disabled', this.hasAttribute('disabled'));
@@ -779,7 +807,7 @@ export default (config) => {
           default:
         }
       }
-    }
+    };
 
     vds.AccordionHeader = class AccordionHeader extends vds.VZBase {
       constructor() {
@@ -787,21 +815,36 @@ export default (config) => {
 
         this.accordion = this.closest('evolv-accordion') || null;
         this.accordionItem = this.closest('evolv-accordion-item') || null;
-        this.accordionItemIndex = this.accordionItem?.getAttribute('index') || null;
-        this.breakpoint = this.getAttribute('breakpoint') || this.accordion?.getAttribute('breakpoint') || '768px';
-        this.durationCSS = this.getAttribute('duration') || this.accordion?.durationCSS;
-        this.handleAlign = this.getAttribute('handle-align') || this.accordion?.getAttribute('handle-align') || 'left';
-        this.id = this.id || this.accordion?.accordionHeaderId(this.accordionItemIndex);
-        this.padding = this.getAttribute('padding') || this.accordion?.padding || '1.5rem';
-        this.paddingTablet = this.getAttribute('padding-tablet') || this.accordion?.paddingTablet || '2rem';this.titleSize = this.accordion?.getAttribute('title-size') || null;
+        this.accordionItemIndex =
+          this.accordionItem?.getAttribute('index') || null;
+        this.breakpoint =
+          this.getAttribute('breakpoint') ||
+          this.accordion?.getAttribute('breakpoint') ||
+          '768px';
+        this.durationCSS =
+          this.getAttribute('duration') || this.accordion?.durationCSS;
+        this.handleAlign =
+          this.getAttribute('handle-align') ||
+          this.accordion?.getAttribute('handle-align') ||
+          'left';
+        this.id =
+          this.id || this.accordion?.accordionHeaderId(this.accordionItemIndex);
+        this.padding =
+          this.getAttribute('padding') || this.accordion?.padding || '1.5rem';
+        this.paddingTablet =
+          this.getAttribute('padding-tablet') ||
+          this.accordion?.paddingTablet ||
+          '2rem';
+        this.titleSize = this.accordion?.getAttribute('title-size') || null;
         this.titleBold = this.accordion?.getAttribute('title-bold') || null;
-        this.titleColor = this.accordion?.getAttribute('title-color') || 'black';
+        this.titleColor =
+          this.accordion?.getAttribute('title-color') || 'black';
 
         const buttonIconSizes = {
-          'small': 'small',
-          'medium': 'large',
-          'large': 'large'
-        }
+          small: 'small',
+          medium: 'large',
+          large: 'large',
+        };
 
         this.buttonIconSize = buttonIconSizes[this.titleSize];
 
@@ -867,10 +910,12 @@ export default (config) => {
               width: 2.5rem;
             }
           }
-        `
+        `;
 
         const template = `
-          <button class="header-button unbutton handle-align-${this.handleAlign}">
+          <button class="header-button unbutton handle-align-${
+            this.handleAlign
+          }">
             <evolv-title
               ${this.titleSize ? `size="${this.titleSize}"` : ''}
               ${this.titleBold ? `bold="${this.titleBold}"` : ''}
@@ -887,7 +932,7 @@ export default (config) => {
             </div>
             <slot name="right"></slot>
           </button>
-        `
+        `;
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
@@ -897,10 +942,13 @@ export default (config) => {
       connectedCallback() {
         if (this.accordionItemIndex) {
           this.setAttribute('index', this.accordionItemIndex);
-          this.setAttribute('aria-controls', this.accordion.accordionDetailsId(this.accordionItemIndex));
+          this.setAttribute(
+            'aria-controls',
+            this.accordion.accordionDetailsId(this.accordionItemIndex)
+          );
         }
       }
-    }
+    };
 
     vds.AccordionDetails = class AccordionDetails extends vds.VZBase {
       constructor() {
@@ -934,12 +982,12 @@ export default (config) => {
               padding-bottom: ${this.paddingTablet};
             }
           }
-        `
+        `;
 
         const template = `
           <div>
             <slot></slot>
-          </div>`
+          </div>`;
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
@@ -947,7 +995,10 @@ export default (config) => {
       }
 
       connectedCallback() {
-        this.setAttribute('aria-labelledby', this.accordion.accordionHeaderId(this.accordionItemIndex));
+        this.setAttribute(
+          'aria-labelledby',
+          this.accordion.accordionHeaderId(this.accordionItemIndex)
+        );
 
         const contents = this.shadow.querySelector('div');
         const observer = new ResizeObserver(this.updateDetailsHeight);
@@ -964,10 +1015,12 @@ export default (config) => {
 
       updateDetailsHeight() {
         const { detailsHeightPrevious, detailsHeightCurrent } = this;
-        if (detailsHeightCurrent === detailsHeightPrevious) { return }
+        if (detailsHeightCurrent === detailsHeightPrevious) {
+          return;
+        }
         this.style.setProperty(this.detailsHeightProp, detailsHeightCurrent);
       }
-    }
+    };
 
     vds.AccordionItem = class AccordionItem extends vds.VZBase {
       constructor() {
@@ -978,12 +1031,12 @@ export default (config) => {
 
         const style = `
           
-        `
+        `;
 
         const template = `
           <div>
               <slot></slot>
-          </div>`
+          </div>`;
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
@@ -996,7 +1049,7 @@ export default (config) => {
         this.setAttribute('slot', 'accordion');
         this.setAttribute('index', this.accordionItemIndex);
       }
-    }
+    };
 
     vds.Accordion = class Accordion extends vds.VZBase {
       constructor() {
@@ -1005,15 +1058,14 @@ export default (config) => {
         this.accordionIndex = vds.accordionIndex;
         this.id = this.getAttribute('id') || `accordion-${this.accordionIndex}`;
 
-        this.adobeTrack = this.getAttribute('adobe-track') === 'false' ? false : true;
+        this.adobeTrack =
+          this.getAttribute('adobe-track') === 'false' ? false : true;
         this.trackName = this.getAttribute('track-name') || null;
         this.durationCSS = this.getAttribute('duration') || '0.33s';
-        this.durationJS = (parseFloat(this.durationCSS) * 1000) || 330;
-        this.openFirst = (this.getAttribute('open-first') === 'true');
-        this.padding = this.getAttribute('padding')
-          || '1.5rem';
-        this.paddingTablet = this.getAttribute('padding-tablet')
-          || '2rem';
+        this.durationJS = parseFloat(this.durationCSS) * 1000 || 330;
+        this.openFirst = this.getAttribute('open-first') === 'true';
+        this.padding = this.getAttribute('padding') || '1.5rem';
+        this.paddingTablet = this.getAttribute('padding-tablet') || '2rem';
         this.type = this.getAttribute('type') === 'single' ? 'single' : 'multi';
 
         this.accordionItems = [];
@@ -1028,13 +1080,13 @@ export default (config) => {
         this.navigate = this.navigate.bind(this);
         this.expand = this.expand.bind(this);
         this.collapse = this.collapse.bind(this);
-        
+
         const style = `
         `;
         const template = `
           <div>
             <slot name="accordion"></slot>
-          </div>`
+          </div>`;
 
         vds.accordionIndex += 1;
         vds.accordionItemIndex = 0;
@@ -1049,20 +1101,22 @@ export default (config) => {
 
       trackValue(index, expanded) {
         const header = this.accordionHeaders[index];
-        const trackName = header.getAttribute('track-name')
-          || (this.trackName ? `${`${this.trackName} ${index}`}` : null)
-          || `${this.id}-${index}`;
-        return `{'type':'link','name':'${trackName}:${expanded ? 'expanded' : 'collapsed'}'}`;
+        const trackName =
+          header.getAttribute('track-name') ||
+          (this.trackName ? `${`${this.trackName} ${index}`}` : null) ||
+          `${this.id}-${index}`;
+        return `{'type':'link','name':'${trackName}:${
+          expanded ? 'expanded' : 'collapsed'
+        }'}`;
       }
 
-      accordionHeaderId (index) {
+      accordionHeaderId(index) {
         return `${this.id}-header-${index}`;
       }
 
-      accordionDetailsId (index) {
+      accordionDetailsId(index) {
         return `${this.id}-details-${index}`;
       }
-
 
       expand(index) {
         const item = this.accordionItems[index];
@@ -1110,7 +1164,10 @@ export default (config) => {
         const index = this.accordionHeaders.indexOf(e.currentTarget);
 
         // Determine if opening or closing
-        const method = (this.accordionHeaders[index].getAttribute('aria-expanded') === 'true' ? 'collapse' : 'expand');
+        const method =
+          this.accordionHeaders[index].getAttribute('aria-expanded') === 'true'
+            ? 'collapse'
+            : 'expand';
 
         // Loop through headers
         this.accordionHeaders.forEach((accordionHeader, accordionItemIndex) => {
@@ -1121,26 +1178,24 @@ export default (config) => {
           } else if (accordionItemIndex !== index && this.type === 'single') {
             this.collapse(accordionItemIndex);
           }
-        })
+        });
       }
 
       navigate(e) {
         // Store key value of keypress
         const key = e.which.toString();
-          
+
         // 38 = Up, 40 = Down
         // 33 = Page Up, 34 = Page Down
-        const ctrlModifier = (e.ctrlKey && key.match(/33|34/));
+        const ctrlModifier = e.ctrlKey && key.match(/33|34/);
 
         // Up/Down arrow and Control + Page Up/Page Down keyboard operations
         if (key.match(/38|40/) || ctrlModifier) {
           const index = this.accordionHeaders.indexOf(e.currentTarget);
-          const direction = (key.match(/34|40/)) ? 1 : -1;
+          const direction = key.match(/34|40/) ? 1 : -1;
           const length = this.accordionHeaders.length;
           const newIndex = (index + length + direction) % length;
-          this
-            .accordionHeaders[newIndex]
-            .shadow
+          this.accordionHeaders[newIndex].shadow
             .querySelector('button')
             .focus();
 
@@ -1148,14 +1203,14 @@ export default (config) => {
         } else if (key.match(/35|36/)) {
           // 35 = End, 36 = Home keyboard operations
           switch (key) {
-          // Go to first accordion
-          case '36':
-            this.accordionHeaders[0].focus();
-            break;
+            // Go to first accordion
+            case '36':
+              this.accordionHeaders[0].focus();
+              break;
             // Go to last accordion
-          case '35':
-            this.accordionHeaders[this.accordionHeaders.length - 1].focus();
-            break;
+            case '35':
+              this.accordionHeaders[this.accordionHeaders.length - 1].focus();
+              break;
           }
           e.preventDefault();
         }
@@ -1163,14 +1218,16 @@ export default (config) => {
 
       initEvents() {
         this.accordionHeaders.forEach((accordionHeader, index) => {
-          if (!accordionHeader || accordionHeader.dataset.init === 'true' ) { return }
+          if (!accordionHeader || accordionHeader.dataset.init === 'true') {
+            return;
+          }
 
           accordionHeader.addEventListener('click', this.accordionClick);
           accordionHeader.addEventListener('keydown', this.navigate);
 
           const accordionDetails = this.accordionDetails[index];
           accordionDetails.style.display = 'none';
-          
+
           if (index === 0 && this.openFirst) {
             this.expand(index);
           } else {
@@ -1183,15 +1240,19 @@ export default (config) => {
         const slot = e.target;
         this.accordionItems = slot.assignedNodes();
         this.accordionItems.forEach((accordionItem, index) => {
-          this.accordionHeaders[index] = accordionItem.querySelector('evolv-accordion-header');
-          this.accordionDetails[index] = accordionItem.querySelector('evolv-accordion-details');
+          this.accordionHeaders[index] = accordionItem.querySelector(
+            'evolv-accordion-header'
+          );
+          this.accordionDetails[index] = accordionItem.querySelector(
+            'evolv-accordion-details'
+          );
         });
         this.initEvents();
       }
-    }
+    };
 
     vds.Tooltip = class Tooltip extends vds.ColorOptionBase {
-      constructor () {
+      constructor() {
         super();
 
         this.breakpoint = this.getAttribute('breakpoint') || '768px';
@@ -1254,6 +1315,7 @@ export default (config) => {
             border-radius: 4px;
             border: 0.0625rem solid rgb(0, 0, 0);
             bottom: var(--offset-y);
+            color: #000000;
             left: 50%;
             max-height: ${this.maxHeight};
             max-width:  14rem;
@@ -1343,7 +1405,6 @@ export default (config) => {
             </span>
           </span>`;
 
-
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
         styleElement.insertAdjacentHTML('afterend', template);
@@ -1353,9 +1414,11 @@ export default (config) => {
       }
 
       connectedCallback() {
-        const wrapRect = this.wrap.getBoundingClientRect();  
-        const contentsMarginTop = -Math.round(utils.remToPx(this.offsetY) + utils.remToPx(this.maxHeight));
-        
+        const wrapRect = this.wrap.getBoundingClientRect();
+        const contentsMarginTop = -Math.round(
+          utils.remToPx(this.offsetY) + utils.remToPx(this.maxHeight)
+        );
+
         this.addEventListener('click', this.toggleExpanded);
 
         this.wrap.addEventListener('mouseenter', () => {
@@ -1368,16 +1431,22 @@ export default (config) => {
 
         this.wrap.addEventListener('mouseleave', () => {
           this.wrap.classList.remove('hover');
-          setTimeout(() => utils.updateProperty('--hover-display', 'none', this.wrap), this.delay);
+          setTimeout(
+            () => utils.updateProperty('--hover-display', 'none', this.wrap),
+            this.delay
+          );
         });
 
-        new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            this.wrap.classList.toggle('bottom', !entry.isIntersecting)
-          });
-        }, {
-          rootMargin: `${contentsMarginTop}px 0px 0px 0px`
-        }).observe(this);
+        new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              this.wrap.classList.toggle('bottom', !entry.isIntersecting);
+            });
+          },
+          {
+            rootMargin: `${contentsMarginTop}px 0px 0px 0px`,
+          }
+        ).observe(this);
       }
 
       handleTooltipPosition() {
@@ -1387,10 +1456,10 @@ export default (config) => {
         const contents = shadow.querySelector('#tooltip-contents');
         const wrapRect = button.getBoundingClientRect();
         const contentsRect = contents.getBoundingClientRect();
-        const wrapCenterX = wrapRect.x + (wrapRect.width / 2);
+        const wrapCenterX = wrapRect.x + wrapRect.width / 2;
 
-        const contentsLeft = wrapCenterX - (contentsRect.width / 2);
-        const contentsRight = wrapCenterX + (contentsRect.width / 2);
+        const contentsLeft = wrapCenterX - contentsRect.width / 2;
+        const contentsRight = wrapCenterX + contentsRect.width / 2;
         const windowWidth = window.innerWidth;
         let offsetX = 0;
 
@@ -1398,7 +1467,7 @@ export default (config) => {
           offsetX = 0 - contentsLeft;
         } else if (contentsRight > windowWidth) {
           offsetX = windowWidth - contentsRight;
-        } 
+        }
 
         utils.updateProperty('--offset-x', `${Math.round(offsetX)}px`, wrap);
         utils.updateProperty('--sign-offset-x', Math.sign(offsetX), wrap);
@@ -1407,7 +1476,7 @@ export default (config) => {
       toggleExpanded() {
         const button = this.shadow.getElementById('tooltip-button');
         const wrap = this.shadow.querySelector('.tooltip-wrap');
-        if (button.getAttribute('aria-expanded') === "false") {
+        if (button.getAttribute('aria-expanded') === 'false') {
           button.setAttribute('aria-expanded', 'true');
           wrap.classList.add('expanded');
           this.handleTooltipPosition();
@@ -1416,7 +1485,7 @@ export default (config) => {
           wrap.classList.remove('expanded');
         }
       }
-    }
+    };
 
     // Register web components
     const components = {
@@ -1430,14 +1499,14 @@ export default (config) => {
       'evolv-accordion-header': vds.AccordionHeader,
       'evolv-accordion-details': vds.AccordionDetails,
       'evolv-tooltip': vds.Tooltip,
-    }
-    
-    Object.keys(components).forEach(name => {
+    };
+
+    Object.keys(components).forEach((name) => {
       if (!customElements.get(name)) {
         customElements.define(name, components[name]);
       }
     });
-  };
+  }
 
   if (window.evolv?.utils) {
     init();

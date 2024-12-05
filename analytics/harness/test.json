@@ -1,24 +1,18 @@
 {
   "ga4-server": {
-      "source": {
-          "type": "dom"
-      },
       "destinations": [
           {
-            "comment": {},
-              "target":{ "type": "evolv"},
-            
             "statements": [ 
                   {
-                      "invoke": "window.dataLayer.push",
-                      "with": [ 
+                      "invoke": "console.info",
+                      "with": [ "Analytics Integration",
                       {
                         "event": "evolv",
                         "evolvEventDetails": {
                           "cid": "${cid}",
                           "eid": "${eid}",
                           "excluded": false,
-                          "group_id": "Server",
+                          "group_id": "${group_id}",
                           "non_interaction": true,
                           "ordinal": "${combination_id}",
                           "projectName": "${project_name}",
@@ -35,38 +29,6 @@
               }
           }
       ]
-  },
+  }
 
-  "ga4": {
-    "event_types": ["confirmed", "contaminated", "event.emitted"],
-    "destinations": [
-        {
-          "statements": [ 
-                {
-                    "invoke": "window.dataLayer.push",
-                    "with": [ 
-                    {
-                      "event": "evolv",
-                      "evolvEventDetails": {
-                        "cid": "${cid}",
-                        "eid": "${eid}",
-                        "excluded": false,
-                        "group_id": "${group_id}",
-                        "non_interaction": true,
-                        "ordinal": "${combination_id}",
-                        "projectName": "${project_name}",
-                        "type": "${event_type}",
-                        "uid": "${uid}"
-                      } 
-                    }
-                  ]
-                }
-            ],
-            "poll": {
-                "duration": 20000,
-                "interval": 50
-            }
-        }
-    ]
-}
 }

@@ -17,6 +17,7 @@ export default (config) => {
     vds.accordionIndex = 0;
     vds.accordionItemIndex = 0;
     vds.accordions = [];
+    vds.tooltipIndex = 0;
 
     utils.toCamelCase = (string) => {
       return string.replace(/[^a-zA-Z0-9]+(.)/g, (match, chr) =>
@@ -35,6 +36,18 @@ export default (config) => {
       );
       return rems * oneRem;
     };
+
+    utils.cssToValue = (cssString) => {
+      const unit = cssString.match(/\d+\.?\d*(px|rem)/i)?.[1];
+      const value = parseFloat(cssString);
+      if (unit === 'px') {
+        return value;
+      } else if (unit === 'rem') {
+        return utils.remToPx(cssString);
+      } else {
+        return NaN;
+      }
+    }
 
     utils.cleanString = (value) => {
       let valueCurrent;
@@ -67,6 +80,32 @@ export default (config) => {
       element.style.setProperty(property, valueCurrent);
     };
 
+    utils.isTouchDevice = () => {
+      return (('ontouchstart' in window) ||
+        (navigator.maxTouchPoints > 0) ||
+        (navigator.msMaxTouchPoints > 0));
+    }
+
+    utils.getOffsetRect = (element) => {
+      const box = element.getBoundingClientRect();
+      const body = document.body;
+      const documentElement = document.documentElement;
+
+      const scrollTop = documentElement.scrollTop || body.scrollTop;
+      const scrollLeft = documentElement.scrollLeft || body.scrollLeft;
+
+      const clientTop = documentElement.clientTop || body.clientTop;
+      const clientLeft = documentElement.clientLeft || body.clientLeft;
+
+      const top = Math.round(box.top + scrollTop - clientTop);
+      const bottom = top + box.height;
+      const left = Math.round(box.left + scrollLeft - clientLeft);
+      const right = left + box.width;
+      const { width, height } = box;
+
+      return { top, bottom, left, right, width, height }
+    }
+
     vds.VZBase = class VZBase extends HTMLElement {
       constructor(config = {}) {
         super();
@@ -81,6 +120,8 @@ export default (config) => {
           --color-gray-85: #d8dada;
           --color-gray-95: #f6f6f6;
           --color-red: #ee0000;
+          --color-overlay: rgba(0, 0, 0, 0.3);
+          --border-gray: 0.0625rem solid var(--color-gray-85);
         }`;
 
         this.mixins = {
@@ -131,6 +172,15 @@ export default (config) => {
             border: none;
             ${this.mixins.bodyText.lg()}
           }
+
+          .text-body-sm {
+            ${this.mixins.bodyText.sm()}
+          }
+
+          .body-text-lg {
+            ${this.mixins.bodyText.lg()}
+          }
+
         </style>`;
       }
     };
@@ -307,6 +357,7 @@ export default (config) => {
 
         this.name = this.getAttribute('name') || 'empty';
         this.type = this.getAttribute('type') || 'standAlone';
+        this.size = this.getAttribute('size') || null;
         this.iconTitle =
           this.getAttribute('title') ||
           `${utils.capitalizeFirstLetter(this.name.replaceAll('-', ' '))} icon`;
@@ -324,12 +375,15 @@ export default (config) => {
             align-items: center;
             height: var(--icon-size);
             width: var(--icon-size);
-            min-height: var(--icon-size);
-            min-width: var(--icon-size);
+            /* min-height: var(--icon-size); */
+            /* min-width: var(--icon-size); */
           }
 
-          :host([type="inline"]) div {
-            --icon-size: 1em;
+          svg {
+            height: var(--icon-size);
+            width: var(--icon-size);
+            /* min-height: var(--icon-size); */
+            /* min-width: var(--icon-size); */
           }
 
           :host([size="medium"]) {
@@ -345,25 +399,46 @@ export default (config) => {
           }
 
           ${
+            !['small', 'medium', 'large', 'xlarge', null]
+              .some(iconSize => iconSize === this.size)
+                ? `:host([size]) div {
+                    --icon-size: ${this.size}
+                  }`
+                : ''
+          }
+
+          :host([type="inline"]) div {
+            --icon-size: .9em;
+            display: inline-block;
+            position: relative;
+            height: .8em;
+          }
+
+          :host([type="inline"]) svg {
+            position: absolute;
+            bottom: -.1em;
+          }
+
+          ${
             this.breakpoint
               ? `
-            @media screen and (min-width: ${this.breakpoint}) {
-            :host([breakpoint]) {
-              --icon-size: 1.25rem;
-            }
+                @media screen and (min-width: ${this.breakpoint}) {
+                :host([breakpoint]) {
+                  --icon-size: 1.25rem;
+                }
 
-            :host([size="medium"][breakpoint]) {
-              --icon-size: 1.5rem;
-            }
+                :host([size="medium"][breakpoint]) {
+                  --icon-size: 1.5rem;
+                }
 
-            :host([size="large"][breakpoint]) {
-              --icon-size: 1.75rem;
-            }
+                :host([size="large"][breakpoint]) {
+                  --icon-size: 1.75rem;
+                }
 
-            :host([size="xlarge"][breakpoint]) {
-              --icon-size: 2rem;
-            }
-          }`
+                :host([size="xlarge"][breakpoint]) {
+                  --icon-size: 2rem;
+                }
+              }`
               : ''
           }
         `;
@@ -1247,30 +1322,245 @@ export default (config) => {
       }
     };
 
+    vds.TooltipContent = class TooltipContent extends vds.VZBase{
+      constructor() {
+        super();
+
+        this.index = this.dataset.tooltipIndex;
+        this.tooltip = document.querySelector(`evolv-tooltip[data-tooltip-index="${this.index}"]`);
+        this.breakpoint = this.tooltip.breakpoint;
+        this.delay = this.tooltip.delay;
+        this.gap = this.tooltip.contentGap;
+        this.maxHeight = this.tooltip.contentMaxHeight;
+        this.title = this.tooltip.title;
+        this.width = this.tooltip.contentWidth;
+        this.zIndex = this.tooltip.zIndex;
+
+        const style = `
+          .content-outer {
+            --gap: ${this.gap};
+            --width: ${this.width};
+            --window-padding: 20px;
+            position: absolute;
+            top: calc(var(--button-top) - var(--gap) - var(--height));
+            left: calc(var(--button-left) + (var(--button-width) - var(--width)) / 2 + var(--offset-x));
+            display: flex;
+            opacity: 0;
+            background-color: rgb(255, 255, 255);
+            box-sizing: border-box;
+            border-radius: 4px;
+            border: 0.0625rem solid rgb(0, 0, 0);
+            bottom: var(--offset-y);
+            color: #000000;
+            max-height: ${this.maxHeight};
+            min-height: 2.5rem;
+            outline: none;
+            text-align: left;
+            /* transform: translateX(calc(-50% + var(--offset-x) + (var(--sign-offset-x) * (var(--window-padding) - 2px)))); */
+            transition: opacity 0ms linear ${this.delay}ms;
+            width: var(--width);
+            z-index: ${this.zIndex};
+          }
+
+          .content {
+            display: flex;
+            padding: 0.75rem 0;
+          }
+
+          .content-inner {
+            overflow-y: auto;
+            padding: 0 0.75rem;
+          }
+
+          .content-outer::before {
+            content: "";
+            position: absolute;
+            display: flex;
+            left: calc(50% - var(--offset-x));
+            bottom: -.3rem;
+            color: black;
+            background: white;
+            height: 0.53125rem;
+            width: 0.53125rem;
+            border-right: 0.0625rem solid black;
+            border-bottom: 0.0625rem solid black;
+            transform: translateX(-50%) rotate(45deg);
+            transition: opacity 0ms linear ${this.delay}ms;
+            z-index: 999;
+            opacity: 0;
+          }
+
+          .content-scroll {
+          }
+
+          .title {
+            display: block;
+            font-family: var(--font-family-etx);
+            font-size: .75rem;
+            line-height: 1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+          }
+
+          .close {
+            display: none;
+          }
+
+          // .scrollbar-track {
+          //   position: absolute;
+          //   width: 4px;
+          //   background-color: var(--color-gray-85);
+          //   display: block;
+          //   top: 0px;
+          //   right: 0px;
+          //   bottom: 0px;
+          //   cursor: pointer;
+          //   border-radius: 2px;
+          //   // overflow: hidden;
+          // }
+
+          // .scrollbar-thumb {
+          // }
+
+          :host([expanded]) .content-outer,
+          :host([expanded]) .content-outer::before,
+          :host([hover]) .content-outer,
+          :host([hover]) .content-outer::before {
+            opacity: 1;
+          }
+
+          :host([expanded]) .content-outer,
+          :host([expanded]) .content-outer::before {
+            display: flex;
+          }
+
+          :host([below]) .content-outer {
+            // bottom: auto;
+            top: calc(var(--button-top) + var(--button-height) + var(--gap));
+          }
+          
+          :host([below]) .content-outer::before {
+            bottom: auto;
+            top: -.307rem;
+            transform: translateX(-50%) rotate(225deg);
+          }
+
+          :host([touch]) .content-outer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-height: unset;
+            min-weight: unset;
+            width: auto;
+            background-color: var(--color-overlay);
+            inset: 0px;
+            position: fixed;
+            padding: 1rem;
+            border: none;
+            z-index = ${this.zIndex};
+          }
+            
+          :host([touch]) .content-outer::before {
+            display: none;
+          }
+
+          :host([touch]) .content {
+            display: flex;
+            flex-direction: column;
+            width: 18.5rem;
+            min-height: 6rem;
+            max-height: 19.5rem;
+            background-color: white;
+            border-radius: 12px;
+            padding: 1rem 0 0;
+          }
+
+          :host([touch]) .content-inner {
+            padding: 0 1rem;
+            overflow: auto;
+          }
+
+          :host([touch]) .title {
+            font-family: var(--font-family-eds);
+            font-size: 1.25rem;
+            line-height: 1.5rem;
+            margin-bottom: 8px;
+          }
+
+          :host([touch]) .close {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 2.75rem;
+            text-align: center;
+            border-top: var(--border-gray);
+          }
+
+          :host([touch]) .scrollbar-track {
+            display: none;
+          }
+        `
+
+        const template = `
+          <div class="content-outer">
+            <div class="content text-body-sm" aria-live="assertive" aria-relevant="all">
+              <div class="content-inner">
+                <div class="content-scroll">
+                  ${ this.title ? `<span class="title">${this.title}</span>` : ''}
+                  <slot></slot>
+                </div>
+                <div class="scrollbar-track">
+                  <div class="scrollbar-thumb"></div>
+                </div>
+              </div>
+              <button class="close unbutton text-body-sm">Close</button>
+            </div>
+          </div>
+        `
+
+        const styleElement = this.shadow.querySelector('style');
+        styleElement.textContent += style;
+        styleElement.insertAdjacentHTML('afterend', template);
+      }
+
+      connectedCallback() {
+        this.toggleAttribute('touch', utils.isTouchDevice());
+      }
+    }
+
     vds.Tooltip = class Tooltip extends vds.ColorOptionBase {
       constructor() {
         super();
 
         this.breakpoint = this.getAttribute('breakpoint') || '768px';
         this.delay = parseInt(this.getAttribute('delay')) || 500;
-        this.offsetY = '2.275rem';
-        this.maxHeight = this.getAttribute('max-height') || '12.75rem';
-        this.color = this.getAttribute('color') || 'black';
+        this.color = this.getAttribute('color') || 'inherit';
+        this.title = this.getAttribute('title') || null;
+        this.contentId = `tooltip-content-${vds.tooltipIndex}`;
+        this.contentGap = '.625rem';
+        this.contentMaxHeight = '12.75rem';
+        this.contentWidth = '14rem';
+        this.windowPadding = '32px';
+        this.zIndex = '999';
 
-        this.toggleExpanded = this.toggleExpanded.bind(this);
+        this.positionContent = this.positionContent.bind(this);
+        this.observePositionY = this.observePositionY.bind(this);
+        this.insertContent = this.insertContent.bind(this);
+        this.removeContent = this.removeContent.bind(this);
+        this.onClick = this.onClick.bind(this);
+        this.onMouseenter = this.onMouseenter.bind(this);
+        this.onMouseleave = this.onMouseleave.bind(this);
 
         const style = `
-          .tooltip-wrap {
-            --offset-x: 0;
-            --sign-offset-x: 0;
-            --offset-y: ${this.offsetY};
-            --window-padding: 20px;
-            --hover-display: none;
+          .button-wrap {
             position: relative;
             display: inline-block;
           }
           
           #tooltip-button {
+            position: absolute;
+            bottom: -.1em;
             display: flex;
             font-size: inherit;
             -webkit-box-pack: center;
@@ -1284,7 +1574,6 @@ export default (config) => {
             box-sizing: border-box;
             text-align: center;
             text-decoration: none;
-            position: relative;
             touch-action: manipulation;
             pointer-events: auto;
             vertical-align: middle;
@@ -1298,35 +1587,7 @@ export default (config) => {
 
           #tooltip-button:hover {
             background-color: rgba(111, 113, 113, 0.06);
-            box-shadow: rgba(111, 113, 113, 0.06) 0px 0px 0px 0.188rem;
-          }
-
-          #tooltip-contents {
-            ${this.mixins.bodyText.sm()}
-            position: absolute;
-            display: var(--hover-display);
-            opacity: 0;
-            background-color: rgb(255, 255, 255);
-            box-sizing: border-box;
-            border-radius: 4px;
-            border: 0.0625rem solid rgb(0, 0, 0);
-            bottom: var(--offset-y);
-            color: #000000;
-            left: 50%;
-            max-height: ${this.maxHeight};
-            max-width:  14rem;
-            min-height: 2.5rem;
-            outline: none;
-            padding: 0.75rem;
-            text-align: left;
-            transform: translateX(calc(-50% + var(--offset-x) + (var(--sign-offset-x) * (var(--window-padding) - 2px))));
-            transition: opacity 0ms linear ${this.delay}ms;
-            width: 14rem;
-            z-index: 998;
-          }
-
-          .tooltip-contents-inner {
-            overflow-y: auto;
+            box-shadow: rgba(111, 113, 113, 0.06) 0px 0px 0px 0.169em;
           }
 
           .tooltip-hit-area {
@@ -1339,145 +1600,159 @@ export default (config) => {
             top: 50%;
             transform: translate(-50%, -50%);
           }
-
-          .tooltip-wrap::before {
-            content: "";
-            position: absolute;
-            display: var(--hover-display);
-            left: 50%;
-            bottom: calc(var(--offset-y) - .25rem);
-            color: black;
-            background: white;
-            height: 0.53125rem;
-            width: 0.53125rem;
-            border-right: 0.0625rem solid black;
-            border-bottom: 0.0625rem solid black;
-            transform: translateX(-50%) rotate(45deg);
-            transition: opacity 0ms linear ${this.delay}ms;
-            z-index: 999;
-            opacity: 0;
-          }
-
-          .tooltip-wrap.expanded #tooltip-contents,
-          .tooltip-wrap.expanded::before,
-          .tooltip-wrap.hover #tooltip-contents,
-          .tooltip-wrap.hover::before {
-            opacity: 1;
-          }
-
-          .tooltip-wrap.expanded #tooltip-contents,
-          .tooltip-wrap.expanded::before {
-            display: flex;
-          }
-
-          .tooltip-wrap.bottom #tooltip-contents {
-            bottom: auto;
-            top: var(--offset-y);
-          }
-          
-          .tooltip-wrap.bottom::before {
-            bottom: auto;
-            top: calc(var(--offset-y) - .26rem);
-            transform: translateX(-50%) rotate(225deg);
-          }
-
-          @media screen and (min-width: ${this.breakpoint}) {
-            #tooltip-contents {
-              --window-padding: 32px;
-            }
-          }
         `;
+
         const template = `
-          <span class="tooltip-wrap">
+          <span class="button-wrap">
             <button class="unbutton" id="tooltip-button" name="info" aria-expanded="false" aria-controls="tooltip-contents">
               <div class="tooltip-hit-area"></div>
-              <evolv-icon name="info" type="inline" color="${this.color}"></evolv-icon>
+              <evolv-icon name="info" size=".9em" color="${this.color}"></evolv-icon>
             </button>
-            <span id="tooltip-contents" aria-live="assertive" aria-relevant="all">
-              <div class="tooltip-contents-inner">
-                <slot></slot>
-              </div>
-              <div class="tooltip-scrollbar"></div>
-            </span>
           </span>`;
 
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
         styleElement.insertAdjacentHTML('afterend', template);
 
-        this.wrap = this.shadow.querySelector('.tooltip-wrap');
-        this.contents = this.shadow.querySelector('#tooltip-contents');
+        this.button = this.shadow.querySelector('button');
+        this.content = utils.makeElement(this.contentHTML);
+        this.hoverTimeout = null;
       }
 
       connectedCallback() {
-        const contentsMarginTop = -Math.round(
-          utils.remToPx(this.offsetY) + utils.remToPx(this.maxHeight)
-        );
+        document.body.style.position = 'relative';
+        this.button.addEventListener('click', this.onClick);
+        this.button.addEventListener('mouseenter', this.onMouseenter);
+        this.button.addEventListener('mouseleave', this.onMouseleave);
+        this.observePositionY();
+        this.dataset.tooltipIndex = vds.tooltipIndex;
+        vds.tooltipIndex += 1;
+      }
 
-        this.addEventListener('click', this.toggleExpanded);
+      get contentHTML() {
+        return `
+          <evolv-tooltip-content
+            id="${this.contentId}"
+            data-tooltip-index="${this.dataset.tooltipIndex}" 
+            width="${this.contentWidth}" max-height="${this.contentMaxHeight}" 
+            delay="${this.delay}" 
+            z-index="${this.zIndex}"
+          >
+            ${this.innerHTML}
+          </evolv-tooltip-content>`;
+      }
 
-        this.wrap.addEventListener('mouseenter', () => {
-          utils.updateProperty('--hover-display', 'flex', this.wrap);
-          setTimeout(() => {
-            this.wrap.classList.add('hover');
-          }, 0);
-          this.handleTooltipPosition();
-        });
+      positionContent() {
+        const buttonRect = utils.getOffsetRect(this.button);
+        const buttonCenterX = buttonRect.left + buttonRect.width / 2;
+        // const positionTop = buttonRect.top - utils.remToPx(this.contentGap) - this.contentMaxHeight;
+        const contentGap = utils.remToPx(this.contentGap);
+        const contentMaxHeight = utils.remToPx(this.contentMaxHeight);
+        const contentWidth = utils.remToPx(this.contentWidth);
+        const contentLeft = buttonCenterX - contentWidth / 2;
+        const contentRight = buttonCenterX + contentWidth / 2;
+        const windowWidth = window.innerWidth;
+        const breakpoint = utils.cssToValue(this.breakpoint);
+        const windowPadding = utils.cssToValue(this.windowPadding)
+        const topBound = buttonRect.top - contentGap - contentMaxHeight - windowPadding;
+        const leftBound = contentLeft - windowPadding;
+        const rightBound = contentRight + windowPadding;
+        let offsetX = 0;
 
-        this.wrap.addEventListener('mouseleave', () => {
-          this.wrap.classList.remove('hover');
-          setTimeout(
-            () => utils.updateProperty('--hover-display', 'none', this.wrap),
-            this.delay
-          );
-        });
+        if (leftBound < 0) {
+          offsetX = 0 - leftBound;
+        } else if (rightBound > windowWidth) {
+          offsetX = windowWidth - rightBound;
+        }
+
+        // utils.updateProperty('--offset-y', `${Math.round(contentTop)}px`, this.content);
+        this.content.toggleAttribute('below', topBound < 0);
+        utils.updateProperty('--button-left', `${Math.round(buttonRect.left)}px`, this.content);
+        utils.updateProperty('--button-top', `${Math.round(buttonRect.top)}px`, this.content);
+        utils.updateProperty('--button-height', `${Math.round(buttonRect.height)}px`, this.content);
+        utils.updateProperty('--button-width', `${Math.round(buttonRect.width)}px`, this.content);
+        utils.updateProperty('--gap', `${Math.round(utils.remToPx(this.contentGap))}px`);
+        utils.updateProperty('--height', `${Math.round(utils.remToPx(this.contentMaxHeight))}px`, this.content);
+        utils.updateProperty('--offset-x', `${Math.round(offsetX)}px`, this.content);
+        utils.updateProperty('--sign-offset-x', Math.sign(offsetX), this.content);
+      }
+
+      observePositionY() {
+        const rootMarginTop = -Math.round(utils.remToPx(this.contentGap) + utils.remToPx(this.contentMaxHeight));
 
         new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
-              this.wrap.classList.toggle('bottom', !entry.isIntersecting);
+              // console.log(entry);
+              this.content.toggleAttribute(
+                'below',
+                !entry.isIntersecting &&
+                  entry.boundingClientRect.top < entry.rootBounds.top
+              );
             });
           },
           {
-            rootMargin: `${contentsMarginTop}px 0px 0px 0px`,
+            rootMargin: `${rootMarginTop}px 0px 0px 0px`,
+            threshold: [1]
           }
-        ).observe(this);
+        ).observe(this.button);
       }
 
-      handleTooltipPosition() {
-        const { shadow } = this;
-        const wrap = shadow.querySelector('.tooltip-wrap');
-        const button = shadow.querySelector('#tooltip-button');
-        const contents = shadow.querySelector('#tooltip-contents');
-        const wrapRect = button.getBoundingClientRect();
-        const contentsRect = contents.getBoundingClientRect();
-        const wrapCenterX = wrapRect.x + wrapRect.width / 2;
+      insertContent() {
+        this.button.setAttribute('aria-expanded', 'true');
+        this.content = utils.makeElement(this.contentHTML);
+        this.positionContent();
+        this.content.addEventListener('click', this.onClick);
+        this.content.addEventListener('mouseenter', this.onMouseenter);
+        this.content.addEventListener('mouseleave', this.onMouseleave);
+        document.body.append(this.content)
+      }
 
-        const contentsLeft = wrapCenterX - contentsRect.width / 2;
-        const contentsRight = wrapCenterX + contentsRect.width / 2;
-        const windowWidth = window.innerWidth;
-        let offsetX = 0;
+      removeContent() {
+        this.button.setAttribute('aria-expanded', 'false');
+        this.content?.remove();
+      }
 
-        if (contentsLeft < 0) {
-          offsetX = 0 - contentsLeft;
-        } else if (contentsRight > windowWidth) {
-          offsetX = windowWidth - contentsRight;
+      onClick() {
+        if (!this.content.isConnected) {
+          this.insertContent();
         }
 
-        utils.updateProperty('--offset-x', `${Math.round(offsetX)}px`, wrap);
-        utils.updateProperty('--sign-offset-x', Math.sign(offsetX), wrap);
+        if (!this.content.hasAttribute('expanded')) {
+          this.content.toggleAttribute('expanded', true);
+        } else {
+          // this.content.toggleAttribute('expanded', false);
+          this.removeContent();
+        }
       }
 
-      toggleExpanded() {
-        const button = this.shadow.getElementById('tooltip-button');
-        const wrap = this.shadow.querySelector('.tooltip-wrap');
-        if (button.getAttribute('aria-expanded') === 'false') {
-          button.setAttribute('aria-expanded', 'true');
-          wrap.classList.add('expanded');
-          this.handleTooltipPosition();
-        } else {
-          button.setAttribute('aria-expanded', 'false');
-          wrap.classList.remove('expanded');
+      onMouseenter() {
+        if (utils.isTouchDevice()) {
+          return;
+        }
+
+        if (!this.content.isConnected) {
+          this.insertContent();
+        }
+        clearTimeout(this.hoverTimeout);
+        setTimeout(() => {
+          this.content.toggleAttribute('hover', true);
+        }, 0);
+      }
+
+      onMouseleave() {
+        if (utils.isTouchDevice()) {
+          return;
+        }
+
+        this.content.toggleAttribute('hover', false);
+        if (!this.content.hasAttribute('expanded')) {
+          this.hoverTimeout = setTimeout(
+            () => {
+              this.removeContent();
+            },
+            this.delay
+          );
         }
       }
     };
@@ -1494,6 +1769,7 @@ export default (config) => {
       'evolv-accordion-header': vds.AccordionHeader,
       'evolv-accordion-details': vds.AccordionDetails,
       'evolv-tooltip': vds.Tooltip,
+      'evolv-tooltip-content': vds.TooltipContent,
     };
 
     Object.keys(components).forEach((name) => {

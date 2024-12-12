@@ -99,8 +99,11 @@ window.evolv.vds.Icon
 | `color` | The text color of the icon | `inherit` | See [Properties](#properties) |
 | `size` | The font size of the icon | `small` | `small`, `medium`, `large`, `xlarge`, *Refer to Notes* |
 | `title` | The title to be passed to the icon, visible to assistive technologies | `<name>` | `<string>` |
+| `type` | Whether the icon size is `standAlone`, determined by the `size` attribute, or `inline`, inherited from text size of the parent | `standAlone` | `inline`, `standAlone` |
 
 #### Notes
+
+`size` only applies to icons with a `type` of `standAlone`.  
 
 | `size` | `width and height` |
 | :----- | :---------- |
@@ -119,7 +122,7 @@ window.evolv.vds.Icon
 <!-- Can use <evolv-icon> built in icons -->
 <evolv-button-icon name="close"></evolv-button-icon>
 
-<!-- Or use custom SVG by omitting the 'name' attribute or specifying 'name="empty"' -->
+<!-- Or use custom SVG by omitting the 'name' attribute -->
 <evolv-button-icon>
   <svg width="28" height="28" viewBox="0 0 28 28">
     <!-- fill="currentColor" allows the SVG to inherit color the parent element -->
@@ -237,6 +240,27 @@ window.evolv.vds.TextLink
 | `title-bold` | The `bold` option for `evolv-title` elements. | `false` | `true`, `false` |
 | `title-color` | The `color` option for `evolv-title` elements. | `black` | See [Properties](#properties) |
 | `type` | `single` only allows one accordion item to be open at a time. `multi` allows multiple items open simultaneously | `multi` | `single`, `multi` |
+
+---
+
+### Tooltip
+
+**Released in version 0.4.0**
+
+#### Tag
+
+```html
+<evolv-tooltip>Autem assumenda saepe cum. Sit molestias assumenda quia est impedit dolor est excepturi. Nihil sed sed perspiciatis rerum consectetur ea amet. Sunt ut expedita consequatur necessitatibus. Est aliquid labore quidem ipsum. Eveniet ipsa quia quos ut excepturi voluptatum.</evolv-tooltip>
+```
+
+#### Attributes
+
+| Name | Description | Default | Accepts |
+| :--- | :---------- | :------ | :------ |
+| `breakpoint` | The screen width where mobile styles shift to tablet/desktop | `768px` | `<css width>` |
+| `color` | The text color of the icon | `inherit` | See [Properties](#properties) |
+| `size` | Renders the tooltip in the correpsponding size. Requires `type` to be `standAlone`. **Coming soon!** | `large` | `large`, `small` |
+| `type` | Whether the tooltip button is `inline`, inherited from the text size of the parent, or `standAlone`, determined by the `size` attribute | `inline` | `inline`, `standAlone` |
 
 ---
 

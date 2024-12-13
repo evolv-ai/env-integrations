@@ -1829,10 +1829,11 @@ export default (config) => {
           (entries) => {
             entries.forEach((entry) => {
               // console.log(entry);
+              
               this.content.toggleAttribute(
                 'below',
                 !entry.isIntersecting &&
-                  entry.boundingClientRect.top < entry.rootBounds.top
+                  entry.boundingClientRect?.top < entry.rootBounds?.top
               );
             });
           },

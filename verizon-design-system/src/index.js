@@ -1400,6 +1400,7 @@ export default (config) => {
 
           .content-scroll {
             overflow-y: scroll;
+            height: fit-content;
           }
 
           .title {
@@ -1486,7 +1487,6 @@ export default (config) => {
           }
 
           :host([below]) .content-outer {
-            // bottom: auto;
             top: calc(var(--button-top) + var(--button-height) + var(--gap));
           }
           
@@ -1527,8 +1527,13 @@ export default (config) => {
           }
 
           :host([touch]) .content-inner {
-            padding: 0 1rem;
-            overflow: auto;
+            padding: 0 0 0 1rem;
+            overflow-y: auto;
+          }
+
+          :host([touch]) .content-scroll {
+            padding: 0 1rem 1rem 0;
+            overflow: unset;
           }
 
           :host([touch]) .title {

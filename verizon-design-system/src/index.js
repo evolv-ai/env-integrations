@@ -1576,10 +1576,6 @@ export default (config) => {
 
         this.scrollElement = this.shadow.querySelector('.content-scroll');
         this.thumbMousemoveListener = null;
-        // this.offsetHeight = null;
-        // this.scrollHeight = null;
-        
-        // const contentScroll = this.shadow.querySelector('content-scroll');
         this.scrollbarTrack = this.shadow.querySelector('.scrollbar-track');
         this.scrollbarThumb = this.shadow.querySelector('.scrollbar-thumb');
         this.scrolls = false;
@@ -1589,22 +1585,6 @@ export default (config) => {
         this.scrollToThumbRatio = null;
         this.thumbToScrollRatio = null;
       }
-
-      get scrollTop() {
-        return this.scrollElement.scrollTop;
-      }
-      
-      // get scrollTopRatio() {
-      //   return this.scrollTop / this.scrollHeight;
-      // } 
-
-      // get scrollHeightRatio() { 
-      //   return this.offsetHeight / this.scrollHeight;
-      // }
-
-      // get thumbHeight() {
-      //   return Math.pow(this.offsetHeight)
-      // }
 
       initScrollbar() {
         const {offsetHeight, scrollHeight} = this.scrollElement;
@@ -1835,7 +1815,6 @@ export default (config) => {
         utils.updateProperty('--gap', `${Math.round(utils.remToPx(this.contentGap))}px`);
         utils.updateProperty('--height', `${Math.round(utils.remToPx(this.contentMaxHeight))}px`, this.content);
         utils.updateProperty('--offset-x', `${Math.round(offsetX)}px`, this.content);
-        utils.updateProperty('--sign-offset-x', Math.sign(offsetX), this.content);
       }
 
       observePositionY() {

@@ -1331,17 +1331,18 @@ export default (config) => {
         this.borderRadius = this.tooltip.contentBorderRadius;
         this.breakpoint = this.tooltip.breakpoint;
         this.delay = this.tooltip.delay;
-        this.disableOnScroll = false;
+        this.disableOnContentScroll = false;
         this.gap = this.tooltip.contentGap;
         this.maxHeight = this.tooltip.contentMaxHeight;
         this.contentTitle = this.tooltip.contentTitle;
         this.width = this.tooltip.contentWidth;
         this.zIndex = this.tooltip.zIndex;
 
-        this.onScroll = this.onScroll.bind(this);
-        this.onThumbMousedown = this.onThumbMousedown.bind(this);
-        this.onMouseup = this.onMouseup.bind(this);
-        this.onThumbMousemove = this.onThumbMousemove.bind(this);
+        this.onContentScroll = this.onContentScroll.bind(this);
+        this.onScrollbarTrackClick = this.onScrollbarTrackClick.bind(this);
+        this.onScrollbarThumbMousedown = this.onScrollbarThumbMousedown.bind(this);
+        this.onScrollbarThumbMouseup = this.onScrollbarThumbMouseup.bind(this);
+        this.onScrollbarThumbMousemove = this.onScrollbarThumbMousemove.bind(this);
 
         const style = `
           .content-outer {
@@ -1434,7 +1435,6 @@ export default (config) => {
             bottom: 0px;
             cursor: pointer;
             border-radius: 2px;
-            // overflow: hidden;
           }
 
           :host([scroll]:not([touch])) .scrollbar-thumb {
@@ -1443,20 +1443,23 @@ export default (config) => {
             width: 4px;
             background-color: var(--color-gray-44);
             display: block;
-            /* top: var(--thumb-top); */
             right: 0;
-            cursor: pointer;
+            cursor: grab;
             border-radius: 2px;
             transform: translateY(var(--thumb-top));
           }
 
+          :host([scroll][mousedown]:not([touch])) .scrollbar-thumb {
+            cursor: grabbing;
+          }
+
+          :host([scroll]:not([touch])) .scrollbar-track::before,
           :host([scroll]:not([touch])) .scrollbar-thumb::before {
             content: "";
             position: absolute;
             top: 0;
             bottom: 0;
             left: -22px;
-            z-index: 1;
             width: 48px;
           }
 
@@ -1545,6 +1548,7 @@ export default (config) => {
 
           :host([touch]) .close {
             display: flex;
+            flex-shrink: 0;
             align-items: center;
             justify-content: center;
             width: 100%;
@@ -1599,10 +1603,12 @@ export default (config) => {
         this.thumbToScrollRatio = scrollHeight / offsetHeight;
         this.scrollToThumbRatio = 1 / this.thumbToScrollRatio;
         utils.updateProperty('--thumb-height', `${this.thumbHeight}px`, this);
-        this.onScroll();
-        this.scrollElement.addEventListener('scroll', this.onScroll);
-        this.scrollbarThumb.addEventListener('mousedown', this.onThumbMousedown);
-        document.body.addEventListener('mouseup', this.onMouseup);
+        this.onContentScroll();
+        this.scrollElement.addEventListener('scroll', this.onContentScroll);
+        this.scrollbarTrack.addEventListener('click', this.onScrollbarTrackClick);
+        this.scrollbarThumb.addEventListener('mousedown', this.onScrollbarThumbMousedown);
+
+        document.body.addEventListener('mouseup', this.onScrollbarThumbMouseup);
       }
 
       connectedCallback() {
@@ -1616,8 +1622,8 @@ export default (config) => {
         }
       }
 
-      onScroll() {
-        if (this.disableOnScroll) {
+      onContentScroll() {
+        if (this.disableOnContentScroll) {
           return;
         }
 
@@ -1626,23 +1632,27 @@ export default (config) => {
         utils.updateProperty('--thumb-top', `${this.thumbTop}px`, this);
       }
 
-      onThumbMousedown() {
-        this.disableOnScroll = true;
+      onScrollbarTrackClick({clientY}) {
+        // console.log(event);
+      }
+
+      onScrollbarThumbMousedown() {
+        this.disableOnContentScroll = true;
         this.tooltip.disableClick = true;
-        this.thumbMousemoveListener = this.scrollbarThumb.addEventListener('mousemove', this.onThumbMousemove);
+        this.thumbMousemoveListener = document.body.addEventListener('mousemove', this.onScrollbarThumbMousemove);
         this.toggleAttribute('mousedown', true);
       }
       
-      onMouseup() {
+      onScrollbarThumbMouseup() {
         setTimeout(() => {
-          this.disableOnScroll = false;
+          this.disableOnContentScroll = false;
           this.tooltip.disableClick = false}
         , 0)
-        this.scrollbarThumb.removeEventListener('mousemove', this.onThumbMousemove);
+        document.body.removeEventListener('mousemove', this.onScrollbarThumbMousemove);
         this.toggleAttribute('mousedown', false);
       }
 
-      onThumbMousemove({movementY}) {
+      onScrollbarThumbMousemove({movementY}) {
         if (!movementY) {
           return
         }
@@ -1856,7 +1866,7 @@ export default (config) => {
 
       removeContent() {
         this.button.setAttribute('aria-expanded', 'false');
-        document.body.removeEventListener(this.content.onMouseup);
+        document.body.removeEventListener('mouseup', this.content.onScrollbarThumbMouseup);
         this.content?.remove();
       }
 

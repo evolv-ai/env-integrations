@@ -257,9 +257,10 @@ window.evolv.vds.TextLink
 
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
-| `breakpoint` | The screen width where mobile styles shift to tablet/desktop | `768px` | `<css width>` |
+| `breakpoint` | The screen width where mobile styles shift to tablet/desktop. This only applies to the window margin, the touch-screen mode not related to this | `768px` | `<css width>` |
 | `color` | The text color of the icon | `inherit` | See [Properties](#properties) |
 | `size` | Renders the tooltip in the correpsponding size. Requires `type` to be `standAlone`. **Coming soon!** | `large` | `large`, `small` |
+| `content-max-height` | The maximum height of the tooltip content 
 | `content-title` | A title to be displayed above the tooltip content | | `<string>` |
 | `type` | Whether the tooltip button is `inline`, inherited from the text size of the parent, or `standAlone`, determined by the `size` attribute | `inline` | `inline`, `standAlone` |
 

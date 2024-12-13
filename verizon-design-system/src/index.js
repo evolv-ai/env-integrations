@@ -1485,6 +1485,7 @@ export default (config) => {
 
           :host([expanded]) .content-outer,
           :host([expanded]) .content-outer::before {
+            transition: unset;
             display: flex;
           }
 
@@ -1518,6 +1519,7 @@ export default (config) => {
           }
 
           :host([touch]) .content {
+            ${this.mixins.bodyText.lg()}
             display: flex;
             flex-direction: column;
             width: 18.5rem;
@@ -1526,6 +1528,14 @@ export default (config) => {
             background-color: white;
             border-radius: 12px;
             padding: 1rem 0 0;
+            opacity: 0;
+            transform: translateY(-9.375rem);
+            transition: opacity 0.4s ease-in, transform 0.4s ease-in;
+          }
+
+          :host([touch][expanded]) .content {
+            opacity: 1;
+            transform: translateY(0);
           }
 
           :host([touch]) .content-inner {
@@ -1574,7 +1584,7 @@ export default (config) => {
                   <div class="scrollbar-thumb"></div>
                 </div>
               </div>
-              <button class="close unbutton text-body-sm">Close</button>
+              <button class="close unbutton">Close</button>
             </div>
           </div>
         `
@@ -1633,7 +1643,13 @@ export default (config) => {
       }
 
       onScrollbarTrackClick({clientY}) {
-        // console.log(event);
+        const trackRect = this.scrollbarTrack.getBoundingClientRect();
+        this.tooltip.disableClick = true;
+        setTimeout(() => {
+          this.tooltip.disableClick = false
+        }, 0);
+        const scrollTop = Math.round((clientY - trackRect.y - (this.thumbHeight / 2)) * this.thumbToScrollRatio); 
+        this.scrollElement.scrollTo({top: scrollTop, behavior: 'smooth'});
       }
 
       onScrollbarThumbMousedown() {
@@ -1686,16 +1702,22 @@ export default (config) => {
         this.contentTitle = this.getAttribute('content-title') || this.getAttribute('title') || null;
         
         this.contentId = `tooltip-content-${vds.tooltipIndex}`;
-        this.contentBorderRadius = '4px';
+        this.contentBorderRadius = '0.25rem';
         this.contentGap = '.625rem';
-        this.contentMaxHeight = '12.75rem';
+        this.contentMaxHeight = this.getAttribute('content-max-height') || '12.75rem';
         this.contentWidth = '14rem';
-        this.size = this.getAttribute('size') || '0.9em';
-        this.windowPadding = '32px';
+        this.size = this.getAttribute('size') || 'medium';
+        this.type = this.getAttribute('type') || 'inline';
+        this.windowPaddingMobile = '20px';
+        this.windowPaddingDeskTab = '32px';
         this.zIndex = '999';
         this.disableClick = false;
 
-        this.buttonWidth = this.size; // Todo: add sizes
+        if (this.type === 'inline') {
+          this.buttonWidth = '0.9em';
+        } else if (this.type === 'standAlone') {
+          this.buttonWidth = this.size === 'small' ? '1rem' : '1.25rem';
+        }
 
         this.positionContent = this.positionContent.bind(this);
         this.observePositionY = this.observePositionY.bind(this);
@@ -1801,15 +1823,17 @@ export default (config) => {
         const buttonRect = utils.getOffsetRect(this.button);
         const buttonCenterX = buttonRect.left + buttonRect.width / 2;
         const contentBorderRadius = utils.cssToValue(this.contentBorderRadius);
-        const contentGap = utils.remToPx(this.contentGap);
-        const contentMaxHeight = utils.remToPx(this.contentMaxHeight);
-        const contentWidth = utils.remToPx(this.contentWidth);
+        const contentGap = utils.cssToValue(this.contentGap);
+        const contentMaxHeight = utils.cssToValue(this.contentMaxHeight);
+        const contentWidth = utils.cssToValue(this.contentWidth);
         const contentLeft = buttonCenterX - contentWidth / 2;
         const contentRight = buttonCenterX + contentWidth / 2;
         const contentCaretWidth = 12;
         const windowWidth = window.innerWidth;
         const breakpoint = utils.cssToValue(this.breakpoint);
-        const windowPadding = utils.cssToValue(this.windowPadding)
+        const windowPadding = windowWidth < breakpoint
+          ? utils.cssToValue(this.windowPaddingMobile)
+          : utils.cssToValue(this.windowPaddingDeskTab);
         const topBound = buttonRect.top - contentGap - contentMaxHeight - windowPadding;
         const leftBound = contentLeft - windowPadding;
         const rightBound = contentRight + windowPadding;
@@ -1827,8 +1851,8 @@ export default (config) => {
         utils.updateProperty('--button-top', `${Math.round(buttonRect.top)}px`, this.content);
         utils.updateProperty('--button-height', `${Math.round(buttonRect.height)}px`, this.content);
         utils.updateProperty('--button-width', `${Math.round(buttonRect.width)}px`, this.content);
-        utils.updateProperty('--gap', `${Math.round(utils.remToPx(this.contentGap))}px`);
-        utils.updateProperty('--height', `${Math.round(utils.remToPx(this.contentMaxHeight))}px`, this.content);
+        utils.updateProperty('--gap', `${Math.round(contentGap)}px`);
+        utils.updateProperty('--height', `${Math.round(contentMaxHeight)}px`, this.content);
         utils.updateProperty('--offset-x', `${Math.round(offsetX)}px`, this.content);
       }
 
@@ -1838,8 +1862,6 @@ export default (config) => {
         new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
-              // console.log(entry);
-              
               this.content.toggleAttribute(
                 'below',
                 !entry.isIntersecting &&
@@ -1880,7 +1902,7 @@ export default (config) => {
         }
 
         if (!this.content.hasAttribute('expanded')) {
-          this.content.toggleAttribute('expanded', true);
+          setTimeout(() => this.content.toggleAttribute('expanded', true), 0);
         } else {
           // this.content.toggleAttribute('expanded', false);
           this.removeContent();

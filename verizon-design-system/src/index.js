@@ -1400,7 +1400,6 @@ export default (config) => {
 
           .content-scroll {
             overflow-y: scroll;
-            height: fit-content;
           }
 
           .title {
@@ -1534,6 +1533,7 @@ export default (config) => {
           :host([touch]) .content-scroll {
             padding: 0 1rem 1rem 0;
             overflow: unset;
+            height: fit-content;
           }
 
           :host([touch]) .title {
@@ -1673,7 +1673,7 @@ export default (config) => {
         this.breakpoint = this.getAttribute('breakpoint') || '768px';
         this.delay = parseInt(this.getAttribute('delay')) || 500;
         this.color = this.getAttribute('color') || 'inherit';
-        this.contentTitle = this.getAttribute('content-title') || null;
+        this.contentTitle = this.getAttribute('content-title') || this.getAttribute('title') || null;
         
         this.contentId = `tooltip-content-${vds.tooltipIndex}`;
         this.contentBorderRadius = '4px';

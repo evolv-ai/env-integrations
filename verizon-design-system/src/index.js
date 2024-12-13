@@ -1328,13 +1328,20 @@ export default (config) => {
 
         this.index = this.dataset.tooltipIndex;
         this.tooltip = document.querySelector(`evolv-tooltip[data-tooltip-index="${this.index}"]`);
+        this.borderRadius = this.tooltip.contentBorderRadius;
         this.breakpoint = this.tooltip.breakpoint;
         this.delay = this.tooltip.delay;
+        this.disableOnScroll = false;
         this.gap = this.tooltip.contentGap;
         this.maxHeight = this.tooltip.contentMaxHeight;
-        this.title = this.tooltip.title;
+        this.contentTitle = this.tooltip.contentTitle;
         this.width = this.tooltip.contentWidth;
         this.zIndex = this.tooltip.zIndex;
+
+        this.onScroll = this.onScroll.bind(this);
+        this.onThumbMousedown = this.onThumbMousedown.bind(this);
+        this.onMouseup = this.onMouseup.bind(this);
+        this.onThumbMousemove = this.onThumbMousemove.bind(this);
 
         const style = `
           .content-outer {
@@ -1362,16 +1369,6 @@ export default (config) => {
             z-index: ${this.zIndex};
           }
 
-          .content {
-            display: flex;
-            padding: 0.75rem 0;
-          }
-
-          .content-inner {
-            overflow-y: auto;
-            padding: 0 0.75rem;
-          }
-
           .content-outer::before {
             content: "";
             position: absolute;
@@ -1390,7 +1387,19 @@ export default (config) => {
             opacity: 0;
           }
 
+          .content {
+            display: flex;
+            padding: 0.75rem 0;
+          }
+
+          .content-inner {
+            display: flex;
+            position: relative;
+            padding: 0 0.75rem;
+          }
+
           .content-scroll {
+            overflow-y: scroll;
           }
 
           .title {
@@ -1406,21 +1415,63 @@ export default (config) => {
             display: none;
           }
 
-          // .scrollbar-track {
-          //   position: absolute;
-          //   width: 4px;
-          //   background-color: var(--color-gray-85);
-          //   display: block;
-          //   top: 0px;
-          //   right: 0px;
-          //   bottom: 0px;
-          //   cursor: pointer;
-          //   border-radius: 2px;
-          //   // overflow: hidden;
-          // }
+          :host([scroll]:not([touch])) .content-scroll::-webkit-scrollbar {
+            display: none; /* For Chrome, Safari, and Opera */
+          }
 
-          // .scrollbar-thumb {
-          // }
+          :host([scroll]:not([touch])) .content-scroll {
+            scrollbar-width: none; /* For Firefox */
+            -ms-overflow-style: none; /* For Internet Explorer and Edge */
+          }
+
+          :host([scroll]:not([touch])) .scrollbar-track {
+            position: absolute;
+            width: 4px;
+            background-color: var(--color-gray-85);
+            display: block;
+            top: 0px;
+            right: 4px;
+            bottom: 0px;
+            cursor: pointer;
+            border-radius: 2px;
+            // overflow: hidden;
+          }
+
+          :host([scroll]:not([touch])) .scrollbar-thumb {
+            position: absolute;
+            height: var(--thumb-height);
+            width: 4px;
+            background-color: var(--color-gray-44);
+            display: block;
+            /* top: var(--thumb-top); */
+            right: 0;
+            cursor: pointer;
+            border-radius: 2px;
+            transform: translateY(var(--thumb-top));
+          }
+
+          :host([scroll]:not([touch])) .scrollbar-thumb::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: -22px;
+            z-index: 1;
+            width: 48px;
+          }
+
+          :host([scroll]:not([touch])) .scrollbar-thumb:hover {
+            background-color: black;
+          }
+
+          :host([mousedown]) {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+          }
 
           :host([expanded]) .content-outer,
           :host([expanded]) .content-outer::before,
@@ -1507,7 +1558,7 @@ export default (config) => {
             <div class="content text-body-sm" aria-live="assertive" aria-relevant="all">
               <div class="content-inner">
                 <div class="content-scroll">
-                  ${ this.title ? `<span class="title">${this.title}</span>` : ''}
+                  ${ this.contentTitle ? `<span class="title">${this.contentTitle}</span>` : ''}
                   <slot></slot>
                 </div>
                 <div class="scrollbar-track">
@@ -1522,10 +1573,111 @@ export default (config) => {
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
         styleElement.insertAdjacentHTML('afterend', template);
+
+        this.scrollElement = this.shadow.querySelector('.content-scroll');
+        this.thumbMousemoveListener = null;
+        // this.offsetHeight = null;
+        // this.scrollHeight = null;
+        
+        // const contentScroll = this.shadow.querySelector('content-scroll');
+        this.scrollbarTrack = this.shadow.querySelector('.scrollbar-track');
+        this.scrollbarThumb = this.shadow.querySelector('.scrollbar-thumb');
+        this.scrolls = false;
+        this.thumbTop = null;
+        this.thumbTopMax = null;
+        this.thumbHeight = null;
+        this.scrollToThumbRatio = null;
+        this.thumbToScrollRatio = null;
+      }
+
+      get scrollTop() {
+        return this.scrollElement.scrollTop;
+      }
+      
+      // get scrollTopRatio() {
+      //   return this.scrollTop / this.scrollHeight;
+      // } 
+
+      // get scrollHeightRatio() { 
+      //   return this.offsetHeight / this.scrollHeight;
+      // }
+
+      // get thumbHeight() {
+      //   return Math.pow(this.offsetHeight)
+      // }
+
+      initScrollbar() {
+        const {offsetHeight, scrollHeight} = this.scrollElement;
+        this.thumbHeight = Math.round(offsetHeight * offsetHeight / scrollHeight);
+        this.thumbTop = 0;
+        this.thumbTopMax = offsetHeight - this.thumbHeight;
+        this.thumbToScrollRatio = scrollHeight / offsetHeight;
+        this.scrollToThumbRatio = 1 / this.thumbToScrollRatio;
+        utils.updateProperty('--thumb-height', `${this.thumbHeight}px`, this);
+        this.onScroll();
+        this.scrollElement.addEventListener('scroll', this.onScroll);
+        this.scrollbarThumb.addEventListener('mousedown', this.onThumbMousedown);
+        document.body.addEventListener('mouseup', this.onMouseup);
       }
 
       connectedCallback() {
         this.toggleAttribute('touch', utils.isTouchDevice());
+
+        this.scrolls = this.scrollElement.scrollHeight > this.scrollElement.offsetHeight;
+        this.toggleAttribute('scroll', this.scrolls);
+        
+        if (this.scrolls) {
+          this.initScrollbar();
+        }
+      }
+
+      onScroll() {
+        if (this.disableOnScroll) {
+          return;
+        }
+
+        const { offsetHeight, scrollTop, scrollHeight } = this.scrollElement;
+        this.thumbTop = Math.round(scrollTop * this.scrollToThumbRatio);
+        utils.updateProperty('--thumb-top', `${this.thumbTop}px`, this);
+      }
+
+      onThumbMousedown() {
+        this.disableOnScroll = true;
+        this.tooltip.disableClick = true;
+        this.thumbMousemoveListener = this.scrollbarThumb.addEventListener('mousemove', this.onThumbMousemove);
+        this.toggleAttribute('mousedown', true);
+      }
+      
+      onMouseup() {
+        setTimeout(() => {
+          this.disableOnScroll = false;
+          this.tooltip.disableClick = false}
+        , 0)
+        this.scrollbarThumb.removeEventListener('mousemove', this.onThumbMousemove);
+        this.toggleAttribute('mousedown', false);
+      }
+
+      onThumbMousemove({movementY}) {
+        if (!movementY) {
+          return
+        }
+
+        let thumbTopNew = this.thumbTop + movementY;
+
+        if (thumbTopNew < 0) {
+          thumbTopNew = 0;
+        } else if (thumbTopNew > this.thumbTopMax) {
+          thumbTopNew = this.thumbTopMax;
+        }
+
+        if (thumbTopNew === this.thumbTop) {
+          return;
+        }
+
+        this.thumbTop = thumbTopNew;
+        this.style.setProperty('--thumb-top', `${thumbTopNew}px`);
+
+        this.scrollElement.scrollTop = thumbTopNew * this.thumbToScrollRatio;
       }
     }
 
@@ -1536,13 +1688,19 @@ export default (config) => {
         this.breakpoint = this.getAttribute('breakpoint') || '768px';
         this.delay = parseInt(this.getAttribute('delay')) || 500;
         this.color = this.getAttribute('color') || 'inherit';
-        this.title = this.getAttribute('title') || null;
+        this.contentTitle = this.getAttribute('content-title') || null;
+        
         this.contentId = `tooltip-content-${vds.tooltipIndex}`;
+        this.contentBorderRadius = '4px';
         this.contentGap = '.625rem';
         this.contentMaxHeight = '12.75rem';
         this.contentWidth = '14rem';
+        this.size = this.getAttribute('size') || '0.9em';
         this.windowPadding = '32px';
         this.zIndex = '999';
+        this.disableClick = false;
+
+        this.buttonWidth = this.size; // Todo: add sizes
 
         this.positionContent = this.positionContent.bind(this);
         this.observePositionY = this.observePositionY.bind(this);
@@ -1556,11 +1714,13 @@ export default (config) => {
           .button-wrap {
             position: relative;
             display: inline-block;
+            width: ${this.buttonWidth};
+            height: ${this.buttonWidth};
           }
           
           #tooltip-button {
             position: absolute;
-            bottom: -.1em;
+            bottom: -.09em;
             display: flex;
             font-size: inherit;
             -webkit-box-pack: center;
@@ -1587,7 +1747,7 @@ export default (config) => {
 
           #tooltip-button:hover {
             background-color: rgba(111, 113, 113, 0.06);
-            box-shadow: rgba(111, 113, 113, 0.06) 0px 0px 0px 0.169em;
+            box-shadow: rgba(111, 113, 113, 0.06) 0px 0px 0px 0.188rem;
           }
 
           .tooltip-hit-area {
@@ -1645,27 +1805,28 @@ export default (config) => {
       positionContent() {
         const buttonRect = utils.getOffsetRect(this.button);
         const buttonCenterX = buttonRect.left + buttonRect.width / 2;
-        // const positionTop = buttonRect.top - utils.remToPx(this.contentGap) - this.contentMaxHeight;
+        const contentBorderRadius = utils.cssToValue(this.contentBorderRadius);
         const contentGap = utils.remToPx(this.contentGap);
         const contentMaxHeight = utils.remToPx(this.contentMaxHeight);
         const contentWidth = utils.remToPx(this.contentWidth);
         const contentLeft = buttonCenterX - contentWidth / 2;
         const contentRight = buttonCenterX + contentWidth / 2;
+        const contentCaretWidth = 12;
         const windowWidth = window.innerWidth;
         const breakpoint = utils.cssToValue(this.breakpoint);
         const windowPadding = utils.cssToValue(this.windowPadding)
         const topBound = buttonRect.top - contentGap - contentMaxHeight - windowPadding;
         const leftBound = contentLeft - windowPadding;
         const rightBound = contentRight + windowPadding;
+        const maxOffset = (contentWidth - contentCaretWidth) / 2 - contentBorderRadius;
         let offsetX = 0;
 
         if (leftBound < 0) {
-          offsetX = 0 - leftBound;
+          offsetX = Math.min(0 - leftBound, maxOffset);
         } else if (rightBound > windowWidth) {
-          offsetX = windowWidth - rightBound;
+          offsetX = -Math.min(rightBound - windowWidth, maxOffset);
         }
 
-        // utils.updateProperty('--offset-y', `${Math.round(contentTop)}px`, this.content);
         this.content.toggleAttribute('below', topBound < 0);
         utils.updateProperty('--button-left', `${Math.round(buttonRect.left)}px`, this.content);
         utils.updateProperty('--button-top', `${Math.round(buttonRect.top)}px`, this.content);
@@ -1710,10 +1871,15 @@ export default (config) => {
 
       removeContent() {
         this.button.setAttribute('aria-expanded', 'false');
+        document.body.removeEventListener(this.content.onMouseup);
         this.content?.remove();
       }
 
       onClick() {
+        if (this.disableClick) {
+          return;
+        }
+
         if (!this.content.isConnected) {
           this.insertContent();
         }

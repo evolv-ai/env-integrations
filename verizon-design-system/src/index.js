@@ -1336,8 +1336,11 @@ export default (config) => {
         this.maxHeight = this.tooltip.contentMaxHeight;
         this.contentTitle = this.tooltip.contentTitle;
         this.width = this.tooltip.contentWidth;
+        this.windowPaddingMobile = this.tooltip.windowPaddingMobile;
+        this.windowPaddingDesktop = this.tooltip.windowPaddingDesktop;
         this.zIndex = this.tooltip.zIndex;
 
+        this.positionContent = this.positionContent.bind(this);
         this.onContentScroll = this.onContentScroll.bind(this);
         this.onScrollbarTrackClick = this.onScrollbarTrackClick.bind(this);
         this.onScrollbarThumbMousedown = this.onScrollbarThumbMousedown.bind(this);
@@ -1374,7 +1377,7 @@ export default (config) => {
             content: "";
             position: absolute;
             display: flex;
-            left: calc(50% - var(--offset-x));
+            left: calc(50% - var(--offset-x) + 1px);
             bottom: -.3rem;
             color: black;
             background: white;
@@ -1593,16 +1596,66 @@ export default (config) => {
         styleElement.textContent += style;
         styleElement.insertAdjacentHTML('afterend', template);
 
+        this.content = this.shadow.querySelector('.content');
         this.scrollElement = this.shadow.querySelector('.content-scroll');
         this.thumbMousemoveListener = null;
         this.scrollbarTrack = this.shadow.querySelector('.scrollbar-track');
         this.scrollbarThumb = this.shadow.querySelector('.scrollbar-thumb');
-        this.scrolls = false;
+        this.hasScrollbar = false;
         this.thumbTop = null;
         this.thumbTopMax = null;
         this.thumbHeight = null;
         this.scrollToThumbRatio = null;
         this.thumbToScrollRatio = null;
+      }
+
+      connectedCallback() {
+        this.toggleAttribute('touch', utils.isTouchDevice());
+
+        this.hasScrollbar = this.scrollElement.scrollHeight > this.scrollElement.offsetHeight;
+        this.toggleAttribute('scroll', this.hasScrollbar);
+        this.positionContent();
+
+        if (this.hasScrollbar) {
+          this.initScrollbar();
+        }
+      }
+
+      positionContent() {
+        const buttonRect = utils.getOffsetRect(this.tooltip.button);
+        const buttonCenterX = buttonRect.left + buttonRect.width / 2;
+        const borderRadius = utils.cssToValue(this.borderRadius);
+        const gap = utils.cssToValue(this.gap);
+        const height = this.content.getBoundingClientRect().height;
+        const width = utils.cssToValue(this.width);
+        const left = buttonCenterX - width / 2;
+        const right = buttonCenterX + width / 2;
+        const caretWidth = 12;
+        const windowWidth = window.innerWidth;
+        const breakpoint = utils.cssToValue(this.breakpoint);
+        const windowPadding = windowWidth < breakpoint
+          ? utils.cssToValue(this.windowPaddingMobile)
+          : utils.cssToValue(this.windowPaddingDeskTab);
+        const topBound = buttonRect.top - gap - height - windowPadding;
+        const leftBound = left - windowPadding;
+        const rightBound = right + windowPadding;
+        const maxOffset = (width - caretWidth) / 2 - borderRadius;
+        let offsetX = 0;
+
+        if (leftBound < 0) {
+          offsetX = Math.min(0 - leftBound, maxOffset);
+        } else if (rightBound > windowWidth) {
+          offsetX = -Math.min(rightBound - windowWidth, maxOffset);
+        }
+
+        this.content.toggleAttribute('below', topBound < 0);
+        utils.updateProperty('--button-left', `${Math.round(buttonRect.left)}px`, this);
+        utils.updateProperty('--button-top', `${Math.round(buttonRect.top)}px`, this);
+        utils.updateProperty('--button-height', `${Math.round(buttonRect.height)}px`, this);
+        utils.updateProperty('--button-width', `${Math.round(buttonRect.width)}px`, this);
+        utils.updateProperty('--gap', `${Math.round(gap)}px`);
+        utils.updateProperty('--height', `${Math.round(height)}px`, this);
+        utils.updateProperty('--offset-x', `${Math.round(offsetX)}px`, this);
       }
 
       initScrollbar() {
@@ -1621,24 +1674,12 @@ export default (config) => {
         document.body.addEventListener('mouseup', this.onScrollbarThumbMouseup);
       }
 
-      connectedCallback() {
-        this.toggleAttribute('touch', utils.isTouchDevice());
-
-        this.scrolls = this.scrollElement.scrollHeight > this.scrollElement.offsetHeight;
-        this.toggleAttribute('scroll', this.scrolls);
-        
-        if (this.scrolls) {
-          this.initScrollbar();
-        }
-      }
-
       onContentScroll() {
         if (this.disableOnContentScroll) {
           return;
         }
 
-        const { offsetHeight, scrollTop, scrollHeight } = this.scrollElement;
-        this.thumbTop = Math.round(scrollTop * this.scrollToThumbRatio);
+        this.thumbTop = Math.round(this.scrollElement.scrollTop * this.scrollToThumbRatio);
         utils.updateProperty('--thumb-top', `${this.thumbTop}px`, this);
       }
 
@@ -1704,9 +1745,11 @@ export default (config) => {
         this.contentId = `tooltip-content-${vds.tooltipIndex}`;
         this.contentBorderRadius = '0.25rem';
         this.contentGap = '.625rem';
+        this.contentHeight = null;
         this.contentMaxHeight = this.getAttribute('content-max-height') || '12.75rem';
         this.contentWidth = '14rem';
         this.size = this.getAttribute('size') || 'medium';
+        this.tooltipIndex = vds.tooltipIndex;
         this.type = this.getAttribute('type') || 'inline';
         this.windowPaddingMobile = '20px';
         this.windowPaddingDeskTab = '32px';
@@ -1719,15 +1762,19 @@ export default (config) => {
           this.buttonWidth = this.size === 'small' ? '1rem' : '1.25rem';
         }
 
-        this.positionContent = this.positionContent.bind(this);
         this.observePositionY = this.observePositionY.bind(this);
         this.insertContent = this.insertContent.bind(this);
         this.removeContent = this.removeContent.bind(this);
         this.onClick = this.onClick.bind(this);
         this.onMouseenter = this.onMouseenter.bind(this);
         this.onMouseleave = this.onMouseleave.bind(this);
+        this.onKeydown = this.onKeydown.bind(this);
 
         const style = `
+          :host {
+            outline: none !important;
+          }
+
           .button-wrap {
             position: relative;
             display: inline-block;
@@ -1767,6 +1814,11 @@ export default (config) => {
             box-shadow: rgba(111, 113, 113, 0.06) 0px 0px 0px 0.188rem;
           }
 
+          #tooltip-button:focus-visible {
+            outline: 0.0625rem dashed black;
+            outline-offset: 0.0625rem;
+          }
+
           .tooltip-hit-area {
             height: 2.75rem;
             width: 2.75rem;
@@ -1794,6 +1846,7 @@ export default (config) => {
         this.button = this.shadow.querySelector('button');
         this.content = utils.makeElement(this.contentHTML);
         this.hoverTimeout = null;
+        vds.tooltipIndex += 1;
       }
 
       connectedCallback() {
@@ -1801,59 +1854,16 @@ export default (config) => {
         this.button.addEventListener('click', this.onClick);
         this.button.addEventListener('mouseenter', this.onMouseenter);
         this.button.addEventListener('mouseleave', this.onMouseleave);
+        this.button.addEventListener('keydown', this.onKeydown);
         this.observePositionY();
-        this.dataset.tooltipIndex = vds.tooltipIndex;
-        vds.tooltipIndex += 1;
+        this.dataset.tooltipIndex = this.tooltipIndex;
       }
 
       get contentHTML() {
         return `
-          <evolv-tooltip-content
-            id="${this.contentId}"
-            data-tooltip-index="${this.dataset.tooltipIndex}" 
-            width="${this.contentWidth}" max-height="${this.contentMaxHeight}" 
-            delay="${this.delay}" 
-            z-index="${this.zIndex}"
-          >
+          <evolv-tooltip-content id="${this.contentId}" data-tooltip-index="${this.tooltipIndex}">
             ${this.innerHTML}
           </evolv-tooltip-content>`;
-      }
-
-      positionContent() {
-        const buttonRect = utils.getOffsetRect(this.button);
-        const buttonCenterX = buttonRect.left + buttonRect.width / 2;
-        const contentBorderRadius = utils.cssToValue(this.contentBorderRadius);
-        const contentGap = utils.cssToValue(this.contentGap);
-        const contentMaxHeight = utils.cssToValue(this.contentMaxHeight);
-        const contentWidth = utils.cssToValue(this.contentWidth);
-        const contentLeft = buttonCenterX - contentWidth / 2;
-        const contentRight = buttonCenterX + contentWidth / 2;
-        const contentCaretWidth = 12;
-        const windowWidth = window.innerWidth;
-        const breakpoint = utils.cssToValue(this.breakpoint);
-        const windowPadding = windowWidth < breakpoint
-          ? utils.cssToValue(this.windowPaddingMobile)
-          : utils.cssToValue(this.windowPaddingDeskTab);
-        const topBound = buttonRect.top - contentGap - contentMaxHeight - windowPadding;
-        const leftBound = contentLeft - windowPadding;
-        const rightBound = contentRight + windowPadding;
-        const maxOffset = (contentWidth - contentCaretWidth) / 2 - contentBorderRadius;
-        let offsetX = 0;
-
-        if (leftBound < 0) {
-          offsetX = Math.min(0 - leftBound, maxOffset);
-        } else if (rightBound > windowWidth) {
-          offsetX = -Math.min(rightBound - windowWidth, maxOffset);
-        }
-
-        this.content.toggleAttribute('below', topBound < 0);
-        utils.updateProperty('--button-left', `${Math.round(buttonRect.left)}px`, this.content);
-        utils.updateProperty('--button-top', `${Math.round(buttonRect.top)}px`, this.content);
-        utils.updateProperty('--button-height', `${Math.round(buttonRect.height)}px`, this.content);
-        utils.updateProperty('--button-width', `${Math.round(buttonRect.width)}px`, this.content);
-        utils.updateProperty('--gap', `${Math.round(contentGap)}px`);
-        utils.updateProperty('--height', `${Math.round(contentMaxHeight)}px`, this.content);
-        utils.updateProperty('--offset-x', `${Math.round(offsetX)}px`, this.content);
       }
 
       observePositionY() {
@@ -1879,11 +1889,10 @@ export default (config) => {
       insertContent() {
         this.button.setAttribute('aria-expanded', 'true');
         this.content = utils.makeElement(this.contentHTML);
-        this.positionContent();
         this.content.addEventListener('click', this.onClick);
         this.content.addEventListener('mouseenter', this.onMouseenter);
         this.content.addEventListener('mouseleave', this.onMouseleave);
-        document.body.append(this.content)
+        document.body.append(this.content);
       }
 
       removeContent() {
@@ -1936,6 +1945,48 @@ export default (config) => {
             },
             this.delay
           );
+        }
+      }
+
+      onKeydown(event) {
+        if (!(this.content.isConnected && this.content.hasScrollbar)) {
+          return;
+        }
+
+        const { scrollTop, offsetHeight, scrollHeight } = this.content.scrollElement;
+
+        const key = event.which;
+        let scrollTopNew = null;
+
+        switch (key) {
+          case 38: // Up
+            scrollTopNew = scrollTop - 40;
+            break;
+          case 40: // Down
+            scrollTopNew = scrollTop + 40;
+            break;
+          case 33: // Pageup
+            scrollTopNew = scrollTop - Math.round(.9 * offsetHeight);
+            break;
+          case 34: // Pagedown
+            scrollTopNew = scrollTop + Math.round(.9 * offsetHeight);
+            break;
+          case 36: // Home
+            scrollTopNew = 0;
+            break;
+          case 35: // End
+            scrollTopNew = scrollHeight;
+            break;
+          default:
+            break;
+        }
+
+        if (scrollTopNew !== null) {
+          this.content.scrollElement.scrollTo({
+            top: scrollTopNew,
+            behavior: 'smooth',
+          })
+          event.preventDefault();
         }
       }
     };

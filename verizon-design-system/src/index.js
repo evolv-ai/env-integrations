@@ -1337,7 +1337,7 @@ export default (config) => {
         this.contentTitle = this.tooltip.contentTitle;
         this.width = this.tooltip.contentWidth;
         this.windowPaddingMobile = this.tooltip.windowPaddingMobile;
-        this.windowPaddingDesktop = this.tooltip.windowPaddingDesktop;
+        this.windowPaddingDeskTab = this.tooltip.windowPaddingDeskTab;
         this.zIndex = this.tooltip.zIndex;
 
         this.positionContent = this.positionContent.bind(this);
@@ -1367,7 +1367,6 @@ export default (config) => {
             min-height: 2.5rem;
             outline: none;
             text-align: left;
-            /* transform: translateX(calc(-50% + var(--offset-x) + (var(--sign-offset-x) * (var(--window-padding) - 2px)))); */
             transition: opacity 0ms linear ${this.delay}ms;
             width: var(--width);
             z-index: ${this.zIndex};
@@ -1377,7 +1376,7 @@ export default (config) => {
             content: "";
             position: absolute;
             display: flex;
-            left: calc(50% - var(--offset-x) + 1px);
+            left: calc(50% - var(--offset-x));
             bottom: -.3rem;
             color: black;
             background: white;
@@ -1507,7 +1506,7 @@ export default (config) => {
             align-items: center;
             justify-content: center;
             max-height: unset;
-            min-weight: unset;
+            min-width: unset;
             width: auto;
             background-color: var(--color-overlay);
             inset: 0px;
@@ -1533,7 +1532,7 @@ export default (config) => {
             padding: 1rem 0 0;
             opacity: 0;
             transform: translateY(-9.375rem);
-            transition: opacity 0.4s ease-in, transform 0.4s ease-in;
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
           }
 
           :host([touch][expanded]) .content {
@@ -1655,7 +1654,7 @@ export default (config) => {
         utils.updateProperty('--button-width', `${Math.round(buttonRect.width)}px`, this);
         utils.updateProperty('--gap', `${Math.round(gap)}px`);
         utils.updateProperty('--height', `${Math.round(height)}px`, this);
-        utils.updateProperty('--offset-x', `${Math.round(offsetX)}px`, this);
+        utils.updateProperty('--offset-x', `${offsetX.toFixed(2)}px`, this);
       }
 
       initScrollbar() {
@@ -1670,7 +1669,6 @@ export default (config) => {
         this.scrollElement.addEventListener('scroll', this.onContentScroll);
         this.scrollbarTrack.addEventListener('click', this.onScrollbarTrackClick);
         this.scrollbarThumb.addEventListener('mousedown', this.onScrollbarThumbMousedown);
-
         document.body.addEventListener('mouseup', this.onScrollbarThumbMouseup);
       }
 
@@ -1728,7 +1726,6 @@ export default (config) => {
 
         this.thumbTop = thumbTopNew;
         this.style.setProperty('--thumb-top', `${thumbTopNew}px`);
-
         this.scrollElement.scrollTop = thumbTopNew * this.thumbToScrollRatio;
       }
     }
@@ -1757,7 +1754,7 @@ export default (config) => {
         this.disableClick = false;
 
         if (this.type === 'inline') {
-          this.buttonWidth = '0.9em';
+          this.buttonWidth = '1em';
         } else if (this.type === 'standAlone') {
           this.buttonWidth = this.size === 'small' ? '1rem' : '1.25rem';
         }
@@ -1784,7 +1781,8 @@ export default (config) => {
           
           #tooltip-button {
             position: absolute;
-            bottom: -.09em;
+            left: 50%;
+            bottom: -.12em;
             display: flex;
             font-size: inherit;
             -webkit-box-pack: center;
@@ -1794,6 +1792,7 @@ export default (config) => {
             padding: 0px;
             margin: 0px;
             cursor: pointer;
+            color: inherit;
             -webkit-tap-highlight-color: transparent;
             box-sizing: border-box;
             text-align: center;
@@ -1806,6 +1805,7 @@ export default (config) => {
             border-radius: 50%;
             border: none;
             background-clip: padding-box;
+            transform: translateX(-50%);
             transition: all 0.1s ease-out 0s;
           }
 
@@ -1815,8 +1815,7 @@ export default (config) => {
           }
 
           #tooltip-button:focus-visible {
-            outline: 0.0625rem dashed black;
-            outline-offset: 0.0625rem;
+            outline: 0.0625rem dashed currentColor;
           }
 
           .tooltip-hit-area {
@@ -1835,7 +1834,7 @@ export default (config) => {
           <span class="button-wrap">
             <button class="unbutton" id="tooltip-button" name="info" aria-expanded="false" aria-controls="tooltip-contents">
               <div class="tooltip-hit-area"></div>
-              <evolv-icon name="info" size=".9em" color="${this.color}"></evolv-icon>
+              <evolv-icon name="info" size="1em"></evolv-icon>
             </button>
           </span>`;
 

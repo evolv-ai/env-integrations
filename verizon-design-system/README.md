@@ -250,16 +250,18 @@ window.evolv.vds.TextLink
 #### Tag
 
 ```html
-<evolv-tooltip>Autem assumenda saepe cum. Sit molestias assumenda quia est impedit dolor est excepturi. Nihil sed sed perspiciatis rerum consectetur ea amet. Sunt ut expedita consequatur necessitatibus. Est aliquid labore quidem ipsum. Eveniet ipsa quia quos ut excepturi voluptatum.</evolv-tooltip>
+<evolv-tooltip content-title="Lorem ipusum">Nulla facilis eos dolorem totam est explicabo fuga. Cum magnam laudantium et itaque rerum sit. Amet laudantium nesciunt consequuntur nam accusamus odit. Sequi rerum et optio et aspernatur quam. Dolores nobis quos suscipit. Aut fugiat ipsam praesentium aliquid ut minima exercitationem illum. Natus explicabo rerum fugit in. Ut voluptatem nemo et. Nobis rem ut repellendus consectetur velit. Consequatur est aperiam praesentium illo facilis. Unde voluptas cumque et aliquid neque autem vel nam. Sit rerum aspernatur minima. Aut sequi vitae et natus est voluptas necessitatibus.</evolv-tooltip>
 ```
 
 #### Attributes
 
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
-| `breakpoint` | The screen width where mobile styles shift to tablet/desktop | `768px` | `<css width>` |
+| `breakpoint` | The screen width where mobile styles shift to tablet/desktop. This only applies to the window margin, the touch-screen mode not related to this | `768px` | `<css width>` |
 | `color` | The text color of the icon | `inherit` | See [Properties](#properties) |
 | `size` | Renders the tooltip in the correpsponding size. Requires `type` to be `standAlone`. **Coming soon!** | `large` | `large`, `small` |
+| `content-max-height` | The maximum height of the tooltip content 
+| `content-title` | A title to be displayed above the tooltip content | | `<string>` |
 | `type` | Whether the tooltip button is `inline`, inherited from the text size of the parent, or `standAlone`, determined by the `size` attribute | `inline` | `inline`, `standAlone` |
 
 ---

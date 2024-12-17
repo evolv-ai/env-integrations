@@ -1328,13 +1328,24 @@ export default (config) => {
 
         this.index = this.dataset.tooltipIndex;
         this.tooltip = document.querySelector(`evolv-tooltip[data-tooltip-index="${this.index}"]`);
+        this.borderRadius = this.tooltip.contentBorderRadius;
         this.breakpoint = this.tooltip.breakpoint;
         this.delay = this.tooltip.delay;
+        this.disableOnContentScroll = false;
         this.gap = this.tooltip.contentGap;
         this.maxHeight = this.tooltip.contentMaxHeight;
-        this.title = this.tooltip.title;
+        this.contentTitle = this.tooltip.contentTitle;
         this.width = this.tooltip.contentWidth;
+        this.windowPaddingMobile = this.tooltip.windowPaddingMobile;
+        this.windowPaddingDeskTab = this.tooltip.windowPaddingDeskTab;
         this.zIndex = this.tooltip.zIndex;
+
+        this.positionContent = this.positionContent.bind(this);
+        this.onContentScroll = this.onContentScroll.bind(this);
+        this.onScrollbarTrackClick = this.onScrollbarTrackClick.bind(this);
+        this.onScrollbarThumbMousedown = this.onScrollbarThumbMousedown.bind(this);
+        this.onScrollbarThumbMouseup = this.onScrollbarThumbMouseup.bind(this);
+        this.onScrollbarThumbMousemove = this.onScrollbarThumbMousemove.bind(this);
 
         const style = `
           .content-outer {
@@ -1356,20 +1367,9 @@ export default (config) => {
             min-height: 2.5rem;
             outline: none;
             text-align: left;
-            /* transform: translateX(calc(-50% + var(--offset-x) + (var(--sign-offset-x) * (var(--window-padding) - 2px)))); */
             transition: opacity 0ms linear ${this.delay}ms;
             width: var(--width);
             z-index: ${this.zIndex};
-          }
-
-          .content {
-            display: flex;
-            padding: 0.75rem 0;
-          }
-
-          .content-inner {
-            overflow-y: auto;
-            padding: 0 0.75rem;
           }
 
           .content-outer::before {
@@ -1390,7 +1390,19 @@ export default (config) => {
             opacity: 0;
           }
 
+          .content {
+            display: flex;
+            padding: 0.75rem 0;
+          }
+
+          .content-inner {
+            display: flex;
+            position: relative;
+            padding: 0 0.75rem;
+          }
+
           .content-scroll {
+            overflow-y: scroll;
           }
 
           .title {
@@ -1406,21 +1418,65 @@ export default (config) => {
             display: none;
           }
 
-          // .scrollbar-track {
-          //   position: absolute;
-          //   width: 4px;
-          //   background-color: var(--color-gray-85);
-          //   display: block;
-          //   top: 0px;
-          //   right: 0px;
-          //   bottom: 0px;
-          //   cursor: pointer;
-          //   border-radius: 2px;
-          //   // overflow: hidden;
-          // }
+          :host([scroll]:not([touch])) .content-scroll::-webkit-scrollbar {
+            display: none; /* For Chrome, Safari, and Opera */
+          }
 
-          // .scrollbar-thumb {
-          // }
+          :host([scroll]:not([touch])) .content-scroll {
+            scrollbar-width: none; /* For Firefox */
+            -ms-overflow-style: none; /* For Internet Explorer and Edge */
+          }
+
+          :host([scroll]:not([touch])) .scrollbar-track {
+            position: absolute;
+            width: 4px;
+            background-color: var(--color-gray-85);
+            display: block;
+            top: 0px;
+            right: 4px;
+            bottom: 0px;
+            cursor: pointer;
+            border-radius: 2px;
+          }
+
+          :host([scroll]:not([touch])) .scrollbar-thumb {
+            position: absolute;
+            height: var(--thumb-height);
+            width: 4px;
+            background-color: var(--color-gray-44);
+            display: block;
+            right: 0;
+            cursor: grab;
+            border-radius: 2px;
+            transform: translateY(var(--thumb-top));
+          }
+
+          :host([scroll][mousedown]:not([touch])) .scrollbar-thumb {
+            cursor: grabbing;
+          }
+
+          :host([scroll]:not([touch])) .scrollbar-track::before,
+          :host([scroll]:not([touch])) .scrollbar-thumb::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: -22px;
+            width: 48px;
+          }
+
+          :host([scroll]:not([touch])) .scrollbar-thumb:hover {
+            background-color: black;
+          }
+
+          :host([mousedown]) {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+          }
 
           :host([expanded]) .content-outer,
           :host([expanded]) .content-outer::before,
@@ -1431,11 +1487,11 @@ export default (config) => {
 
           :host([expanded]) .content-outer,
           :host([expanded]) .content-outer::before {
+            transition: unset;
             display: flex;
           }
 
           :host([below]) .content-outer {
-            // bottom: auto;
             top: calc(var(--button-top) + var(--button-height) + var(--gap));
           }
           
@@ -1450,7 +1506,7 @@ export default (config) => {
             align-items: center;
             justify-content: center;
             max-height: unset;
-            min-weight: unset;
+            min-width: unset;
             width: auto;
             background-color: var(--color-overlay);
             inset: 0px;
@@ -1465,6 +1521,7 @@ export default (config) => {
           }
 
           :host([touch]) .content {
+            ${this.mixins.bodyText.lg()}
             display: flex;
             flex-direction: column;
             width: 18.5rem;
@@ -1473,11 +1530,25 @@ export default (config) => {
             background-color: white;
             border-radius: 12px;
             padding: 1rem 0 0;
+            opacity: 0;
+            transform: translateY(-9.375rem);
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+          }
+
+          :host([touch][expanded]) .content {
+            opacity: 1;
+            transform: translateY(0);
           }
 
           :host([touch]) .content-inner {
-            padding: 0 1rem;
-            overflow: auto;
+            padding: 0 0 0 1rem;
+            overflow-y: auto;
+          }
+
+          :host([touch]) .content-scroll {
+            padding: 0 1rem 1rem 0;
+            overflow: unset;
+            height: fit-content;
           }
 
           :host([touch]) .title {
@@ -1489,6 +1560,7 @@ export default (config) => {
 
           :host([touch]) .close {
             display: flex;
+            flex-shrink: 0;
             align-items: center;
             justify-content: center;
             width: 100%;
@@ -1507,14 +1579,14 @@ export default (config) => {
             <div class="content text-body-sm" aria-live="assertive" aria-relevant="all">
               <div class="content-inner">
                 <div class="content-scroll">
-                  ${ this.title ? `<span class="title">${this.title}</span>` : ''}
+                  ${ this.contentTitle ? `<span class="title">${this.contentTitle}</span>` : ''}
                   <slot></slot>
                 </div>
                 <div class="scrollbar-track">
                   <div class="scrollbar-thumb"></div>
                 </div>
               </div>
-              <button class="close unbutton text-body-sm">Close</button>
+              <button class="close unbutton">Close</button>
             </div>
           </div>
         `
@@ -1522,10 +1594,139 @@ export default (config) => {
         const styleElement = this.shadow.querySelector('style');
         styleElement.textContent += style;
         styleElement.insertAdjacentHTML('afterend', template);
+
+        this.content = this.shadow.querySelector('.content');
+        this.scrollElement = this.shadow.querySelector('.content-scroll');
+        this.thumbMousemoveListener = null;
+        this.scrollbarTrack = this.shadow.querySelector('.scrollbar-track');
+        this.scrollbarThumb = this.shadow.querySelector('.scrollbar-thumb');
+        this.hasScrollbar = false;
+        this.thumbTop = null;
+        this.thumbTopMax = null;
+        this.thumbHeight = null;
+        this.scrollToThumbRatio = null;
+        this.thumbToScrollRatio = null;
       }
 
       connectedCallback() {
         this.toggleAttribute('touch', utils.isTouchDevice());
+
+        this.hasScrollbar = this.scrollElement.scrollHeight > this.scrollElement.offsetHeight;
+        this.toggleAttribute('scroll', this.hasScrollbar);
+        this.positionContent();
+
+        if (this.hasScrollbar) {
+          this.initScrollbar();
+        }
+      }
+
+      positionContent() {
+        const buttonRect = utils.getOffsetRect(this.tooltip.button);
+        const buttonCenterX = buttonRect.left + buttonRect.width / 2;
+        const borderRadius = utils.cssToValue(this.borderRadius);
+        const gap = utils.cssToValue(this.gap);
+        const height = this.content.getBoundingClientRect().height;
+        const width = utils.cssToValue(this.width);
+        const left = buttonCenterX - width / 2;
+        const right = buttonCenterX + width / 2;
+        const caretWidth = 12;
+        const windowWidth = window.innerWidth;
+        const breakpoint = utils.cssToValue(this.breakpoint);
+        const windowPadding = windowWidth < breakpoint
+          ? utils.cssToValue(this.windowPaddingMobile)
+          : utils.cssToValue(this.windowPaddingDeskTab);
+        const topBound = buttonRect.top - gap - height - windowPadding;
+        const leftBound = left - windowPadding;
+        const rightBound = right + windowPadding;
+        const maxOffset = (width - caretWidth) / 2 - borderRadius;
+        let offsetX = 0;
+
+        if (leftBound < 0) {
+          offsetX = Math.min(0 - leftBound, maxOffset);
+        } else if (rightBound > windowWidth) {
+          offsetX = -Math.min(rightBound - windowWidth, maxOffset);
+        }
+
+        this.content.toggleAttribute('below', topBound < 0);
+        utils.updateProperty('--button-left', `${Math.round(buttonRect.left)}px`, this);
+        utils.updateProperty('--button-top', `${Math.round(buttonRect.top)}px`, this);
+        utils.updateProperty('--button-height', `${Math.round(buttonRect.height)}px`, this);
+        utils.updateProperty('--button-width', `${Math.round(buttonRect.width)}px`, this);
+        utils.updateProperty('--gap', `${Math.round(gap)}px`);
+        utils.updateProperty('--height', `${Math.round(height)}px`, this);
+        utils.updateProperty('--offset-x', `${offsetX.toFixed(2)}px`, this);
+      }
+
+      initScrollbar() {
+        const {offsetHeight, scrollHeight} = this.scrollElement;
+        this.thumbHeight = Math.round(offsetHeight * offsetHeight / scrollHeight);
+        this.thumbTop = 0;
+        this.thumbTopMax = offsetHeight - this.thumbHeight;
+        this.thumbToScrollRatio = scrollHeight / offsetHeight;
+        this.scrollToThumbRatio = 1 / this.thumbToScrollRatio;
+        utils.updateProperty('--thumb-height', `${this.thumbHeight}px`, this);
+        this.onContentScroll();
+        this.scrollElement.addEventListener('scroll', this.onContentScroll);
+        this.scrollbarTrack.addEventListener('click', this.onScrollbarTrackClick);
+        this.scrollbarThumb.addEventListener('mousedown', this.onScrollbarThumbMousedown);
+        document.body.addEventListener('mouseup', this.onScrollbarThumbMouseup);
+      }
+
+      onContentScroll() {
+        if (this.disableOnContentScroll) {
+          return;
+        }
+
+        this.thumbTop = Math.round(this.scrollElement.scrollTop * this.scrollToThumbRatio);
+        utils.updateProperty('--thumb-top', `${this.thumbTop}px`, this);
+      }
+
+      onScrollbarTrackClick({clientY}) {
+        const trackRect = this.scrollbarTrack.getBoundingClientRect();
+        this.tooltip.disableClick = true;
+        setTimeout(() => {
+          this.tooltip.disableClick = false
+        }, 0);
+        const scrollTop = Math.round((clientY - trackRect.y - (this.thumbHeight / 2)) * this.thumbToScrollRatio); 
+        this.scrollElement.scrollTo({top: scrollTop, behavior: 'smooth'});
+      }
+
+      onScrollbarThumbMousedown() {
+        this.disableOnContentScroll = true;
+        this.tooltip.disableClick = true;
+        this.thumbMousemoveListener = document.body.addEventListener('mousemove', this.onScrollbarThumbMousemove);
+        this.toggleAttribute('mousedown', true);
+      }
+      
+      onScrollbarThumbMouseup() {
+        setTimeout(() => {
+          this.disableOnContentScroll = false;
+          this.tooltip.disableClick = false}
+        , 0)
+        document.body.removeEventListener('mousemove', this.onScrollbarThumbMousemove);
+        this.toggleAttribute('mousedown', false);
+      }
+
+      onScrollbarThumbMousemove({movementY}) {
+        if (!movementY) {
+          return
+        }
+
+        let thumbTopNew = this.thumbTop + movementY;
+
+        if (thumbTopNew < 0) {
+          thumbTopNew = 0;
+        } else if (thumbTopNew > this.thumbTopMax) {
+          thumbTopNew = this.thumbTopMax;
+        }
+
+        if (thumbTopNew === this.thumbTop) {
+          return;
+        }
+
+        this.thumbTop = thumbTopNew;
+        this.style.setProperty('--thumb-top', `${thumbTopNew}px`);
+        this.scrollElement.scrollTop = thumbTopNew * this.thumbToScrollRatio;
       }
     }
 
@@ -1536,31 +1737,52 @@ export default (config) => {
         this.breakpoint = this.getAttribute('breakpoint') || '768px';
         this.delay = parseInt(this.getAttribute('delay')) || 500;
         this.color = this.getAttribute('color') || 'inherit';
-        this.title = this.getAttribute('title') || null;
+        this.contentTitle = this.getAttribute('content-title') || this.getAttribute('title') || null;
+        
         this.contentId = `tooltip-content-${vds.tooltipIndex}`;
+        this.contentBorderRadius = '0.25rem';
         this.contentGap = '.625rem';
-        this.contentMaxHeight = '12.75rem';
+        this.contentHeight = null;
+        this.contentMaxHeight = this.getAttribute('content-max-height') || '12.75rem';
         this.contentWidth = '14rem';
-        this.windowPadding = '32px';
+        this.size = this.getAttribute('size') || 'medium';
+        this.tooltipIndex = vds.tooltipIndex;
+        this.type = this.getAttribute('type') || 'inline';
+        this.windowPaddingMobile = '20px';
+        this.windowPaddingDeskTab = '32px';
         this.zIndex = '999';
+        this.disableClick = false;
 
-        this.positionContent = this.positionContent.bind(this);
+        if (this.type === 'inline') {
+          this.buttonWidth = '1em';
+        } else if (this.type === 'standAlone') {
+          this.buttonWidth = this.size === 'small' ? '1rem' : '1.25rem';
+        }
+
         this.observePositionY = this.observePositionY.bind(this);
         this.insertContent = this.insertContent.bind(this);
         this.removeContent = this.removeContent.bind(this);
         this.onClick = this.onClick.bind(this);
         this.onMouseenter = this.onMouseenter.bind(this);
         this.onMouseleave = this.onMouseleave.bind(this);
+        this.onKeydown = this.onKeydown.bind(this);
 
         const style = `
+          :host {
+            outline: none !important;
+          }
+
           .button-wrap {
             position: relative;
             display: inline-block;
+            width: ${this.buttonWidth};
+            height: ${this.buttonWidth};
           }
           
           #tooltip-button {
             position: absolute;
-            bottom: -.1em;
+            left: 50%;
+            bottom: -.12em;
             display: flex;
             font-size: inherit;
             -webkit-box-pack: center;
@@ -1570,6 +1792,7 @@ export default (config) => {
             padding: 0px;
             margin: 0px;
             cursor: pointer;
+            color: inherit;
             -webkit-tap-highlight-color: transparent;
             box-sizing: border-box;
             text-align: center;
@@ -1582,12 +1805,17 @@ export default (config) => {
             border-radius: 50%;
             border: none;
             background-clip: padding-box;
+            transform: translateX(-50%);
             transition: all 0.1s ease-out 0s;
           }
 
           #tooltip-button:hover {
             background-color: rgba(111, 113, 113, 0.06);
-            box-shadow: rgba(111, 113, 113, 0.06) 0px 0px 0px 0.169em;
+            box-shadow: rgba(111, 113, 113, 0.06) 0px 0px 0px 0.188rem;
+          }
+
+          #tooltip-button:focus-visible {
+            outline: 0.0625rem dashed currentColor;
           }
 
           .tooltip-hit-area {
@@ -1606,7 +1834,7 @@ export default (config) => {
           <span class="button-wrap">
             <button class="unbutton" id="tooltip-button" name="info" aria-expanded="false" aria-controls="tooltip-contents">
               <div class="tooltip-hit-area"></div>
-              <evolv-icon name="info" size=".9em" color="${this.color}"></evolv-icon>
+              <evolv-icon name="info" size="1em"></evolv-icon>
             </button>
           </span>`;
 
@@ -1617,6 +1845,7 @@ export default (config) => {
         this.button = this.shadow.querySelector('button');
         this.content = utils.makeElement(this.contentHTML);
         this.hoverTimeout = null;
+        vds.tooltipIndex += 1;
       }
 
       connectedCallback() {
@@ -1624,57 +1853,16 @@ export default (config) => {
         this.button.addEventListener('click', this.onClick);
         this.button.addEventListener('mouseenter', this.onMouseenter);
         this.button.addEventListener('mouseleave', this.onMouseleave);
+        this.button.addEventListener('keydown', this.onKeydown);
         this.observePositionY();
-        this.dataset.tooltipIndex = vds.tooltipIndex;
-        vds.tooltipIndex += 1;
+        this.dataset.tooltipIndex = this.tooltipIndex;
       }
 
       get contentHTML() {
         return `
-          <evolv-tooltip-content
-            id="${this.contentId}"
-            data-tooltip-index="${this.dataset.tooltipIndex}" 
-            width="${this.contentWidth}" max-height="${this.contentMaxHeight}" 
-            delay="${this.delay}" 
-            z-index="${this.zIndex}"
-          >
+          <evolv-tooltip-content id="${this.contentId}" data-tooltip-index="${this.tooltipIndex}">
             ${this.innerHTML}
           </evolv-tooltip-content>`;
-      }
-
-      positionContent() {
-        const buttonRect = utils.getOffsetRect(this.button);
-        const buttonCenterX = buttonRect.left + buttonRect.width / 2;
-        // const positionTop = buttonRect.top - utils.remToPx(this.contentGap) - this.contentMaxHeight;
-        const contentGap = utils.remToPx(this.contentGap);
-        const contentMaxHeight = utils.remToPx(this.contentMaxHeight);
-        const contentWidth = utils.remToPx(this.contentWidth);
-        const contentLeft = buttonCenterX - contentWidth / 2;
-        const contentRight = buttonCenterX + contentWidth / 2;
-        const windowWidth = window.innerWidth;
-        const breakpoint = utils.cssToValue(this.breakpoint);
-        const windowPadding = utils.cssToValue(this.windowPadding)
-        const topBound = buttonRect.top - contentGap - contentMaxHeight - windowPadding;
-        const leftBound = contentLeft - windowPadding;
-        const rightBound = contentRight + windowPadding;
-        let offsetX = 0;
-
-        if (leftBound < 0) {
-          offsetX = 0 - leftBound;
-        } else if (rightBound > windowWidth) {
-          offsetX = windowWidth - rightBound;
-        }
-
-        // utils.updateProperty('--offset-y', `${Math.round(contentTop)}px`, this.content);
-        this.content.toggleAttribute('below', topBound < 0);
-        utils.updateProperty('--button-left', `${Math.round(buttonRect.left)}px`, this.content);
-        utils.updateProperty('--button-top', `${Math.round(buttonRect.top)}px`, this.content);
-        utils.updateProperty('--button-height', `${Math.round(buttonRect.height)}px`, this.content);
-        utils.updateProperty('--button-width', `${Math.round(buttonRect.width)}px`, this.content);
-        utils.updateProperty('--gap', `${Math.round(utils.remToPx(this.contentGap))}px`);
-        utils.updateProperty('--height', `${Math.round(utils.remToPx(this.contentMaxHeight))}px`, this.content);
-        utils.updateProperty('--offset-x', `${Math.round(offsetX)}px`, this.content);
-        utils.updateProperty('--sign-offset-x', Math.sign(offsetX), this.content);
       }
 
       observePositionY() {
@@ -1683,11 +1871,10 @@ export default (config) => {
         new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
-              // console.log(entry);
               this.content.toggleAttribute(
                 'below',
                 !entry.isIntersecting &&
-                  entry.boundingClientRect.top < entry.rootBounds.top
+                  entry.boundingClientRect?.top < entry.rootBounds?.top
               );
             });
           },
@@ -1701,25 +1888,29 @@ export default (config) => {
       insertContent() {
         this.button.setAttribute('aria-expanded', 'true');
         this.content = utils.makeElement(this.contentHTML);
-        this.positionContent();
         this.content.addEventListener('click', this.onClick);
         this.content.addEventListener('mouseenter', this.onMouseenter);
         this.content.addEventListener('mouseleave', this.onMouseleave);
-        document.body.append(this.content)
+        document.body.append(this.content);
       }
 
       removeContent() {
         this.button.setAttribute('aria-expanded', 'false');
+        document.body.removeEventListener('mouseup', this.content.onScrollbarThumbMouseup);
         this.content?.remove();
       }
 
       onClick() {
+        if (this.disableClick) {
+          return;
+        }
+
         if (!this.content.isConnected) {
           this.insertContent();
         }
 
         if (!this.content.hasAttribute('expanded')) {
-          this.content.toggleAttribute('expanded', true);
+          setTimeout(() => this.content.toggleAttribute('expanded', true), 0);
         } else {
           // this.content.toggleAttribute('expanded', false);
           this.removeContent();
@@ -1753,6 +1944,48 @@ export default (config) => {
             },
             this.delay
           );
+        }
+      }
+
+      onKeydown(event) {
+        if (!(this.content.isConnected && this.content.hasScrollbar)) {
+          return;
+        }
+
+        const { scrollTop, offsetHeight, scrollHeight } = this.content.scrollElement;
+
+        const key = event.which;
+        let scrollTopNew = null;
+
+        switch (key) {
+          case 38: // Up
+            scrollTopNew = scrollTop - 40;
+            break;
+          case 40: // Down
+            scrollTopNew = scrollTop + 40;
+            break;
+          case 33: // Pageup
+            scrollTopNew = scrollTop - Math.round(.9 * offsetHeight);
+            break;
+          case 34: // Pagedown
+            scrollTopNew = scrollTop + Math.round(.9 * offsetHeight);
+            break;
+          case 36: // Home
+            scrollTopNew = 0;
+            break;
+          case 35: // End
+            scrollTopNew = scrollHeight;
+            break;
+          default:
+            break;
+        }
+
+        if (scrollTopNew !== null) {
+          this.content.scrollElement.scrollTo({
+            top: scrollTopNew,
+            behavior: 'smooth',
+          })
+          event.preventDefault();
         }
       }
     };

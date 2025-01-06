@@ -1,5 +1,5 @@
 import json from '@rollup/plugin-json';
-import { babel } from '@rollup/plugin-babel';
+// import { babel } from '@rollup/plugin-babel';
 import terser from '@rollup/plugin-terser';
 
 export default [
@@ -19,15 +19,15 @@ export default [
     },
     plugins: [
       json(),
-      babel({
-        babelHelpers: 'bundled',
-        presets: ['@babel/preset-env'],
-        plugins: ['@babel/plugin-proposal-class-properties', '@babel/plugin-transform-private-methods'],
-        targets: {
-          esmodules: true,
-          browsers: 'defaults',
-        },
-      }),
+      // babel({
+      //   babelHelpers: 'bundled',
+      //   presets: ['@babel/preset-env'],
+      //   plugins: ['@babel/plugin-proposal-class-properties', '@babel/plugin-transform-private-methods'],
+      //   targets: {
+      //     esmodules: true,
+      //     browsers: 'defaults',
+      //   },
+      // }),
     ],
   },
   {
@@ -38,15 +38,15 @@ export default [
     },
     plugins: [
       json(),
-      babel({
-        babelHelpers: 'bundled',
-        presets: ['@babel/preset-env'],
-        plugins: ['@babel/plugin-proposal-class-properties', '@babel/plugin-transform-private-methods'],
-        targets: {
-          esmodules: true,
-          browsers: 'defaults',
-        },
-      }),
+      // babel({
+      //   babelHelpers: 'bundled',
+      //   presets: ['@babel/preset-env'],
+      //   plugins: ['@babel/plugin-proposal-class-properties', '@babel/plugin-transform-private-methods'],
+      //   targets: {
+      //     esmodules: true,
+      //     browsers: 'defaults',
+      //   },
+      // }),
       terser(),
     ],
   },

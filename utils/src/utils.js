@@ -1,8 +1,11 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-plusplus */
 import { version } from '../package.json';
-import CookieMethods from './cookies.js';
+import Component from './Component.js';
+import CookieMethods from './CookieMethods.js';
 import initNamespace from './namespace.js';
+import TemplateResult from './TemplateResult.js';
+import XPathMethods from './XPathMethods.js';
 
 /***
  * Creates the prefix for a log message.
@@ -10,7 +13,7 @@ import initNamespace from './namespace.js';
  * @param {string} id - The context id.
  * @param {number} opacity - The opacity of the prefix. A number between 0 and 1.
  */
-function getlogPrefix(id, opacity) {
+function getLogPrefix(id, opacity) {
   return [
     `%c[evolv${id ? `-${id}` : '-utils'}]`,
     `background-color: rgba(255, 122, 65, ${
@@ -54,8 +57,8 @@ class Utils {
         ?.match(/normal|debug/i)?.[0]
         .toLowerCase() || 'silent';
 
-    this.#logPrefixNormal = getlogPrefix(id, 1);
-    this.#logPrefixDebug = getlogPrefix(id, 0.5);
+    this.#logPrefixNormal = getLogPrefix(id, 1);
+    this.#logPrefixDebug = getLogPrefix(id, 0.5);
 
     this.version = version;
     this.contextKey = config?.context_key || config?.contexts?.[0]?.id || null;
@@ -88,6 +91,9 @@ class Utils {
         });
       });
     }
+
+    this.windowWidthObserver = null;
+    this.xpath = new XPathMethods(this.#config);
   }
 
   /**
@@ -131,7 +137,9 @@ class Utils {
    */
   describe = (context, variable, variant) => {
     if (!this.#config) {
-      this.warn('Describe requires Evolv Utils to be initialized with a config object');
+      this.warn(
+        'Describe requires Evolv Utils to be initialized with a config object',
+      );
       return;
     }
     const type = ['context', 'variable', 'variant'];
@@ -146,6 +154,8 @@ class Utils {
     }, this.#config);
     this.log(`init ${type[typeIndex]}:`, item.display_name);
   };
+
+  namespace = initNamespace(this.#config);
 
   /**
    * For functions called in rapid succession, waits until a call has not been made for the duration
@@ -231,7 +241,6 @@ class Utils {
    *  }
    * });
    */
-
   subscribe = (testCondition, exitCondition = 5000, interval = 25) => {
     let fired;
     let poll;
@@ -260,7 +269,9 @@ class Utils {
       const currentState = testCondition();
 
       if (currentState !== previousState) {
-        this.debug(`subscribe: change in test condition results. previous: ${previousState}, current: ${currentState}`);
+        this.debug(
+          `subscribe: change in test condition results. previous: ${previousState}, current: ${currentState}`,
+        );
         fired ??= true;
         callbackA(currentState);
         previousState = currentState;
@@ -283,7 +294,90 @@ class Utils {
   cookie = new CookieMethods(this.debug);
 
   /**
+   * A utility object for string manipulation methods.
+   */
+  string = {
+    /**
+     * Capitalizes the first letter of a string.
+     *
+     * @param {string} string The string to capitalize.
+     * @returns {string} The string with the first letter capitalized.
+     * @example
+     * string.capitalizeFirstLetter("hello"); // "Hello"
+     */
+    capitalizeFirstLetter: (string) =>
+      string.charAt(0).toUpperCase() + string.slice(1),
+
+    /**
+     * Checks if the given string is in camelCase format.
+     *
+     * @param {string} string The string to check.
+     * @returns {boolean} Returns `true` if the string is in camelCase, `false` otherwise.
+     * @example
+     * string.isCamelCase("myVariable"); // true
+     * string.isCamelCase("my_variable"); // false
+     */
+    isCamelCase: (string) => /^[a-z]+([A-Z][a-z]*)$/.test(string),
+
+    /**
+     * Parses a string into an array of words. If the string is in camelCase, it splits the string
+     * at uppercase letter boundaries. If not, it treats spaces or non-word characters as delimiters.
+     *
+     * @param {string} string The string to parse.
+     * @returns {string[]} An array of words parsed from the string.
+     * @example
+     * string.parse("myCamelCaseString"); // ["my", "Camel", "Case", "String"]
+     * string.parse("hello world!"); // ["hello", "world"]
+     */
+    parse: (string) => {
+      if (this.string.isCamelCase(string)) {
+        return string.match(/[A-Z]?[a-z]+/g);
+      }
+
+      return string
+        .replace(/[^\w]+/g, ' ')
+        .trim()
+        .split(' ');
+    },
+
+    /**
+     * Converts a string to camelCase.
+     *
+     * @param {string} string The string to convert.
+     * @returns {string} The string converted to camelCase.
+     * @example
+     * string.toCamelCase("hello world"); // "helloWorld"
+     * string.toCamelCase("this is a test"); // "thisIsATest"
+     */
+    toCamelCase: (string) =>
+      this.string
+        .parse(string)
+        .map((word, index) =>
+          index === 0
+            ? word.toLowerCase()
+            : this.string.capitalizeFirstLetter(word.toLowerCase()),
+        )
+        .join(''),
+
+    /**
+     * Converts a string to kebab-case.
+     *
+     * @param {string} string The string to convert.
+     * @returns {string} The string converted to kebab-case.
+     * @example
+     * string.toKebabCase("hello world"); // "hello-world"
+     * string.toKebabCase("this is a test"); // "this-is-a-test"
+     */
+    toKebabCase: (string) =>
+      this.string
+        .parse(string)
+        .map((word) => word.toLowerCase())
+        .join('-'),
+  };
+
+  /**
    * Transforms a string into a slug.
+   * @deprecated Use `utils.string.toKebabCase()` instead
    * @param {string} string The string to transform
    * @returns {string} The slug
    */
@@ -314,7 +408,76 @@ class Utils {
   }
 
   /**
+   * A tag for template literals that exports a `TemplateResult` object to be consumed by the `utils.render` method.
+   *
+   * @param {string[]} strings
+   * @param  {...any} expressions
+   * @returns {TemplateResult}
+   */
+  html = (strings, ...expressions) => new TemplateResult(strings, expressions);
+
+  /**
+   * Transforms `TemplateResult` into an `Element` or `ElementCollection`. Attributes prefixed with `@` will be assigned as event listeners. If a single element is at the top level it will return an `Element`, if there are multiple it returns an `ElementCollection`. Allows embedding of other `TemplateResult` objects and arrays of expressions.
+   * @param {string[]} strings
+   * @param  {...any} expressions
+   * @returns {HTMLElement | HTMLCollection}
+   * @example
+   * // Creates a div containing two buttons with click handlers already assigned
+   * const {html, render} = utils;
+   *
+   * const button = render(html`
+   *   <div class="button-wrap">
+   *       <button @click=${goBackCallback}>
+   *           Go back
+   *       </button>
+   *       <button class="secondary" @click=${continueCallback}>
+   *           Continue
+   *       </button>
+   *   </div>
+   * `)
+   *
+   * @example
+   * // Creates a group of tiles
+   * const {html, render} = utils;
+   *
+   * const tileContents = [
+   *   {
+   *     title: "Buy this phone",
+   *     body: "It's better than your old phone.",
+   *     onClick: app.phoneAction
+   *   },
+   *   {
+   *     title: "Upgrade your plan",
+   *     body: "It's better than your old plan.",
+   *     onClick: app.planAction
+   *   },
+   *   {
+   *     title: "Get device protection",
+   *     body: "You know you're clumsy.",
+   *     onClick: app.protectionAction
+   *   }
+   * ]
+   *
+   * const tileTemplate = (content) => html`
+   *   <div class="tile">
+   *     <h2>${content.title}</h2>
+   *     <div>${content.body}</div>
+   *     <button @click=${content.onClick}>Continue</button>
+   *   </div>
+   * `)
+   *
+   * // Maps the content into a new array of `TemplateResult` objects which get recursively rendered. The `false` flag is important because it instructs `inject` to not clone the element, preventing the destruction of event listeners.
+   * mutate('main').inject(render(html`
+   *   <div class="tile-group">
+   *     ${tileContents.map(tileContent => tileTemplate(tileContent))}
+   *   </div>
+   * `), false);
+   */
+  render = (templateResult) => new Component(templateResult).render();
+
+  /**
    * Creates an array of elements from an HTML string and adds click handlers to the elements.
+   * ** Deprecated: to be replaced by [render](#Utils+render)
    * @param {string} HTMLString The HTML string
    * @param {Object} clickHandlers An object where the keys are CSS selectors and the values are click handlers
    * @returns {HTMLElement[]} The array of elements
@@ -324,7 +487,9 @@ class Utils {
     template.innerHTML = HTMLString;
 
     Object.keys(clickHandlers).forEach((key) => {
-      template.content.querySelector(key)?.addEventListener('click', clickHandlers[key]);
+      template.content
+        .querySelector(key)
+        ?.addEventListener('click', clickHandlers[key]);
     });
 
     const array = Array.from(template.content.children);
@@ -350,7 +515,13 @@ class Utils {
     switch (selector.charAt(0)) {
       case '/':
       case '(': {
-        return document.evaluate(selector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        return document.evaluate(
+          selector,
+          document,
+          null,
+          XPathResult.FIRST_ORDERED_NODE_TYPE,
+          null,
+        ).singleNodeValue;
       }
       case '<':
         return this.makeElement(selector);
@@ -369,7 +540,13 @@ class Utils {
     switch (selector.charAt(0)) {
       case '/':
       case '(': {
-        const result = document.evaluate(selector, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        const result = document.evaluate(
+          selector,
+          document,
+          null,
+          XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+          null,
+        );
         const length = result.snapshotLength;
         const array = new Array(length);
         for (let i = 0; i < length; i += 1) {
@@ -389,9 +566,11 @@ class Utils {
    * @param {HTMLElement} element The element
    * @param {string} className The class name
    */
-  addClass = (element, className) => {
+  addClass = (element, className, silent = false) => {
     if (element && !element.classList.contains(className)) {
-      this.debug(`add class: '${className}' added`);
+      if (!silent) {
+        this.debug(`add class: '${className}' added`);
+      }
       element.classList.add(className);
     }
   };
@@ -401,9 +580,11 @@ class Utils {
    * @param {HTMLElement} element The element
    * @param {string} className The class name
    */
-  removeClass = (element, className) => {
+  removeClass = (element, className, silent = false) => {
     if (element && element.classList.contains(className)) {
-      this.debug(`remove class: '${className}' removed`);
+      if (!silent) {
+        this.debug(`remove class: '${className}' removed`);
+      }
       element.classList.remove(className);
     }
   };
@@ -429,7 +610,8 @@ class Utils {
    */
   wrap = (elements, wrapperString) => {
     this.debug('wrap:', wrapperString);
-    const elementArray = elements instanceof Element ? [elements] : Array.from(elements);
+    const elementArray =
+      elements instanceof Element ? [elements] : Array.from(elements);
     const wrapper = this.makeElement(wrapperString);
     elementArray[0].before(wrapper);
     wrapper.append(...elementArray);
@@ -444,20 +626,6 @@ class Utils {
   isVisible(element) {
     return !(element.offsetParent === null);
   }
-
-  /**
-   * Adds classes prefixed with `evolv-` to the body element. Comma delimited arguments
-   * are separated by dashes. By default `namespace()` will observe classes on the body
-   * element and replace the class if it is removed. Automatically reverts classes on
-   * context exit if the context key is supplied in the `config` object. See [.toRevert](#Utils+toRevert)
-   * @param {...(string|number)} args The namespace
-   * @example
-   * namespace('new-experiment', 'c1');
-   * namespace('new-experiment', 'c1', 'v2');
-   *
-   * document.querySelector('body') // body.evolv-new-experiment-c1.evolv-new-experiment-c1-v2
-   */
-  namespace = initNamespace(this);
 
   /**
    * A wrapper for `evolv.client.contaminate` that logs a warning to the console.
@@ -550,6 +718,112 @@ class Utils {
     }
 
     return outerElementPrevious;
+  };
+
+  /**
+   * Converts a CSS size string (e.g., '10px', '1rem') to its numeric value in pixels.
+   * If the value is in 'rem', it will be converted based on the root font size.
+   * Returns NaN if the unit is not 'px' or 'rem'.
+   *
+   * @param {string} cssSize - The CSS size string (e.g., '10px', '1rem').
+   * @returns {number} The numeric value of the size in pixels, or NaN if the unit is invalid.
+   */
+  cssSizeToValue = (cssSize) => {
+    const unit = cssSize.match(/\d+\.?\d*(px|rem)/i)?.[1];
+    const value = parseFloat(cssSize);
+
+    if (unit === 'px' && !Number.isNaN(value)) {
+      return value;
+    }
+
+    if (unit === 'rem' && !Number.isNaN(value)) {
+      const remSize = parseFloat(
+        window.getComputedStyle(document.documentElement).fontSize,
+      );
+      return value * remSize;
+    }
+
+    return NaN;
+  };
+
+  /**
+   * Updates a CSS property on a target element with a new value.
+   * If the new value is the same as the current value, no update is made.
+   * Optionally, the target element can be specified, otherwise defaults to `document.documentElement`.
+   *
+   * @param {string} property - The CSS property to update (e.g., 'background-color').
+   * @param {string | number} value - The new value to set for the property (can be a string or number).
+   * @param {HTMLElement} [targetElement=document.documentElement] - The target element to apply the style to.
+   */
+
+  updateProperty = (
+    property,
+    value,
+    targetElement = document.documentElement,
+  ) => {
+    if (
+      !targetElement ||
+      !property ||
+      value === null ||
+      typeof value === 'undefined'
+    ) {
+      return;
+    }
+    const valuePrevious = targetElement.style.getPropertyValue(property);
+    const valueCurrent = value.toString();
+
+    if (valueCurrent === valuePrevious) {
+      return;
+    }
+
+    targetElement.style.setProperty(property, valueCurrent);
+  };
+
+  /**
+   * Checks if the device supports touch events.
+   * This method checks for the presence of touch event properties in the window and navigator objects.
+   *
+   * @returns {boolean} `true` if the device supports touch events, otherwise `false`.
+   */
+  isTouchDevice = () =>
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0;
+
+  /**
+   * Returns the offset rectangle of a given element relative to the document,
+   * including scroll offsets and client positions.
+   * This method calculates the element's position and size considering scrolling.
+   *
+   * @param {Element} element - The DOM element whose offset rectangle is to be calculated.
+   * @returns {DOMRect} The calculated DOMRect object containing the element's position and dimensions.
+   */
+  getOffsetRect = (element) => {
+    const box = element.getBoundingClientRect();
+    const { width, height } = box;
+    const { documentElement, body } = document;
+    const scrollTop = documentElement.scrollTop ?? body.scrollTop;
+    const scrollLeft = documentElement.scrollLeft ?? body.scrollLeft;
+    const clientTop = documentElement.clientTop ?? body.clientTop;
+    const clientLeft = documentElement.clientLeft ?? body.clientLeft;
+    const x = Math.round(box.left + scrollLeft - clientLeft);
+    const y = Math.round(box.top + scrollTop - clientTop);
+
+    return new DOMRect(x, y, width, height);
+  };
+
+  observeWindowWidth = () => {
+    if (!this.windowWidthObserver) {
+      this.windowWidthObserver = new ResizeObserver(() =>
+        this.updateProperty(
+          '--evolv-window-width',
+          `${window.innerWidth}px`,
+          document.body,
+        ),
+      );
+    }
+
+    this.windowWidthObserver.observe(document.body);
   };
 }
 

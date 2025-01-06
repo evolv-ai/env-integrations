@@ -5,11 +5,32 @@
 <dd></dd>
 <dt><a href="#Utils">Utils</a></dt>
 <dd></dd>
+<dt><a href="#XPathMethods">XPathMethods</a></dt>
+<dd><p>A utility class for generating XPath selectors for elements based on class names.
+The generated XPaths can be used to locate DOM elements that match specific patterns
+related to mutation keys and context prefixes.</p>
+</dd>
 </dl>
 
 ## Functions
 
 <dl>
+<dt><a href="#capitalizeFirstLetter">capitalizeFirstLetter(string)</a> ⇒ <code>string</code></dt>
+<dd><p>Capitalizes the first letter of a string.</p>
+</dd>
+<dt><a href="#isCamelCase">isCamelCase(string)</a> ⇒ <code>boolean</code></dt>
+<dd><p>Checks if the given string is in camelCase format.</p>
+</dd>
+<dt><a href="#parse">parse(string)</a> ⇒ <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Parses a string into an array of words. If the string is in camelCase, it splits the string
+at uppercase letter boundaries. If not, it treats spaces or non-word characters as delimiters.</p>
+</dd>
+<dt><a href="#toCamelCase">toCamelCase(string)</a> ⇒ <code>string</code></dt>
+<dd><p>Converts a string to camelCase.</p>
+</dd>
+<dt><a href="#toKebabCase">toKebabCase(string)</a> ⇒ <code>string</code></dt>
+<dd><p>Converts a string to kebab-case.</p>
+</dd>
 <dt><a href="#init">init(id, [config])</a> ⇒ <code><a href="#Utils">Utils</a></code></dt>
 <dd><p>Creates a new Utils sandbox at the location <code>window.evolv.utils.&lt;id&gt;</code>. A sandbox with the same id will persist between contexts if the page has not reloaded.</p>
 </dd>
@@ -101,15 +122,21 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
     * [.describe](#Utils+describe)
     * [.debounce](#Utils+debounce) ⇒ <code>function</code>
     * [.subscribe](#Utils+subscribe) ⇒ <code>Object</code>
+    * [.string](#Utils+string)
+    * [.html](#Utils+html) ⇒ <code>TemplateResult</code>
+    * [.render](#Utils+render) ⇒ <code>HTMLElement</code> \| <code>HTMLCollection</code>
     * [.addClass](#Utils+addClass)
     * [.removeClass](#Utils+removeClass)
     * [.updateText](#Utils+updateText)
     * [.wrap](#Utils+wrap) ⇒ <code>HTMLElement</code>
-    * [.namespace](#Utils+namespace)
     * [.getOutermost](#Utils+getOutermost)
+    * [.cssSizeToValue](#Utils+cssSizeToValue) ⇒ <code>number</code>
+    * [.updateProperty](#Utils+updateProperty)
+    * [.isTouchDevice](#Utils+isTouchDevice) ⇒ <code>boolean</code>
+    * [.getOffsetRect](#Utils+getOffsetRect) ⇒ <code>DOMRect</code>
     * [.throttle(callback, limit)](#Utils+throttle) ⇒ <code>function</code>
     * [.waitFor(callback, timeout, interval)](#Utils+waitFor) ⇒ <code>Promise</code>
-    * [.slugify(string)](#Utils+slugify) ⇒ <code>string</code>
+    * ~~[.slugify(string)](#Utils+slugify) ⇒ <code>string</code>~~
     * [.setContext(key, value)](#Utils+setContext)
     * [.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
     * [.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code>
@@ -240,6 +267,90 @@ subscribe(() => sessionStorage.getItem(key), 600000, 250).then(sessionToken => {
  }
 });
 ```
+<a name="Utils+string"></a>
+
+### utils.string
+A utility object for string manipulation methods.
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
+<a name="Utils+html"></a>
+
+### utils.html ⇒ <code>TemplateResult</code>
+A tag for template literals that exports a `TemplateResult` object to be consumed by the `utils.render` method.
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
+
+| Param | Type |
+| --- | --- |
+| strings | <code>Array.&lt;string&gt;</code> | 
+| ...expressions | <code>any</code> | 
+
+<a name="Utils+render"></a>
+
+### utils.render ⇒ <code>HTMLElement</code> \| <code>HTMLCollection</code>
+Transforms `TemplateResult` into an `Element` or `ElementCollection`. Attributes prefixed with `@` will be assigned as event listeners. If a single element is at the top level it will return an `Element`, if there are multiple it returns an `ElementCollection`. Allows embedding of other `TemplateResult` objects and arrays of expressions.
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
+
+| Param | Type |
+| --- | --- |
+| strings | <code>Array.&lt;string&gt;</code> | 
+| ...expressions | <code>any</code> | 
+
+**Example**  
+```js
+// Creates a div containing two buttons with click handlers already assigned
+const {html, render} = utils;
+
+const button = render(html`
+  <div class="button-wrap">
+      <button @click=${goBackCallback}>
+          Go back
+      </button>
+      <button class="secondary" @click=${continueCallback}>
+          Continue
+      </button>
+  </div>
+`)
+```
+**Example**  
+```js
+// Creates a group of tiles
+const {html, render} = utils;
+
+const tileContents = [
+  {
+    title: "Buy this phone",
+    body: "It's better than your old phone.",
+    onClick: app.phoneAction
+  },
+  {
+    title: "Upgrade your plan",
+    body: "It's better than your old plan.",
+    onClick: app.planAction
+  },
+  {
+    title: "Get device protection",
+    body: "You know you're clumsy.",
+    onClick: app.protectionAction
+  }
+]
+
+const tileTemplate = (content) => html`
+  <div class="tile">
+    <h2>${content.title}</h2>
+    <div>${content.body}</div>
+    <button @click=${content.onClick}>Continue</button>
+  </div>
+`)
+
+// Maps the content into a new array of `TemplateResult` objects which get recursively rendered. The `false` flag is important because it instructs `inject` to not clone the element, preventing the destruction of event listeners.
+mutate('main').inject(render(html`
+  <div class="tile-group">
+    ${tileContents.map(tileContent => tileTemplate(tileContent))}
+  </div>
+`), false);
+```
 <a name="Utils+addClass"></a>
 
 ### utils.addClass
@@ -289,27 +400,6 @@ Wraps an element or a group of elements with an HTML element defined by a string
 | elements | <code>HTMLElement</code> \| <code>NodeList</code> \| <code>Array.&lt;HTMLElement&gt;</code> | The elements to be wrapped |
 | wrapperString | <code>string</code> | String containing markup a valid HTML element |
 
-<a name="Utils+namespace"></a>
-
-### utils.namespace
-Adds classes prefixed with `evolv-` to the body element. Comma delimited arguments
-are separated by dashes. By default `namespace()` will observe classes on the body
-element and replace the class if it is removed. Automatically reverts classes on
-context exit if the context key is supplied in the `config` object. See [.toRevert](#Utils+toRevert)
-
-**Kind**: instance property of [<code>Utils</code>](#Utils)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| ...args | <code>string</code> \| <code>number</code> | The namespace |
-
-**Example**  
-```js
-namespace('new-experiment', 'c1');
-namespace('new-experiment', 'c1', 'v2');
-
-document.querySelector('body') // body.evolv-new-experiment-c1.evolv-new-experiment-c1-v2
-```
 <a name="Utils+getOutermost"></a>
 
 ### utils.getOutermost
@@ -326,6 +416,57 @@ Gets the outermost element matching a selector
 ```js
 const modalDialog = utils.getOutermost(iframe, 'div[class^="ModalDialogWrapper-VDS"]');
 ```
+<a name="Utils+cssSizeToValue"></a>
+
+### utils.cssSizeToValue ⇒ <code>number</code>
+Converts a CSS size string (e.g., '10px', '1rem') to its numeric value in pixels.
+If the value is in 'rem', it will be converted based on the root font size.
+Returns NaN if the unit is not 'px' or 'rem'.
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
+**Returns**: <code>number</code> - The numeric value of the size in pixels, or NaN if the unit is invalid.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| cssSize | <code>string</code> | The CSS size string (e.g., '10px', '1rem'). |
+
+<a name="Utils+updateProperty"></a>
+
+### utils.updateProperty
+Updates a CSS property on a target element with a new value.
+If the new value is the same as the current value, no update is made.
+Optionally, the target element can be specified, otherwise defaults to `document.documentElement`.
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| property | <code>string</code> |  | The CSS property to update (e.g., 'background-color'). |
+| value | <code>string</code> \| <code>number</code> |  | The new value to set for the property (can be a string or number). |
+| [targetElement] | <code>HTMLElement</code> | <code>document.documentElement</code> | The target element to apply the style to. |
+
+<a name="Utils+isTouchDevice"></a>
+
+### utils.isTouchDevice ⇒ <code>boolean</code>
+Checks if the device supports touch events.
+This method checks for the presence of touch event properties in the window and navigator objects.
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
+**Returns**: <code>boolean</code> - `true` if the device supports touch events, otherwise `false`.  
+<a name="Utils+getOffsetRect"></a>
+
+### utils.getOffsetRect ⇒ <code>DOMRect</code>
+Returns the offset rectangle of a given element relative to the document,
+including scroll offsets and client positions.
+This method calculates the element's position and size considering scrolling.
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
+**Returns**: <code>DOMRect</code> - The calculated DOMRect object containing the element's position and dimensions.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| element | <code>Element</code> | The DOM element whose offset rectangle is to be calculated. |
+
 <a name="Utils+throttle"></a>
 
 ### utils.throttle(callback, limit) ⇒ <code>function</code>
@@ -356,7 +497,9 @@ Polls a callback function until it returns a truthy value or a timeout is reache
 
 <a name="Utils+slugify"></a>
 
-### utils.slugify(string) ⇒ <code>string</code>
+### ~~utils.slugify(string) ⇒ <code>string</code>~~
+***Deprecated***
+
 Transforms a string into a slug.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
@@ -391,6 +534,7 @@ utils.setContext('vz.cartDeviceEditModal', {
 
 ### utils.makeElements(HTMLString, clickHandlers) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
 Creates an array of elements from an HTML string and adds click handlers to the elements.
+** Deprecated: to be replaced by [render](#Utils+render)
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
 **Returns**: <code>Array.&lt;HTMLElement&gt;</code> - The array of elements  
@@ -514,6 +658,229 @@ Gets all elements before the given element within the same parent
 mutate('order-summary-wrap').customMutation((state, orderSummaryWrap) => {
   utils.wrap(utils.getPrecedingSiblings(orderSummaryWrap), '<div class="evolv-psfec-cart-left"></div>');
 });
+```
+<a name="XPathMethods"></a>
+
+## XPathMethods
+A utility class for generating XPath selectors for elements based on class names.
+The generated XPaths can be used to locate DOM elements that match specific patterns
+related to mutation keys and context prefixes.
+
+**Kind**: global class  
+
+* [XPathMethods](#XPathMethods)
+    * [new XPathMethods(config)](#new_XPathMethods_new)
+    * [.containsClass](#XPathMethods+containsClass) ⇒ <code>string</code>
+    * [.containsKey](#XPathMethods+containsKey) ⇒ <code>string</code>
+    * [.includesKeys](#XPathMethods+includesKeys) ⇒ <code>string</code>
+    * [.anyKey](#XPathMethods+anyKey) ⇒ <code>string</code>
+
+<a name="new_XPathMethods_new"></a>
+
+### new XPathMethods(config)
+Creates an instance of the XPathMethods class.
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| config | <code>Object</code> | Configuration object for initializing the XPath methods. |
+| [config.xpath_prefix] | <code>string</code> | The prefix for XPath generation. If not provided falls back to `config.context_key` |
+| [config.context_key] | <code>string</code> | An alternate context key to use for generating the prefix. If not provided falls back to `config.contexts[0].id` |
+| [config.contexts] | <code>Array.&lt;{id: string}&gt;</code> | A list of context objects, used if neither `xpath_prefix` nor `context_key` is provided. |
+
+**Example**  
+```js
+const xpathMethods = new XPathMethods({ xpath_prefix: 'abc' });
+```
+<a name="XPathMethods+containsClass"></a>
+
+### xPathMethods.containsClass ⇒ <code>string</code>
+Generates an XPath expression that matches elements containing the specified class name.
+
+**Kind**: instance property of [<code>XPathMethods</code>](#XPathMethods)  
+**Returns**: <code>string</code> - An XPath expression to match elements containing the specified class.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| className | <code>string</code> | The class name to match within the element's `class` attribute. |
+
+**Example**  
+```js
+// HTML
+<div class="content">
+  <div class="content-inner">Content</div>
+</div>
+
+// JS
+collect(`//div[${containsClass('content')}]`, 'content');
+
+// Mutate only collects the outer div
+```
+<a name="XPathMethods+containsKey"></a>
+
+### xPathMethods.containsKey ⇒ <code>string</code>
+Generates an XPath expression to match elements that contain a mutation key as a class name.
+The mutation key is prefixed with the class prefix.
+
+**Kind**: instance property of [<code>XPathMethods</code>](#XPathMethods)  
+**Returns**: <code>string</code> - An XPath expression for the specified mutation key.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| key | <code>string</code> | The collector name to match as part of the class name. |
+
+**Example**  
+```js
+// In this example utils was initialized with config.xpath_prefix = "page-transform"
+utils.selectors = {
+  'protection-section': `//div[${containsKey('line-content')}]//div[@data-testid="protectionSection"]`
+}
+console.log(utils.selectors['protection-section']);
+// Output: //div[contains(concat(" ", @class, " "), " mutate-page-transform-protection-section ")]
+```
+<a name="XPathMethods+includesKeys"></a>
+
+### xPathMethods.includesKeys ⇒ <code>string</code>
+Generates an XPath expression that matches an element containing all the specified keys as classes.
+The keys are prefixed and combined into an XPath expression to match a container element
+that holds all other specified elements.
+
+**Kind**: instance property of [<code>XPathMethods</code>](#XPathMethods)  
+**Returns**: <code>string</code> - An XPath expression to find the container element that contains all specified keys.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| keys | <code>Array.&lt;string&gt;</code> | A list of keys to match as part of the element's class names. |
+| container | <code>string</code> | The collector name that identifies the container element. |
+
+**Example**  
+```js
+// In this example utils was initialized with config.contexts[0].id = "abc"
+const selectors = {
+  'user-profile-settings': utils.xpath.includesAllKeys(['user', 'profile', 'settings'], 'container')
+}
+console.log(selectors['user-profile-settings']);
+// Output: //*[contains(concat(" ", @class, " "), " mutate-abc-container ")]//*[contains(concat(" ", @class, " "), " mutate-abc-user ")]/ancestor::*[contains(concat(" ", @class, " "), " mutate-abc-container ")]//*[contains(concat(" ", @class, " "), " mutate-abc-profile ")]/ancestor::*[contains(concat(" ", @class, " "), " mutate-abc-container ")]//*[contains(concat(" ", @class, " "), " mutate-abc-settings ")]/ancestor::*[contains(concat(" ", @class, " "), " mutate-abc-container ")]
+```
+<a name="XPathMethods+anyKey"></a>
+
+### xPathMethods.anyKey ⇒ <code>string</code>
+Generates an XPath expression to match any element containing one of the specified keys.
+Optionally, a container key can be provided to further scope the search.
+
+**Kind**: instance property of [<code>XPathMethods</code>](#XPathMethods)  
+**Returns**: <code>string</code> - An XPath expression that matches any element with one of the specified keys.  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| keys | <code>Array.&lt;string&gt;</code> |  | A list of keys to match as part of the element's class names. |
+| [container] | <code>string</code> | <code>&quot;&#x27;&#x27;&quot;</code> | An optional key to limit the scope of the XPath to a specific container element. Can be an XPath selector or a collector name. |
+
+**Example**  
+```js
+// Using collector name
+// In this example utils was initialized with config.contexts[0].id = "abc"
+const selectors = {
+  'container': '.container',
+  'user-profile': utils.xpath.anyKey(['user', 'profile'], 'container');
+}
+console.log(selectors['user-profile']);
+// Output: //*[contains(concat(" ", @class, " "), " mutate-abc-container ")]//*[contains(concat(" ", @class, " "), " mutate-abc-user ")] | //*[contains(concat(" ", @class, " "), " mutate-abc-container ")]//*[contains(concat(" ", @class, " "), " mutate-abc-profile ")]
+```
+**Example**  
+```js
+// Using XPath selector
+// In this example utils was initialized with config.contexts[0].id = "abc"
+const selectors = {
+  'user-profile': utils.xpath.anyKey(['user', 'profile'], '//div[@id="container"]');
+}
+console.log(selectors['user-profile']);
+// Output: //div[@id="container"]//*[contains(concat(" ", @class, " "), " mutate-abc-user ")] | //div[@id="container"]//*[contains(concat(" ", @class, " "), " mutate-abc-profile ")]
+```
+<a name="capitalizeFirstLetter"></a>
+
+## capitalizeFirstLetter(string) ⇒ <code>string</code>
+Capitalizes the first letter of a string.
+
+**Kind**: global function  
+**Returns**: <code>string</code> - The string with the first letter capitalized.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| string | <code>string</code> | The string to capitalize. |
+
+**Example**  
+```js
+string.capitalizeFirstLetter("hello"); // "Hello"
+```
+<a name="isCamelCase"></a>
+
+## isCamelCase(string) ⇒ <code>boolean</code>
+Checks if the given string is in camelCase format.
+
+**Kind**: global function  
+**Returns**: <code>boolean</code> - Returns `true` if the string is in camelCase, `false` otherwise.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| string | <code>string</code> | The string to check. |
+
+**Example**  
+```js
+string.isCamelCase("myVariable"); // true
+string.isCamelCase("my_variable"); // false
+```
+<a name="parse"></a>
+
+## parse(string) ⇒ <code>Array.&lt;string&gt;</code>
+Parses a string into an array of words. If the string is in camelCase, it splits the string
+at uppercase letter boundaries. If not, it treats spaces or non-word characters as delimiters.
+
+**Kind**: global function  
+**Returns**: <code>Array.&lt;string&gt;</code> - An array of words parsed from the string.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| string | <code>string</code> | The string to parse. |
+
+**Example**  
+```js
+string.parse("myCamelCaseString"); // ["my", "Camel", "Case", "String"]
+string.parse("hello world!"); // ["hello", "world"]
+```
+<a name="toCamelCase"></a>
+
+## toCamelCase(string) ⇒ <code>string</code>
+Converts a string to camelCase.
+
+**Kind**: global function  
+**Returns**: <code>string</code> - The string converted to camelCase.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| string | <code>string</code> | The string to convert. |
+
+**Example**  
+```js
+string.toCamelCase("hello world"); // "helloWorld"
+string.toCamelCase("this is a test"); // "thisIsATest"
+```
+<a name="toKebabCase"></a>
+
+## toKebabCase(string) ⇒ <code>string</code>
+Converts a string to kebab-case.
+
+**Kind**: global function  
+**Returns**: <code>string</code> - The string converted to kebab-case.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| string | <code>string</code> | The string to convert. |
+
+**Example**  
+```js
+string.toKebabCase("hello world"); // "hello-world"
+string.toKebabCase("this is a test"); // "this-is-a-test"
 ```
 <a name="init"></a>
 

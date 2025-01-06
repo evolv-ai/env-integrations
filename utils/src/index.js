@@ -1,4 +1,4 @@
-import Utils from './utils.js';
+import Utils from './Utils.js';
 
 /**
  * Creates a new Utils sandbox at the location `window.evolv.utils.<id>`. A sandbox with the same id will persist between contexts if the page has not reloaded.

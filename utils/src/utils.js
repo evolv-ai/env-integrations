@@ -93,6 +93,7 @@ class Utils {
     }
 
     this.windowWidthObserver = null;
+    this.namespace = initNamespace(this);
     this.xpath = new XPathMethods(this.#config);
   }
 
@@ -154,8 +155,6 @@ class Utils {
     }, this.#config);
     this.log(`init ${type[typeIndex]}:`, item.display_name);
   };
-
-  namespace = initNamespace(this.#config);
 
   /**
    * For functions called in rapid succession, waits until a call has not been made for the duration

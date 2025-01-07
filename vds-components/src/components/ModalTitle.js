@@ -1,19 +1,20 @@
-import Base from './Base';
+import vds from '../imports/vds.js';
+import Title from './Title.js';
 
-class ModalTitle extends Base {
+class ModalTitle extends Title {
   static observedAttributes = [...this.observedAttributes];
 
   constructor() {
     super();
 
     this.props = {
-      modal: () => this.closest('evolv-modal'),
-      bold: () => this.getAttribute('bold') || true,
       breakpoint: () =>
-        this.props.modal().breakpoint ||
         this.getAttribute('breakpoint') ||
-        null,
-      id: () => this.id || this.props.modal().titleId,
+        this._props.modal().breakpoint ||
+        vds.breakpoint ||
+        '768px',
+      id: () => this.id || this._props.modal().titleId,
+      modal: () => this.closest('evolv-modal'),
       size: () => this.getAttribute('size') || 'large',
     };
 
@@ -24,15 +25,9 @@ class ModalTitle extends Base {
     `;
 
     this.template = () => html`
-      <div class="modal-header">
-        <evolv-title
-          size="${this.size}"
-          bold="${this.bold}"
-          breakpoint="${this.breakpoint}"
-        >
-          <slot></slot>
-        </evolv-title>
-      </div>
+      <${this.primitive} class="modal-title">
+        <slot></slot>
+      </${this.primitive}>
     `;
   }
 }

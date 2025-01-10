@@ -62,15 +62,13 @@ class AccordionDetails extends Base {
       details: '.accordion-details',
     };
 
-    this.onConnect = () => {
-      this.observeHeight();
-    };
-
     this.onRender = () => {
       this.setAttribute(
         'aria-labelledby',
         this.accordion?.accordionHeaderId(this.accordionItemIndex)
       );
+
+      this.observeHeight();
     };
   }
 

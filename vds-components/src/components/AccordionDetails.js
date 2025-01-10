@@ -62,6 +62,10 @@ class AccordionDetails extends Base {
       details: '.accordion-details',
     };
 
+    this.onConnect = () => {
+      this.observeHeight();
+    };
+
     this.onRender = () => {
       this.setAttribute(
         'aria-labelledby',
@@ -76,7 +80,11 @@ class AccordionDetails extends Base {
   };
 
   updateDetailsHeight = () => {
-    utils.updateProperty(this.heightProp, `${this.scrollHeight}px`, this);
+    utils.updateProperty(
+      this.heightProp,
+      `${this.parts.details.scrollHeight}px`,
+      this
+    );
   };
 }
 

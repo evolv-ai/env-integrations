@@ -8,7 +8,7 @@ A library of web components for experiments.
 | :------------ | :----------------|
 | `npm run build` | Builds `dist/../index.js` files |
 | `npm run watch` | Automatically builds on save of `src/index.js` |
-| `npm run serve` | Hosts `dist` folder on port `8080` |
+| `npm run serve` | Hosts `dist` folder on port `4444` |
 | `npm run dev` | Watch and serve |
 | `npm run ship` | Build and publish to npm |
 | `npm start` | Same as `npm run dev` |

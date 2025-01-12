@@ -67,6 +67,8 @@ class AccordionDetails extends Base {
         'aria-labelledby',
         this.accordion?.accordionHeaderId(this.accordionItemIndex)
       );
+
+      this.observeHeight();
     };
   }
 
@@ -76,7 +78,11 @@ class AccordionDetails extends Base {
   };
 
   updateDetailsHeight = () => {
-    utils.updateProperty(this.heightProp, `${this.scrollHeight}px`, this);
+    utils.updateProperty(
+      this.heightProp,
+      `${this.parts.details.scrollHeight}px`,
+      this
+    );
   };
 }
 

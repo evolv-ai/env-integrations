@@ -1,7 +1,6 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-plusplus */
 import { version } from '../package.json';
-import Component from './Component.js';
 import CookieMethods from './CookieMethods.js';
 import initNamespace from './namespace.js';
 import TemplateResult from './TemplateResult.js';
@@ -416,10 +415,10 @@ class Utils {
   html = (strings, ...expressions) => new TemplateResult(strings, expressions);
 
   /**
-   * Transforms `TemplateResult` into an `Element` or `ElementCollection`. Attributes prefixed with `@` will be assigned as event listeners. If a single element is at the top level it will return an `Element`, if there are multiple it returns an `ElementCollection`. Allows embedding of other `TemplateResult` objects and arrays of expressions.
+   * Transforms `TemplateResult` into an `Node`. Attributes prefixed with `@` will be assigned as event listeners. Allows embedding of `Nodes`, other `TemplateResult` objects, and arrays of expressions.
    * @param {string[]} strings
    * @param  {...any} expressions
-   * @returns {HTMLElement | HTMLCollection}
+   * @returns {Node}
    * @example
    * // Creates a div containing two buttons with click handlers already assigned
    * const {html, render} = utils;
@@ -472,7 +471,14 @@ class Utils {
    *   </div>
    * `), false);
    */
-  render = (templateResult) => new Component(templateResult).render();
+  render = (templateResult) => templateResult.render();
+
+  /**
+   * Renders a `TemplateResult` and returns an array of elements.
+   * @param {TemplateResult} templateResult The `TemplateResult` to render
+   * @returns {NodeList} The rendered nodes
+   */
+  renderAll = (templateResult) => templateResult.renderAll();
 
   /**
    * Creates an array of elements from an HTML string and adds click handlers to the elements.

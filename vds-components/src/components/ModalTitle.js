@@ -19,13 +19,13 @@ class ModalTitle extends Title {
     };
 
     this.styles = () => css`
-      .modal-header {
+      .modal-title {
         margin-right: 40px;
       }
     `;
 
     this.template = () => html`
-      <${this.primitive} class="modal-title">
+      <${this.primitive} class="title modal-title">
         <slot></slot>
       </${this.primitive}>
     `;

@@ -111,6 +111,10 @@ class TextLink extends Base {
   }
 
   onKeydown(e) {
+    if (typeof this.href === 'string') {
+      return;
+    }
+
     const { code } = e;
     if (code === 'Enter' || code === 'Space') {
       this.click();

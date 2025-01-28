@@ -43,6 +43,7 @@ class TextLink extends Base {
         background: none;
         outline: none;
         padding: 0;
+        color: inherit;
       }
 
       :host([type='standAlone']) {

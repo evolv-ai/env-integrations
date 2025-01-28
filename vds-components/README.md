@@ -122,7 +122,7 @@ Example:
 #### Properties
 
 | Name | Description | Default | Accepts |
-| :--- |:------------|:--------|:--------|
+| :--- | :---------- | :------ | :------ |
 | `disable-track` | Whether to disable Adobe Target tracking | `false` | `true`, `false` |
 | `breakpoint` | Used by `evolv-title` and `evolv-button-icon` elements to increase `size` above a certain screen width | `768px` | `<css length>` |
 | `duration` | Sets the animation duration for opening `evolv-details` panels | `0.33s` | `<css duration>` |

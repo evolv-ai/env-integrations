@@ -2,7 +2,7 @@ import vds from '../imports/vds.js';
 import Base from './Base.js';
 
 class TextLink extends Base {
-  static observedAttributes = [...this.observedAttributes, 'href', 'size', 'type'];
+  static observedAttributes = [...this.observedAttributes, 'href', 'size', 'type', 'primitive'];
 
   constructor() {
     super();
@@ -10,33 +10,39 @@ class TextLink extends Base {
     this.props = {
       href: () => this.getAttribute('href') || null,
       size: () => this.getAttribute('size') || 'large',
+      primitive: () => this.getAttribute('primitive') || 'a',
       type: () => this.getAttribute('type') || 'inline',
     };
 
     this.styles = () => css`
-      .text-link:focus-within {
+      .text-link-wrap:focus-within {
         outline: var(--outline-focus);
         outline-offset: var(--outline-offset-focus);
         border-radius: 2px;
       }
 
-      a {
+      .text-link {
+        display: inline;
         font-family: inherit;
         font-size: inherit;
         line-height: inherit;
         font-weight: inherit;
         letter-spacing: inherit;
-        border-bottom-width: 0.0625rem;
-        border-bottom-style: solid;
+        border-top: none;
+        border-right: none;
+        border-left: none;
+        border-bottom: 0.0625rem solid currentColor;
         cursor: pointer;
         position: relative;
         text-decoration: none;
+        text-align: left;
         touch-action: manipulation;
         transition: opacity 0.15s ease-in 0s;
         pointer-events: auto;
         -webkit-tap-highlight-color: transparent;
+        background: none;
         outline: none;
-        border-color: currentColor;
+        padding: 0;
       }
 
       :host([type='standAlone']) {
@@ -88,14 +94,26 @@ class TextLink extends Base {
       }
     `;
 
-    this.template = () => html` <span class="text-link">
-      <a ${this.href ? `href="${this.href}"` : ''} tabindex="0">
-        <span class="hit-area"></span>
-        <span class="text">
-          <slot></slot>
-        </span>
-      </a>
-    </span>`;
+    this.template = () => html`
+      <span class="text-link-wrap">
+        <${this.primitive} class="text-link" ${this.href ? `href="${this.href}"` : ''} tabindex="0">
+          <span class="hit-area"></span>
+          <span class="text">
+            <slot></slot>
+          </span>
+        </${this.primitive}>
+      </span>`;
+
+    this.onConnect = () => {
+      this.addEventListener('keydown', this.onKeydown);
+    }
+  }
+
+  onKeydown(e) {
+    const { code } = e;
+    if (code === 'Enter' || code === 'Space') {
+      this.click();
+    }
   }
 }
 

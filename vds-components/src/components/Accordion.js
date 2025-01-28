@@ -12,6 +12,9 @@ class Accordion extends Base {
     'padding',
     'padding-tablet',
     'type',
+    'title-size',
+    'title-bold',
+    'title-primitive'
   ];
 
   accordionItems = [];
@@ -28,12 +31,15 @@ class Accordion extends Base {
       breakpoint: () =>
         this.getAttribute('breakpoint') || vds.breakpoint || '768px',
       disableTrack: () =>
-        this.getAttribute('disable-track') === 'true' ? true : false,
+        this.getAttribute('disable-track') === 'true',
       duration: () => parseFloat(this.getAttribute('duration')) || 330,
       id: () => this.getAttribute('id') || `accordion-${this.accordionIndex}`,
       openFirst: () => this.getAttribute('open-first') === 'true',
       padding: () => this.getAttribute('padding') || '1.5rem',
       paddingTablet: () => this.getAttribute('padding-tablet') || '2rem',
+      titleBold: () => this.getAttribute('title-bold') || null,
+      titlePrimitive: () => this.getAttribute('title-primitive') || null,
+      titleSize: () => this.getAttribute('title-size') || null,
       trackName: () => this.getAttribute('track-name') || null,
       type: () => (this.getAttribute('type') === 'single' ? 'single' : 'multi'),
     };

@@ -10,6 +10,7 @@ class AccordionHeader extends Base {
     'padding-tablet',
     'title-bold',
     'title-size',
+    'title-primitive',
   ];
 
   constructor() {
@@ -49,6 +50,7 @@ class AccordionHeader extends Base {
         '2rem',
       titleSize: () => this.accordion?.getAttribute('title-size') || null,
       titleBold: () => this.accordion?.getAttribute('title-bold') || null,
+      titlePrimitive: () => this.accordion?.getAttribute('title-primitive') || null,
     };
 
     this.styles = () => css`
@@ -121,8 +123,9 @@ class AccordionHeader extends Base {
     this.template = () => html`
       <button class="header-button unbutton handle-align-${this.handleAlign}">
         <evolv-title
-          ${this.titleSize ? `size="${this.titleSize}"` : ''}
           ${this.titleBold ? `bold="${this.titleBold}"` : ''}
+          ${this.titlePrimitive ? `primitive="${this.titlePrimitive}"` : ''}
+          ${this.titleSize ? `size="${this.titleSize}"` : ''}
           breakpoint="${this.breakpoint}"
         ><slot></slot></evolv-title>
         <div class="button-icon-wrap">

@@ -126,15 +126,15 @@ Example:
 | `disable-track` | Whether to disable Adobe Target tracking | `false` | `true`, `false` |
 | `breakpoint` | Used by `evolv-title` and `evolv-button-icon` elements to increase `size` above a certain screen width | `768px` | `<css length>` |
 | `duration` | Sets the animation duration for opening `evolv-details` panels | `0.33s` | `<css duration>` |
-| `handle-align` | Whether the accordion handle is aligned left or right | `left` | `left`, `right`
-| `icon-size` | The `size` of the `evolv-button-icon` element,  | Based on `title-size` if present, otherwise `small` | `small`, `large` |
+| `handle-align` | Whether the accordion handle is aligned left or right | `left` | `left`, `right` |
+| `icon-size` | The `size` of the `evolv-button-icon` element, | Based on `title-size` if present, otherwise `small` | `small`, `large` |
 | `id` | A name for the accordion, used by `data-track` attributes and aria ids. | `accordion-<index>` | `<valid id>` |
 | `open-first` | Sets the initial state of the first accordion item to open | `false` | `true`, `false` |
 | `padding` | The `padding` for `evolv-accordion-header` and `evolv-accordion-details` elements | `1.5rem` | `<css length>` |
 | `padding-tablet` | The `padding` for `evolv-accordion-header` and `evolv-accordion-details` elements on screens over `breakpoint` in width | `2rem` | `<css length>` |
-| `title-size` | The `size` of the `evolv-title` elements to use | `small` | `small`, `medium`, `large` |
-| `title-bold` | The `bold` option for `evolv-title` elements | `false` | `true`, `false` |
-| `title-color` | The `color` option for `evolv-title` elements | `black` | See [Properties](#properties) |
+| `title-bold` | The `bold` option for the `evolv-title` elements in the `accordion-headers` | `false` | `true`, `false` |
+| `title-primitive` | The `primitive` option for `evolv-title` elements in the `accordion-headers` | `null` | `h1`, `h2`, `h3`, `h4`, `h5`, `p`, `span` |
+| `title-size` | The `size` of the `evolv-title` elements in the `accordion-headers` | `null` | `small`, `medium`, `large`, `xlarge`, `2xlarge` |
 | `track-name` | The name to use for Adobe Target tracking on accordion headers. Priority is first given to `track-name` set on the header, followed by `track-name` set on the accordion itself. If neither are supplied then the `track-name` will be generated from the `id` | `null` |
 | `type` | `single` only allows one accordion item to be open at a time. `multi` allows multiple items open simultaneously | `multi` | `single`, `multi` |
 

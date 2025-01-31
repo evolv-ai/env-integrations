@@ -85,12 +85,14 @@ class TooltipContent extends Base {
 
       .content {
         display: flex;
+        width: 100%;
         padding: 0.75rem 0;
       }
 
       .content-inner {
         display: flex;
         position: relative;
+        width: 100%;
         padding: 0 0.75rem;
       }
 
@@ -305,7 +307,7 @@ class TooltipContent extends Base {
     if (!content) {
       return;
     }
-    const bodyTop = document.body.getBoundingClientRect().top;
+    const bodyTop = utils.getOffsetRect(document.body).top;
     const buttonRect = utils.getOffsetRect(this.tooltip.parts.button);
     const buttonCenterX = buttonRect.left + buttonRect.width / 2;
     const borderRadius = utils.cssSizeToValue(this.borderRadius);

@@ -124,7 +124,8 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
     * [.subscribe](#Utils+subscribe) ⇒ <code>Object</code>
     * [.string](#Utils+string)
     * [.html](#Utils+html) ⇒ <code>TemplateResult</code>
-    * [.render](#Utils+render) ⇒ <code>HTMLElement</code> \| <code>HTMLCollection</code>
+    * [.render](#Utils+render) ⇒ <code>Node</code>
+    * [.renderAll](#Utils+renderAll) ⇒ <code>NodeList</code>
     * [.addClass](#Utils+addClass)
     * [.removeClass](#Utils+removeClass)
     * [.updateText](#Utils+updateText)
@@ -287,8 +288,8 @@ A tag for template literals that exports a `TemplateResult` object to be consume
 
 <a name="Utils+render"></a>
 
-### utils.render ⇒ <code>HTMLElement</code> \| <code>HTMLCollection</code>
-Transforms `TemplateResult` into an `Element` or `ElementCollection`. Attributes prefixed with `@` will be assigned as event listeners. If a single element is at the top level it will return an `Element`, if there are multiple it returns an `ElementCollection`. Allows embedding of other `TemplateResult` objects and arrays of expressions.
+### utils.render ⇒ <code>Node</code>
+Transforms `TemplateResult` into an `Node`. Attributes prefixed with `@` will be assigned as event listeners. Allows embedding of `Nodes`, other `TemplateResult` objects, and arrays of expressions.
 
 **Kind**: instance property of [<code>Utils</code>](#Utils)  
 
@@ -351,6 +352,18 @@ mutate('main').inject(render(html`
   </div>
 `), false);
 ```
+<a name="Utils+renderAll"></a>
+
+### utils.renderAll ⇒ <code>NodeList</code>
+Renders a `TemplateResult` and returns an array of elements.
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
+**Returns**: <code>NodeList</code> - The rendered nodes  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| templateResult | <code>TemplateResult</code> | The `TemplateResult` to render |
+
 <a name="Utils+addClass"></a>
 
 ### utils.addClass

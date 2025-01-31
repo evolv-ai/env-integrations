@@ -1,8 +1,8 @@
 import vds from '../imports/vds.js';
-import Title from './Title.js';
+import Base from './Base';
 
-class ModalTitle extends Title {
-  static observedAttributes = [...this.observedAttributes];
+class ModalTitle extends Base {
+  static observedAttributes = [...this.observedAttributes, 'id', 'size', 'bold', 'primitive'];
 
   constructor() {
     super();
@@ -16,6 +16,8 @@ class ModalTitle extends Title {
       id: () => this.id || this._props.modal().titleId,
       modal: () => this.closest('evolv-modal'),
       size: () => this.getAttribute('size') || 'large',
+      bold: () => this.getAttribute('bold') || true,
+      primitive: () => this.getAttribute('primitive') || 'h2',
     };
 
     this.styles = () => css`
@@ -25,9 +27,9 @@ class ModalTitle extends Title {
     `;
 
     this.template = () => html`
-      <${this.primitive} class="title modal-title">
+      <evolv-title class="modal-title" size=${this.size} bold=${this.bold} primitive="${this.primitive}">
         <slot></slot>
-      </${this.primitive}>
+      </evolv-title>
     `;
   }
 }

@@ -50,22 +50,22 @@ class TextLink extends Base {
         display: block;
       }
 
-      :host([type='standAlone']) a,
-      :host([type='standAlone'][size='small']) a {
+      :host([type='standAlone']) .text-link,
+      :host([type='standAlone'][size='small']) .text-link {
         ${vds.style.text.body.small()}
       }
 
-      :host([type='standAlone'][size='large']) a {
+      :host([type='standAlone'][size='large']) .text-link {
         ${vds.style.text.body.large()}
       }
 
-      a:active {
+      .text-link:active {
         color: var(--color-gray-44);
         border-bottom: 1px solid var(--color-gray-44);
         box-shadow: var(--color-gray-44) 0px 1px;
       }
 
-      a:hover {
+      .text-link:hover {
         box-shadow: currentColor 0px 1px;
       }
 
@@ -88,8 +88,8 @@ class TextLink extends Base {
       }
 
       @media screen and (min-width: ${this.breakpoint}) {
-        :host([type='standAlone']) a,
-        :host([type='standAlone'][size='small']) a {
+        :host([type='standAlone']) .text-link,
+        :host([type='standAlone'][size='small']) .text-link {
           ${vds.style.text.body.large()}
         }
       }
@@ -111,7 +111,7 @@ class TextLink extends Base {
   }
 
   onKeydown(e) {
-    if (typeof this.href === 'string') {
+    if (this.primitive !== 'a' || typeof this.href === 'string') {
       return;
     }
 

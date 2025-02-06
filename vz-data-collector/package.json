@@ -1,0 +1,27 @@
+{
+  "name": "@evolv-integr/a1a273539c",
+  "version": "1.2.7",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evolv-ai/env-integrations.git"
+  },
+  "author": "yvan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/evolv-ai/env-integrations/issues"
+  },
+  "homepage": "https://github.com/evolv-ai/env-integrations/",
+  "description": "",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4"
+  }
+}

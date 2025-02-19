@@ -27,7 +27,12 @@ class TooltipContent extends Base {
       breakpoint: () => this.tooltip.breakpoint,
       gap: () => this.tooltip.contentGap,
       hoverDelay: () => this.tooltip.hoverDelay,
-      isTouchDevice: () => utils.isTouchDevice(),
+      isModal: () => this.tooltip.detectTouchDevice
+        ? this.tooltip.isTouchDevice
+        : !window
+            .matchMedia(`(min-width: ${this.tooltip.breakpoint})`)
+            .matches,
+      isTouchDevice: () => this.tooltip.isTouchDevice,
       maxHeight: () => this.tooltip.contentMaxHeight,
       modalDuration: () => this.tooltip.modalDuration,
       contentTitle: () => this.tooltip.contentTitle,
@@ -203,7 +208,7 @@ class TooltipContent extends Base {
     `;
 
     this.template = () =>
-      this.isTouchDevice
+      this.isModal
         ? html`
             <evolv-modal
               class="modal"
@@ -272,7 +277,9 @@ class TooltipContent extends Base {
     };
 
     this.onConnect = () => {
-      this.observeBodySize();
+      if (!this.isModal) {
+        this.observeBodySize();
+      }
     };
 
     this.onRender = () => {

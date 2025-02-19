@@ -42,6 +42,7 @@ class Tooltip extends Base {
         this.getAttribute('title') ||
         null,
       contentWidth: () => '14rem',
+      detectTouchDevice: () => this.getAttribute('detect-touch-device') !== "false",
       hoverDelay: () => parseInt(this.getAttribute('hover-delay')) || 500,
       isTouchDevice: () => utils.isTouchDevice(),
       modalDuration: () => this.getAttribute('modal-duration') || 400,

@@ -53,9 +53,12 @@ class ButtonIcon extends Base {
         height: 2.75rem;
       }
 
-      .button-icon[disabled] {
+      :host([disabled]) {
         pointer-events: none;
         cursor: default;
+      }
+        
+      :host([disabled]) .button-icon {
         background-color: transparent;
         color: var(--color-gray-85);
       }

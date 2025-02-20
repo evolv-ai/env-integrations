@@ -42,7 +42,13 @@ class Tooltip extends Base {
         this.getAttribute('title') ||
         null,
       contentWidth: () => '14rem',
+      detectTouchDevice: () => this.getAttribute('detect-touch-device') !== "false",
       hoverDelay: () => parseInt(this.getAttribute('hover-delay')) || 500,
+      isModal: () => this.props.detectTouchDevice()
+        ? this.props.isTouchDevice()
+        : !window
+          .matchMedia(`(min-width: ${this.breakpoint})`)
+          .matches,
       isTouchDevice: () => utils.isTouchDevice(),
       modalDuration: () => this.getAttribute('modal-duration') || 400,
       size: () => this.getAttribute('size') || 'medium',
@@ -170,7 +176,7 @@ class Tooltip extends Base {
   insertContent = () => {
     this.parts.button.setAttribute('aria-expanded', 'true');
     this.updateProp('content');
-    if (!this.isTouchDevice) {
+    if (!(this.props.isModal())) {
       this.content.addEventListener('mouseenter', this.onMouseenter);
       this.content.addEventListener('mouseleave', this.onMouseleave);
       this.content.addEventListener('click', this.onClick);
@@ -222,7 +228,7 @@ class Tooltip extends Base {
   };
 
   onMouseenter = () => {
-    if (this.isTouchDevice) {
+    if (this.props.isModal()) {
       return;
     }
 
@@ -237,7 +243,7 @@ class Tooltip extends Base {
   };
 
   onMouseleave = () => {
-    if (this.isTouchDevice) {
+    if (this.props.isModal()) {
       return;
     }
 

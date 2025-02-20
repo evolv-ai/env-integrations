@@ -25,9 +25,11 @@ class TooltipContent extends Base {
     this.props = {
       borderRadius: () => this.tooltip.contentBorderRadius,
       breakpoint: () => this.tooltip.breakpoint,
+      detectTouchDevice: () => this.tooltip.detectTouchDevice,
       gap: () => this.tooltip.contentGap,
       hoverDelay: () => this.tooltip.hoverDelay,
-      isTouchDevice: () => utils.isTouchDevice(),
+      isModal: () => this.tooltip.isModal,
+      isTouchDevice: () => this.tooltip.isTouchDevice,
       maxHeight: () => this.tooltip.contentMaxHeight,
       modalDuration: () => this.tooltip.modalDuration,
       contentTitle: () => this.tooltip.contentTitle,
@@ -118,7 +120,7 @@ class TooltipContent extends Base {
         display: none;
       }
 
-      :host([scroll]:not([touch])) .content-scroll::-webkit-scrollbar {
+      :host([scroll]:not([modal])) .content-scroll::-webkit-scrollbar {
         display: none; /* For Chrome, Safari, and Opera */
       }
 
@@ -203,7 +205,7 @@ class TooltipContent extends Base {
     `;
 
     this.template = () =>
-      this.isTouchDevice
+      this.isModal
         ? html`
             <evolv-modal
               class="modal"
@@ -272,12 +274,14 @@ class TooltipContent extends Base {
     };
 
     this.onConnect = () => {
-      this.observeBodySize();
+      if (!this.isModal) {
+        this.observeBodySize();
+      }
     };
 
     this.onRender = () => {
-      if (this.isTouchDevice) {
-        this.toggleAttribute('touch', true);
+      if (this.isModal) {
+        this.toggleAttribute('modal', true);
       } else {
         this.hasScrollbar = vds.isScrollable(this.parts.scrollElement);
         this.toggleAttribute('scroll', this.hasScrollbar);

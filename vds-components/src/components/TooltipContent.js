@@ -120,7 +120,7 @@ class TooltipContent extends Base {
         display: none;
       }
 
-      :host([scroll]:not([modal])) .content-scroll::-webkit-scrollbar {
+      :host(:not([modal])) .content-scroll::-webkit-scrollbar {
         display: none; /* For Chrome, Safari, and Opera */
       }
 

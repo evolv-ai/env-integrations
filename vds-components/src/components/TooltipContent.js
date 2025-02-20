@@ -98,10 +98,6 @@ class TooltipContent extends Base {
         padding: 0 0.75rem;
       }
 
-      .content-scroll {
-        overflow-y: scroll;
-      }
-
       .title {
         display: block;
         font-family: var(--font-family-etx);
@@ -120,11 +116,15 @@ class TooltipContent extends Base {
         display: none;
       }
 
+      :host([scroll]) .content-scroll {
+          overflow-y: scroll;
+      }
+        
       :host([scroll]:not([modal])) .content-scroll::-webkit-scrollbar {
         display: none; /* For Chrome, Safari, and Opera */
       }
 
-      :host([scroll]) .content-scroll {
+      :host([scroll]:not([modal])) .content-scroll {
         scrollbar-width: none; /* For Firefox */
         -ms-overflow-style: none; /* For Internet Explorer and Edge */
       }

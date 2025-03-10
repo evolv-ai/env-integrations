@@ -65,7 +65,7 @@ class Typography extends Base {
 
       :host([size='large']) .title {
         font-size: 1.5rem;
-        line-height: 1.75;
+        line-height: 1.75rem;
         letter-spacing: 0.015625rem;
       }
 

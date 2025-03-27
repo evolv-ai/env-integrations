@@ -33,7 +33,7 @@ class TileContainer extends Base {
       trackName: () => this.getAttribute('track-name') || null,
       padding: () => this.getAttribute('padding') || '30px',
       backgroundColor: () => this.getAttribute('background-color') || 'white',
-      height: () => this.getAttribute('height') || '100%',
+      height: () => this.getAttribute('height') || 'auto',
       backgroundImage: () => this.getAttribute('background-image') || null,
       showBorder: () => this.getAttribute('show-border') || true,
       showDropShadow: () => this.getAttribute('show-drop-shadow') || false,

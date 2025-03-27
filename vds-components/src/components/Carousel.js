@@ -50,26 +50,27 @@ class Carousel extends Base {
         display: block;
       }
       .carousel {
+        display: flex;
+        flex-direction: column;
+        padding: 30px 20px;
         position: relative;
+        margin: -10px;
       }
       .carousel-track {
-        align-items: stretch;
         box-sizing: border-box;
         display: flex;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
+        flex-direction: row;
         gap: ${this.props.gutter()};
-        overflow-x: hidden;
         margin-left: 50%;
+        overflow-x: scroll;
         padding-top: 8px;
         padding-bottom: 32px;
         padding-left: 20px;
+        transform: translateX(-50%);
         scroll-padding: 0px 36px;
         scroll-snap-type: x mandatory;
         scroll-behavior: smooth;
         scrollbar-width: none;
-        transform: translateX(-50%);
-        transition: 1s;
         width: 100%;
         will-change: scroll-position;
         &::-webkit-scrollbar {
@@ -221,10 +222,12 @@ class Carousel extends Base {
   };
 
   updateCarousel = () => {
-    let carouselItemWidth = this.carouselItems[0].offsetWidth;
-    this.parts.carouselTrack.style.transform = `translateX(${
-      -carouselItemWidth * this.counter
-    }px)`;
+    let position = this.carouselItems[0].clientWidth * this.counter;
+    this.parts.carouselTrack.scrollLeft = position;
+    // let carouselItemWidth = this.carouselItems[0].offsetWidth;
+    // this.parts.carouselTrack.style.transform = `translateX(${
+    //   -carouselItemWidth * this.counter
+    // }px)`;
     this.parts.progressBar.style.width = `${
       ((this.counter + 1) / this.carouselItems.length) * 100
     }%`;

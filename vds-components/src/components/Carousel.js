@@ -103,7 +103,8 @@ class Carousel extends Base {
         background-color: rgb(216, 218, 218);
         border-radius: 4px;
         box-sizing: border-box;
-        height: 4px;
+        cursor: pointer;
+        height: 6px;
         margin: 0 auto;
         position: relative;
         transition: height 100ms linear, width 100ms linear,
@@ -126,15 +127,26 @@ class Carousel extends Base {
         touch-action: manipulation;
         position: absolute;
         will-change: transform;
-        left: 0px;
-        height: 4px;
+        left: 0;
+        height: 6px;
         min-width: 16px;
-        width: 24px;
         background-color: rgb(111, 113, 113);
         z-index: 1;
         transition: height 100ms linear, left linear;
         border-radius: 4px;
         outline: none;
+      }
+      .carousel-progress-bar::before {
+        min-height: 44px;
+        min-width: 44px;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        content: '';
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
       }
     `;
 
@@ -181,9 +193,15 @@ class Carousel extends Base {
         'aspect-ratio',
         this.props.aspectRatio()
       );
+      this.parts.progressBar.style.width = `${
+        this.parts.progressContainer.offsetWidth / (this.carouselItems.length - 1)
+      }px`;
       this.parts.buttonPrevious.addEventListener('click', this.onPreviousClick);
       this.parts.buttonNext.addEventListener('click', this.onNextClick);
-      this.parts.progressBar.addEventListener('click', this.progressBarClick);
+      this.parts.progressContainer.addEventListener(
+        'click',
+        this.progressContainerClick
+      );
       this.resizeCarousel();
     };
   }
@@ -212,25 +230,24 @@ class Carousel extends Base {
     this.updateCarousel();
   };
 
-  progressBarClick = (e) => {
+  progressContainerClick = (e) => {
     const clickPosition = e.offsetX;
+    console.log('evolv clickPosition', clickPosition);
     const containerWidth = this.parts.progressContainer.offsetWidth;
     this.counter = Math.floor(
-      (clickPosition / containerWidth) * this.carouselItems.length
+      (clickPosition / containerWidth) * (this.carouselItems.length - 1)
     );
+    console.log('evolv counter', this.counter);
     this.updateCarousel();
   };
 
   updateCarousel = () => {
-    let position = this.carouselItems[0].clientWidth * this.counter;
+    let position = this.carouselItems[0].offsetWidth * this.counter;
     this.parts.carouselTrack.scrollLeft = position;
-    // let carouselItemWidth = this.carouselItems[0].offsetWidth;
-    // this.parts.carouselTrack.style.transform = `translateX(${
-    //   -carouselItemWidth * this.counter
-    // }px)`;
-    this.parts.progressBar.style.width = `${
-      ((this.counter + 1) / this.carouselItems.length) * 100
-    }%`;
+    let progressBarCount = this.carouselItems.length - 1;
+    this.parts.progressBar.style.left = `${
+      (this.counter / progressBarCount) * 96
+    }px`;
   };
 
   resizeCarousel = () => {

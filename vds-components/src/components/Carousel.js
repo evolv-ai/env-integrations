@@ -25,19 +25,19 @@ class Carousel extends Base {
     vds.carouselIndex += 1;
 
     this.props = {
-      aspectRatio: () => this.getAttribute('aspect-ratio') || '2:3',
+      aspectRatio: () => this.getAttribute('aspect-ratio') || '2/3',
       breakpoint: () =>
         this.getAttribute('breakpoint') || vds.breakpoint || '768px',
       disableTrack: () => this.getAttribute('disable-track') || 'true',
       gutter: () => this.getAttribute('gutter') || '24px',
       id: () => this.getAttribute('id') || `carousel-${this.carouselIndex}`,
       layout: () => this.getAttribute('layout') || '3',
+      nextButtonTrack: () => this.getAttribute('next-button-track') || null,
       paginationDisplay: () =>
         parseFloat(this.getAttribute('pagination-display')) || 'persistent',
       peek: () => this.getAttribute('peek') || 'standard',
       previousButtonTrack: () =>
         this.getAttribute('previous-button-track') || null,
-      nextButtonTrack: () => this.getAttribute('next-button-track') || null,
       progressBarTrack: () => this.getAttribute('progress-bar-track') || null,
       tileHeight: () => this.getAttribute('tile-height') || null,
       trackName: () => this.getAttribute('track-name') || null,
@@ -99,14 +99,15 @@ class Carousel extends Base {
         cursor: pointer;
       }
       .carousel-progress {
-        position: relative;
-        width: 96px;
+        background-color: rgb(216, 218, 218);
+        border-radius: 4px;
+        box-sizing: border-box;
         height: 4px;
+        margin: 0 auto;
+        position: relative;
         transition: height 100ms linear, width 100ms linear,
           border-radius 100ms linear;
-        box-sizing: border-box;
-        border-radius: 4px;
-        background-color: rgb(216, 218, 218);
+        width: 96px;
       }
       .carousel-progress::before {
         min-height: 44px;
@@ -175,6 +176,10 @@ class Carousel extends Base {
 
     this.onRender = () => {
       // console.log('this.parts.carouselTrack', this.parts.carouselTrack);
+      this.parts.carousel.setAttribute(
+        'aspect-ratio',
+        this.props.aspectRatio()
+      );
       this.parts.buttonPrevious.addEventListener('click', this.onPreviousClick);
       this.parts.buttonNext.addEventListener('click', this.onNextClick);
       this.parts.progressBar.addEventListener('click', this.progressBarClick);

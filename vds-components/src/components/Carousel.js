@@ -5,8 +5,7 @@ class Carousel extends Base {
   static observedAttributes = [
     ...this.observedAttributes,
     'id',
-    'disable-track',
-    'track-name',
+    'data-track-ignore',
     'pagination-display',
     'layout',
     'aspect-ratio',
@@ -23,24 +22,31 @@ class Carousel extends Base {
 
     this.carouselIndex = vds.carouselIndex;
     vds.carouselIndex += 1;
+    this.previousArrow = `evolv-icon {transform:rotate(90deg)}`;
+    this.nextArrow = `evolv-icon {transform:rotate(270deg)}`;
+    this.progressContainerWidth = () => 96;
 
     this.props = {
       aspectRatio: () => this.getAttribute('aspect-ratio') || '2/3',
       breakpoint: () =>
         this.getAttribute('breakpoint') || vds.breakpoint || '768px',
-      disableTrack: () => this.getAttribute('disable-track') || 'true',
+      dataTrackIgnore: () => this.getAttribute('data-track-ignore') || false,
       gutter: () => this.getAttribute('gutter') || '24px',
       id: () => this.getAttribute('id') || `carousel-${this.carouselIndex}`,
       layout: () => this.getAttribute('layout') || '3',
-      nextButtonTrack: () => this.getAttribute('next-button-track') || null,
+      nextButtonTrack: () =>
+        this.getAttribute('next-button-track') ||
+        `next button| ${this.props.id()}`,
       paginationDisplay: () =>
         parseFloat(this.getAttribute('pagination-display')) || 'persistent',
       peek: () => this.getAttribute('peek') || 'standard',
       previousButtonTrack: () =>
-        this.getAttribute('previous-button-track') || null,
-      progressBarTrack: () => this.getAttribute('progress-bar-track') || null,
+        this.getAttribute('previous-button-track') ||
+        `previous button | ${this.props.id()}`,
+      progressBarTrack: () =>
+        this.getAttribute('progress-bar-track') ||
+        `progress bar | ${this.props.id()}`,
       tileHeight: () => this.getAttribute('tile-height') || null,
-      trackName: () => this.getAttribute('track-name') || null,
     };
 
     this.onAttributeChanged = () => this.renderChildren();
@@ -54,7 +60,6 @@ class Carousel extends Base {
         flex-direction: column;
         padding: 30px 20px;
         position: relative;
-        margin: -10px;
       }
       .carousel-track {
         box-sizing: border-box;
@@ -65,7 +70,6 @@ class Carousel extends Base {
         overflow-x: scroll;
         padding-top: 8px;
         padding-bottom: 32px;
-        padding-left: 20px;
         transform: translateX(-50%);
         scroll-padding: 0px 36px;
         scroll-snap-type: x mandatory;
@@ -85,19 +89,42 @@ class Carousel extends Base {
         }
       }
       .carousel-nav {
+        display: flex;
+        justify-content: space-between;
+        left: 0;
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
         width: 100%;
-        display: flex;
-        justify-content: space-between;
       }
       .carousel-nav-button {
-        background: rgba(0, 0, 0, 0.5);
-        color: white;
-        border: none;
-        padding: 10px;
+        box-shadow: rgb(255, 255, 255) 0px 0px 0px 0.0625rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0px;
+        margin: 0px;
         cursor: pointer;
+        box-sizing: border-box;
+        text-align: center;
+        text-decoration: none;
+        position: relative;
+        touch-action: manipulation;
+        pointer-events: auto;
+        vertical-align: middle;
+        outline: none;
+        background-color: rgb(255, 255, 255);
+        border-radius: 50%;
+        border: none;
+        background-clip: padding-box;
+        transition: 0.1s ease-out;
+      }
+      .carousel-nav-button:hover {
+        outline: none;
+        box-shadow: rgb(255, 255, 255) 0px 0px 0px 0.0625rem;
+      }
+      .carousel-nav-button.previous {
+        visibility: hidden;
       }
       .carousel-progress {
         background-color: rgb(216, 218, 218);
@@ -109,7 +136,7 @@ class Carousel extends Base {
         position: relative;
         transition: height 100ms linear, width 100ms linear,
           border-radius 100ms linear;
-        width: 96px;
+        width: ${this.progressContainerWidth()}px;
       }
       .carousel-progress::before {
         min-height: 44px;
@@ -156,18 +183,20 @@ class Carousel extends Base {
           <slot></slot>
         </div>
         <div class="carousel-nav">
-          <button
+          <evolv-button-icon
+            name="down-caret"
+            size="large"
+            css="${this.previousArrow}"
             class="carousel-nav-button previous"
             data-track="${this.previousButtonTrack}"
-          >
-            &lt;
-          </button>
-          <button
+          ></evolv-button-icon>
+          <evolv-button-icon
+            name="down-caret"
+            size="large"
+            css="${this.nextArrow}"
             class="carousel-nav-button next"
             data-track="${this.nextButtonTrack}"
-          >
-            &gt;
-          </button>
+          ></evolv-button-icon>
         </div>
         <div class="carousel-progress">
           <div
@@ -188,14 +217,8 @@ class Carousel extends Base {
     };
 
     this.onRender = () => {
-      // console.log('this.parts.carouselTrack', this.parts.carouselTrack);
-      this.parts.carousel.setAttribute(
-        'aspect-ratio',
-        this.props.aspectRatio()
-      );
-      this.parts.progressBar.style.width = `${
-        this.parts.progressContainer.offsetWidth / (this.carouselItems.length - 1)
-      }px`;
+      this.setAttribute('tile-width', this.setTileWidth());
+      this.progressBarWidth();
       this.parts.buttonPrevious.addEventListener('click', this.onPreviousClick);
       this.parts.buttonNext.addEventListener('click', this.onNextClick);
       this.parts.progressContainer.addEventListener(
@@ -210,43 +233,77 @@ class Carousel extends Base {
     return `${this.id}-tile-${index}`;
   };
 
-  counter = 0;
+  counter = 1;
   carouselItems = this.querySelectorAll('evolv-tile-container');
-  carouselItemWidth = this.carouselItems[0].offsetWidth;
+  tileCount = this.carouselItems.length;
+  layout = parseInt(this.props.layout);
+
+  setTileWidth = () => {
+    const layout = parseInt(this.layout);
+    const peek = this.props.peek();
+    let tileWidth = '';
+    if (this.carouselItems.length > layout) {
+      tileWidth =
+        peek === 'standard'
+          ? this.offsetWidth / (layout + 0.3) - 100
+          : this.offsetWidth / layout - 100;
+    } else {
+      tileWidth = this.offsetWidth / layout;
+    }
+    return `${Math.floor(tileWidth)}px`;
+  };
 
   onPreviousClick = () => {
     this.counter--;
-    if (this.counter < 0) {
-      this.counter = this.carouselItems.length - 1;
+    if (this.counter < 1) {
+      this.counter = 1;
     }
-    this.updateCarousel();
+    this.updateCarousel(this.counter);
   };
 
   onNextClick = () => {
+    const denominator = Math.ceil(this.tileCount / this.layout);
     this.counter++;
-    if (this.counter === this.carouselItems.length) {
-      this.counter = 0;
+    if (this.counter >= denominator) {
+      this.counter = denominator;
     }
-    this.updateCarousel();
+    this.updateCarousel(this.counter);
+  };
+
+  progressBarWidth = () => {
+    const denominator = Math.ceil(this.tileCount / this.layout);
+    this.parts.progressBar.style.width =
+      this.progressContainerWidth() / denominator + 'px';
   };
 
   progressContainerClick = (e) => {
+    const denominator = Math.ceil(this.tileCount / this.layout);
     const clickPosition = e.offsetX;
-    console.log('evolv clickPosition', clickPosition);
-    const containerWidth = this.parts.progressContainer.offsetWidth;
-    this.counter = Math.floor(
-      (clickPosition / containerWidth) * (this.carouselItems.length - 1)
-    );
-    console.log('evolv counter', this.counter);
-    this.updateCarousel();
+    const segmentSize = Math.ceil(this.progressContainerWidth() / denominator);
+    const numberOfSegments = (this.progressContainerWidth() / segmentSize) >> 0;
+    if (clickPosition <= segmentSize) {
+      this.counter = 1;
+    } else if (clickPosition > (numberOfSegments - 1) * segmentSize) {
+      this.counter = 2;
+    }
+    this.updateCarousel(this.counter);
   };
 
-  updateCarousel = () => {
-    let position = this.carouselItems[0].offsetWidth * this.counter;
+  updateCarousel = (counter) => {
+    const denominator = Math.ceil(this.tileCount / this.layout);
+    this.parts.buttonPrevious.style.visibility =
+      counter !== 1 ? 'visible' : 'hidden';
+    this.parts.buttonNext.style.visibility =
+      counter >= denominator ? 'hidden' : 'visible';
+    let position =
+      counter === 1
+        ? 0
+        : this.layout *
+          (this.carouselItems[0].offsetWidth +
+            parseInt(this.props.gutter(), 10));
     this.parts.carouselTrack.scrollLeft = position;
-    let progressBarCount = this.carouselItems.length - 1;
     this.parts.progressBar.style.left = `${
-      (this.counter / progressBarCount) * 96
+      (this.progressContainerWidth() / denominator) * (counter - 1)
     }px`;
   };
 

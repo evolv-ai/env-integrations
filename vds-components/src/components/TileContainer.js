@@ -4,47 +4,35 @@ import Base from './Base';
 class TileContainer extends Base {
   static observedAttributes = [
     ...this.observedAttributes,
-    'id',
-    'disable-track',
-    'track-name',
-    'padding',
     'backgroundColor',
-    'height',
-    'width',
     'backgroundImage',
+    'data-track-ignore',
+    'height',
+    'id',
+    'padding',
     'showBorder',
     'showDropShadow',
-    'onClick',
+    'track-name',
+    'width',
   ];
 
   constructor() {
     super();
 
     this.carousel = this.closest('evolv-carousel');
-    console.log(
-      'evolv this.carousel',
-      this.carousel.getAttribute('aspect-ratio')
-    );
+    this.carouselWidth = this.carousel.offsetWidth;
 
     this.props = {
-      aspectRatio: () => '2/3',
-      id: () => '1',
-      disableTrack: () => this.getAttribute('disable-track') === 'true',
-      trackName: () => this.getAttribute('track-name') || null,
-      padding: () => this.getAttribute('padding') || '30px',
+      aspectRatio: () => this.carousel.getAttribute('aspect-ratio') || '2/3',
       backgroundColor: () => this.getAttribute('background-color') || 'white',
-      height: () => this.getAttribute('height') || 'auto',
       backgroundImage: () => this.getAttribute('background-image') || null,
+      height: () => this.getAttribute('height') || 'auto',
+      id: () => '1',
+      dataTrackIgnore: () => this.getAttribute('data-track-ignore') || false,
+      padding: () => this.getAttribute('padding') || '30px',
       showBorder: () => this.getAttribute('show-border') || true,
       showDropShadow: () => this.getAttribute('show-drop-shadow') || false,
-      onClick: () => this.getAttribute('onClick') || null,
-      width: () => '200px',
-      // width: () =>
-      //   this.carousel
-      //     ? Math.round(
-      //         this.carousel.offsetWidth / (parseInt(this.carousel.layout) - 0.5)
-      //       ) + 'px'
-      //     : '200px',
+      trackName: () => this.getAttribute('track-name') || null,
     };
 
     this.styles = () => css`
@@ -67,7 +55,7 @@ class TileContainer extends Base {
         box-sizing: content-box;
         border-radius: 12px;
         display: flex;
-        flex: 0 0 ${this.props.width()};
+        flex-basis: ${this.carousel.getAttribute('tile-width')};
         flex-direction: column;
         height: ${this.props.height()};
         outline: none;
@@ -76,7 +64,7 @@ class TileContainer extends Base {
         scroll-snap-align: start;
         scroll-margin: 66px;
         text-align: left;
-        width: ${this.props.width()};
+        width: ${this.carousel.getAttribute('tile-width')};
       }
     `;
 

@@ -21,13 +21,17 @@ class TileContainer extends Base {
 
     this.carousel = this.closest('evolv-carousel');
     this.carouselWidth = this.carousel.offsetWidth;
+    this.carouselIndex = this.carousel?.carouselIndex;
+    this.tileIndex = this.getAttribute('index');
 
     this.props = {
+      accordionItemIndex: () => this.tileIndex,
       aspectRatio: () => this.carousel.getAttribute('aspect-ratio') || '2/3',
       backgroundColor: () => this.getAttribute('background-color') || 'white',
       backgroundImage: () => this.getAttribute('background-image') || null,
       height: () => this.getAttribute('height') || 'auto',
-      id: () => '1',
+      id: () => this.carousel?.tileContainerId(this.props.accordionItemIndex()),
+      index: () => this.getAttribute('index'),
       dataTrackIgnore: () => this.getAttribute('data-track-ignore') || false,
       padding: () => this.getAttribute('padding') || '30px',
       showBorder: () => this.getAttribute('show-border') || true,

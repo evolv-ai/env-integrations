@@ -17,6 +17,8 @@ class Carousel extends Base {
     'progress-bar-track',
   ];
 
+  tileItems = [];
+
   constructor() {
     super();
 
@@ -31,7 +33,7 @@ class Carousel extends Base {
       breakpoint: () =>
         this.getAttribute('breakpoint') || vds.breakpoint || '768px',
       dataTrackIgnore: () => this.getAttribute('data-track-ignore') || false,
-      gutter: () => this.getAttribute('gutter') || '24px',
+      gutter: () => this.getAttribute('gutter') || '24',
       id: () => this.getAttribute('id') || `carousel-${this.carouselIndex}`,
       layout: () => this.getAttribute('layout') || '3',
       nextButtonTrack: () =>
@@ -65,7 +67,7 @@ class Carousel extends Base {
         box-sizing: border-box;
         display: flex;
         flex-direction: row;
-        gap: ${this.props.gutter()};
+        gap: ${this.props.gutter()}px;
         margin-left: 50%;
         overflow-x: scroll;
         padding-top: 8px;
@@ -217,14 +219,8 @@ class Carousel extends Base {
     };
 
     this.onRender = () => {
-      this.setAttribute('tile-width', this.setTileWidth());
+      // this.setAttribute('tile-width', this.setTileWidth());
       this.progressBarWidth();
-      this.parts.buttonPrevious.addEventListener('click', this.onPreviousClick);
-      this.parts.buttonNext.addEventListener('click', this.onNextClick);
-      this.parts.progressContainer.addEventListener(
-        'click',
-        this.progressContainerClick
-      );
       this.resizeCarousel();
     };
   }
@@ -241,16 +237,42 @@ class Carousel extends Base {
   setTileWidth = () => {
     const layout = parseInt(this.layout);
     const peek = this.props.peek();
+    const gutter = parseInt(this.props.gutter());
     let tileWidth = '';
+    let carouselSpacing = gutter * 2 + 40;
     if (this.carouselItems.length > layout) {
       tileWidth =
         peek === 'standard'
-          ? this.offsetWidth / (layout + 0.3) - 100
-          : this.offsetWidth / layout - 100;
+          ? this.offsetWidth / (layout + 0.3) - carouselSpacing
+          : this.offsetWidth / layout - carouselSpacing;
     } else {
       tileWidth = this.offsetWidth / layout;
     }
     return `${Math.floor(tileWidth)}px`;
+  };
+
+  resizeTileWidth = () => {
+    const resizeObserver = new ResizeObserver((entries) => {
+      let aspectRatio = this.props.aspectRatio();
+      const bits = aspectRatio.split('/');
+      aspectRatio = parseInt(bits[0], 10) / parseInt(bits[1], 10);
+      this.tileItems = this.querySelectorAll('evolv-tile-container');
+      entries.forEach((entry) => {
+        console.log('entry', entry);
+        const carouselHeight = entry.contentRect.height;
+        const newTileWidth = (carouselHeight - 60) * aspectRatio;
+        console.log(
+          'carouselHeight, aspectRatio, newTileWidth',
+          carouselHeight,
+          aspectRatio,
+          newTileWidth
+        );
+        this.tileItems.forEach((tileItem, index) => {
+          tileItem.style.width = `${newTileWidth}px`;
+        });
+      });
+    });
+    resizeObserver.observe(this);
   };
 
   onPreviousClick = () => {
@@ -311,6 +333,24 @@ class Carousel extends Base {
     window.addEventListener('resize', () => {
       this.updateCarousel();
     });
+  };
+
+  initEvents = () => {
+    this.parts.buttonPrevious.addEventListener('click', this.onPreviousClick);
+    this.parts.buttonNext.addEventListener('click', this.onNextClick);
+    this.parts.progressContainer.addEventListener(
+      'click',
+      this.progressContainerClick
+    );
+  };
+
+  contentChangedCallback = () => {
+    this.tileItems = this.querySelectorAll('evolv-tile-container');
+    this.tileItems.forEach((tileItem, index) => {
+      tileItem.setAttribute('index', index);
+    });
+    this.resizeTileWidth();
+    this.initEvents();
   };
 }
 

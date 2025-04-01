@@ -40,9 +40,6 @@ class TileContainer extends Base {
     };
 
     this.styles = () => css`
-      :host {
-        display: block;
-      }
       .tile-container {
         aspect-ratio: ${this.props.aspectRatio()};
         background-color: ${this.props.backgroundColor()};
@@ -59,7 +56,6 @@ class TileContainer extends Base {
         box-sizing: content-box;
         border-radius: 12px;
         display: flex;
-        flex-basis: ${this.carousel.getAttribute('tile-width')};
         flex-direction: column;
         height: ${this.props.height()};
         outline: none;
@@ -68,7 +64,6 @@ class TileContainer extends Base {
         scroll-snap-align: start;
         scroll-margin: 66px;
         text-align: left;
-        width: ${this.carousel.getAttribute('tile-width')};
       }
     `;
 

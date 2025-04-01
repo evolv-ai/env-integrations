@@ -20,8 +20,6 @@ class TileContainer extends Base {
     super();
 
     this.carousel = this.closest('evolv-carousel');
-    this.carouselWidth = this.carousel.offsetWidth;
-    this.carouselIndex = this.carousel?.carouselIndex;
     this.tileIndex = this.getAttribute('index');
 
     this.props = {

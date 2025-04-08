@@ -30,7 +30,7 @@ class Carousel extends Base {
     this.nextArrow = `evolv-icon {transform:rotate(270deg)}`;
 
     this.props = {
-      aspectRatio: () => this.getAttribute('aspect-ratio') || '2/3',
+      aspectRatio: () => this.getAttribute('aspect-ratio') || '5/3',
       breakpoint: () =>
         this.getAttribute('breakpoint') || vds.breakpoint || '768px',
       dataTrackIgnore: () => this.getAttribute('data-track-ignore') || false,
@@ -75,6 +75,7 @@ class Carousel extends Base {
         display: flex;
         flex-direction: row;
         gap: ${this.props.gutter()}px;
+        margin-bottom: 20px;
         scroll-padding: 0px 36px;
         scroll-snap-type: x mandatory;
         scroll-behavior: smooth;
@@ -189,11 +190,10 @@ class Carousel extends Base {
     };
 
     this.onRender = () => {
-      this.initEvents();
+      // this.initEvents();
     };
   }
 
-  viewportWidth = this.clientWidth;
   scrollPosition = 0;
   isDragging = false;
   startX = 0;
@@ -203,8 +203,10 @@ class Carousel extends Base {
   };
 
   updateScrollThumb = () => {
+    console.log('this.viewportWidth', this.viewportWidth);
+    console.log('this.scrollPosition', this.scrollPosition);
     const totalScrollableWidth =
-      this.parts.carouselTrack.scrollWidth - this.clientWidth;
+      this.parts.carouselTrack.scrollWidth - this.viewportWidth;
     // console.log(
     //   'updateScrollThumb: totalScrollableWidth',
     //   totalScrollableWidth
@@ -219,12 +221,13 @@ class Carousel extends Base {
   };
 
   updateArrows = () => {
-    // console.log('updateArrows');
+    console.log('this.viewportWidth', this.viewportWidth);
+    console.log('this.scrollPosition', this.scrollPosition);
     this.parts.buttonPrevious.style.display =
       this.scrollPosition === 0 ? 'none' : 'block';
     this.parts.buttonNext.style.display =
       this.scrollPosition >=
-      this.parts.carouselTrack.scrollWidth - this.clientWidth
+      this.parts.carouselTrack.scrollWidth - this.viewportWidth
         ? 'none'
         : 'block';
   };
@@ -232,16 +235,8 @@ class Carousel extends Base {
   setScrollPosition = (pos) => {
     this.scrollPosition = Math.max(
       0,
-      Math.min(pos, this.parts.carouselTrack.scrollWidth - this.clientWidth)
+      Math.min(pos, this.parts.carouselTrack.scrollWidth - this.viewportWidth)
     );
-    console.log('this', this);
-    console.log('this.scrollPosition', this.scrollPosition);
-    console.log('this.clientWidth', this.clientWidth);
-    console.log(
-      'this.parts.carouselTrack.scrollWidth',
-      this.parts.carouselTrack.scrollWidth
-    );
-    console.log('this.viewportWidth', this.clientWidth);
     this.parts.carouselTrack.style.transform = `translateX(-${this.scrollPosition}px)`;
     this.updateArrows();
     this.updateScrollThumb();
@@ -250,28 +245,22 @@ class Carousel extends Base {
   initEvents = () => {
     this.parts.buttonPrevious.addEventListener('click', () => {
       console.log('previous click');
-      this.setScrollPosition(this.scrollPosition - this.clientWidth);
+      this.setScrollPosition(this.scrollPosition - this.viewportWidth);
     });
 
     this.parts.buttonNext.addEventListener('click', () => {
-      // console.log('next click');
-      // console.log('this.scrollPosition', this.scrollPosition);
-      // console.log('this.viewportWidth', this.viewportWidth);
-      // console.log(
-      //   'next this.scrollPosition + this.viewportWidth',
-      //   this.scrollPosition + this.viewportWidth
-      // );
-      this.setScrollPosition(this.scrollPosition + this.clientWidth);
+      this.setScrollPosition(this.scrollPosition + this.viewportWidth);
     });
 
     this.parts.carouselScroll.addEventListener('click', (e) => {
-      console.log('carouselScroll click');
+      // console.log('carouselScroll click');
       const rect = this.parts.carouselScroll.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const totalWidth = this.parts.carouselScroll.clientWidth;
       const scrollRatio = clickX / totalWidth;
       this.setScrollPosition(
-        scrollRatio * (this.parts.carouselTrack.scrollWidth - this.clientWidth)
+        scrollRatio *
+          (this.parts.carouselTrack.scrollWidth - this.viewportWidth)
       );
     });
 
@@ -290,7 +279,7 @@ class Carousel extends Base {
         this.parts.carouselScrollThumb.clientWidth;
       const scrollDelta =
         (dx / thumbMaxMove) *
-        (this.parts.carouselTrack.scrollWidth - this.clientWidth);
+        (this.parts.carouselTrack.scrollWidth - this.viewportWidth);
       this.setScrollPosition(this.scrollPosition + scrollDelta);
       this.startX = e.clientX;
     });
@@ -314,7 +303,7 @@ class Carousel extends Base {
         this.parts.carouselScrollThumb.clientWidth;
       const scrollDelta =
         (dx / thumbMaxMove) *
-        (this.parts.carouselTrack.scrollWidth - this.clientWidth);
+        (this.parts.carouselTrack.scrollWidth - this.viewportWidth);
       this.setScrollPosition(this.scrollPosition + scrollDelta);
       this.startX = e.touches[0].clientX;
     });
@@ -341,7 +330,8 @@ class Carousel extends Base {
     });
 
     window.addEventListener('resize', () => {
-      this.viewportWidth = document.querySelector('.carousel').clientWidth;
+      // this.viewportWidth = this.clientWidth;
+      this.updateArrows();
       this.setScrollPosition(this.scrollPosition);
     });
 
@@ -350,6 +340,7 @@ class Carousel extends Base {
   };
 
   contentChangedCallback = () => {
+    this.viewportWidth = this.clientWidth;
     this.tileItems = this.querySelectorAll('evolv-tile-container');
     this.tileItems.forEach((tileItem, index) => {
       tileItem.setAttribute('index', index);

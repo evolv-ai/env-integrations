@@ -15,6 +15,7 @@ class Carousel extends Base {
     'previous-button-track',
     'progress-bar-track',
     'tile-height',
+    'tile-width',
   ];
 
   tileItems = [];
@@ -26,10 +27,9 @@ class Carousel extends Base {
     vds.carouselIndex += 1;
     this.previousArrow = `evolv-icon {transform:rotate(90deg)}`;
     this.nextArrow = `evolv-icon {transform:rotate(270deg)}`;
-    this.progressContainerWidth = () => 96;
 
     this.props = {
-      aspectRatio: () => this.getAttribute('aspect-ratio') || '5/3',
+      aspectRatio: () => this.getAttribute('aspect-ratio') || '4/5',
       breakpoint: () =>
         this.getAttribute('breakpoint') || vds.breakpoint || '768px',
       dataTrackIgnore: () => this.getAttribute('data-track-ignore') || false,
@@ -37,7 +37,7 @@ class Carousel extends Base {
       id: () => this.getAttribute('id') || `carousel${this.carouselIndex}`,
       layout: () => this.getAttribute('layout') || '3',
       maxHeight: () => Math.round(parseInt(this.props.maxWidth()) - 60 / 2),
-      maxWidth: () => this.getAttribute('max-width') || '1000',
+      maxWidth: () => this.getAttribute('max-width') || 1272,
       nextButtonTrack: () =>
         this.getAttribute('next-button-track') ||
         `next button| ${this.props.id()}`,
@@ -47,10 +47,11 @@ class Carousel extends Base {
       previousButtonTrack: () =>
         this.getAttribute('previous-button-track') ||
         `previous button | ${this.props.id()}`,
-      progressBarTrack: () =>
-        this.getAttribute('progress-bar-track') ||
+      scrollTrack: () =>
+        this.getAttribute('scroll-track') ||
         `progress bar | ${this.props.id()}`,
       tileHeight: () => this.getAttribute('tile-height') || null,
+      tileWidth: () => this.getAttribute('tile-width') || null,
     };
 
     this.onAttributeChanged = () => this.renderChildren();
@@ -61,8 +62,7 @@ class Carousel extends Base {
       }
       .carousel-container {
         position: relative;
-        max-width: 1272px;
-        overflow: hidden;
+        max-width: ${this.props.maxWidth()}px;
         padding: 30px 20px;
         margin: auto;
         display: flex;
@@ -71,6 +71,7 @@ class Carousel extends Base {
       }
 
       .carousel-wrapper {
+        overflow: hidden;
         position: relative;
         width: 100%;
         display: flex;
@@ -86,26 +87,29 @@ class Carousel extends Base {
       }
 
       .carousel-nav-button {
-        box-shadow: rgb(255, 255, 255) 0px 0px 0px 0.0625rem;
-        display: flex;
-        justify-content: center;
         align-items: center;
-        padding: 0px;
-        margin: 0px;
-        cursor: pointer;
-        box-sizing: border-box;
-        text-align: center;
-        text-decoration: none;
-        position: relative;
-        touch-action: manipulation;
-        pointer-events: auto;
-        vertical-align: middle;
-        outline: none;
+        background-clip: padding-box;
         background-color: rgb(255, 255, 255);
         border-radius: 50%;
         border: none;
-        background-clip: padding-box;
+        box-shadow: rgb(255, 255, 255) 0px 0px 0px 0.0625rem;
+        box-sizing: border-box;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        margin: 0px;
+        outline: none;
+        padding: 0px;
+        pointer-events: auto;
+        position: absolute;
+        text-align: center;
+        text-decoration: none;
+        touch-action: manipulation;
+        top: 50%;
         transition: 0.1s ease-out;
+        transform: translateY(-50%);
+        vertical-align: middle;
+        z-index: 10;
       }
       .carousel-nav-button:hover {
         outline: none;
@@ -114,12 +118,10 @@ class Carousel extends Base {
       .carousel-nav-button.previous {
         left: 0;
       }
-
       .carousel-nav-button.next {
         right: 0;
       }
-
-      .carousel-scrollbar {
+      .carousel-scroll {
         margin-top: 10px;
         width: 96px;
         height: 8px;
@@ -130,7 +132,7 @@ class Carousel extends Base {
         align-items: center;
         position: relative;
       }
-      .carousel-scrollbar-thumb {
+      .carousel-scroll-thumb {
         width: 24px;
         height: 100%;
         background: #888;
@@ -144,47 +146,50 @@ class Carousel extends Base {
 
     this.template = () => html`
       <div class="carousel-container">
+        <evolv-button-icon
+          name="down-caret"
+          size="large"
+          css="${this.previousArrow}"
+          class="carousel-nav-button previous"
+          data-track="${this.props.previousButtonTrack()}"
+        ></evolv-button-icon>
         <div class="carousel-wrapper">
-          <evolv-button-icon
-            name="down-caret"
-            size="large"
-            css="${this.previousArrow}"
-            class="carousel-nav-button previous"
-            data-track="${this.previousButtonTrack}"
-          ></evolv-button-icon>
           <div class="carousel">
             <slot></slot>
           </div>
-          <evolv-button-icon
-            name="down-caret"
-            size="large"
-            css="${this.nextArrow}"
-            class="carousel-nav-button next"
-            data-track="${this.nextButtonTrack}"
-          ></evolv-button-icon>
         </div>
-        <div class="carousel-scrollbar">
+        <evolv-button-icon
+          name="down-caret"
+          size="large"
+          css="${this.nextArrow}"
+          class="carousel-nav-button next"
+          data-track="${this.props.nextButtonTrack()}"
+        ></evolv-button-icon>
+        <div class="carousel-scroll">
           <div
-            class="carousel-scrollbar-thumb"
-            data-track="${this.progressBarTrack}"
+            class="carousel-scroll-thumb"
+            data-track="${this.props.scrollTrack()}"
           ></div>
         </div>
       </div>
     `;
 
     this.parts = {
+      carouselContainer: '.carousel-container',
+      carouselWrapper: '.carousel-wrapper',
       carousel: '.carousel',
       leftArrow: '.carousel-nav-button.previous',
       rightArrow: '.carousel-nav-button.next',
-      scroll: '.carousel-scrollbar',
-      scrollThumb: '.carousel-scrollbar-thumb',
+      scroll: '.carousel-scroll',
+      scrollThumb: '.carousel-scroll-thumb',
     };
 
     this.onRender = () => {
-      this.viewportWidth = this.clientWidth;
+      this.viewportWidth = this.parts.carouselContainer.clientWidth;
       this.scrollPosition = 0;
       this.isDragging = false;
       this.startX = 0;
+      this.initEvents();
     };
   }
 
@@ -249,7 +254,7 @@ class Carousel extends Base {
     // Mouse drag support for scrollbar thumb
     this.parts.scrollThumb.addEventListener('mousedown', (e) => {
       this.isDragging = true;
-      startX = e.clientX;
+      this.startX = e.clientX;
       document.body.style.userSelect = 'none';
     });
     // ✅ Touch support for scrollbar thumb
@@ -315,11 +320,12 @@ class Carousel extends Base {
     this.onPreviousClick();
     this.onNextClick();
     this.scrollbarClick();
+    this.scrollThumbMove();
+    this.documentListeners();
+    this.carouselListeners();
     window.addEventListener('resize', () => {
-      this.viewportWidth = document.querySelector(
-        '.carousel-container'
-      ).clientWidth;
-      this.setScrollPosition(scrollPosition);
+      this.viewportWidth = this.parts.carouselContainer.clientWidth;
+      this.setScrollPosition(this.scrollPosition);
     });
   };
 
@@ -328,7 +334,6 @@ class Carousel extends Base {
     this.tileItems.forEach((tileItem, index) => {
       tileItem.setAttribute('index', index);
     });
-    this.initEvents();
   };
 }
 

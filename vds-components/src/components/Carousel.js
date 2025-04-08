@@ -4,17 +4,17 @@ import Base from './Base';
 class Carousel extends Base {
   static observedAttributes = [
     ...this.observedAttributes,
-    'id',
-    'data-track-ignore',
-    'pagination-display',
-    'layout',
     'aspect-ratio',
+    'data-track-ignore',
     'gutter',
+    'id',
+    'layout',
     'peek',
-    'tile-height',
-    'previous-button-track',
     'next-button-track',
+    'pagination-display',
+    'previous-button-track',
     'progress-bar-track',
+    'tile-height',
   ];
 
   tileItems = [];
@@ -29,7 +29,7 @@ class Carousel extends Base {
     this.progressContainerWidth = () => 96;
 
     this.props = {
-      aspectRatio: () => this.getAttribute('aspect-ratio') || '2/3',
+      aspectRatio: () => this.getAttribute('aspect-ratio') || '5/3',
       breakpoint: () =>
         this.getAttribute('breakpoint') || vds.breakpoint || '768px',
       dataTrackIgnore: () => this.getAttribute('data-track-ignore') || false,
@@ -59,51 +59,32 @@ class Carousel extends Base {
       :host {
         display: block;
       }
+      .carousel-container {
+        position: relative;
+        max-width: 1272px;
+        overflow: hidden;
+        padding: 30px 20px;
+        margin: auto;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+      }
+
+      .carousel-wrapper {
+        position: relative;
+        width: 100%;
+        display: flex;
+        align-items: center;
+      }
+
       .carousel {
         display: flex;
-        flex-direction: column;
-        margin: 0 auto;
-        max-height: ${parseInt(this.props.maxWidth()) / 2 + 60}px;
-        max-width: ${this.props.maxWidth()}px;
-        padding: 30px 20px;
-        position: relative;
-      }
-      .carousel-track {
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: row;
         gap: ${this.props.gutter()}px;
-        margin-left: 50%;
-        overflow-x: scroll;
-        padding-top: 8px;
-        padding-bottom: 32px;
-        transform: translateX(-50%);
-        scroll-padding: 0px 36px;
-        scroll-snap-type: x mandatory;
-        scroll-behavior: smooth;
-        scrollbar-width: none;
-        width: 100%;
-        will-change: scroll-position;
-        &::-webkit-scrollbar {
-          width: 0;
-        }
-        &::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        &::-webkit-scrollbar-thumb {
-          background: transparent;
-          border: none;
-        }
+        transition: transform 0.3s ease-in-out;
+        touch-action: pan-y;
+        will-change: transform;
       }
-      .carousel-nav {
-        display: flex;
-        justify-content: space-between;
-        left: 0;
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 100%;
-      }
+
       .carousel-nav-button {
         box-shadow: rgb(255, 255, 255) 0px 0px 0px 0.0625rem;
         display: flex;
@@ -131,65 +112,39 @@ class Carousel extends Base {
         box-shadow: rgb(255, 255, 255) 0px 0px 0px 0.0625rem;
       }
       .carousel-nav-button.previous {
-        visibility: hidden;
-      }
-      .carousel-progress {
-        background-color: rgb(216, 218, 218);
-        border-radius: 4px;
-        box-sizing: border-box;
-        cursor: pointer;
-        height: 6px;
-        margin: 0 auto;
-        position: relative;
-        transition: height 100ms linear, width 100ms linear,
-          border-radius 100ms linear;
-        width: ${this.progressContainerWidth()}px;
-      }
-      .carousel-progress::before {
-        min-height: 44px;
-        min-width: 44px;
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        content: '';
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1;
-      }
-      .carousel-progress-bar {
-        touch-action: manipulation;
-        position: absolute;
-        will-change: transform;
         left: 0;
-        height: 6px;
-        min-width: 16px;
-        background-color: rgb(111, 113, 113);
-        z-index: 1;
-        transition: height 100ms linear, left linear;
-        border-radius: 4px;
-        outline: none;
       }
-      .carousel-progress-bar::before {
-        min-height: 44px;
-        min-width: 44px;
-        width: 100%;
+
+      .carousel-nav-button.next {
+        right: 0;
+      }
+
+      .carousel-scrollbar {
+        margin-top: 10px;
+        width: 96px;
+        height: 8px;
+        background: #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        position: relative;
+      }
+      .carousel-scrollbar-thumb {
+        width: 24px;
         height: 100%;
+        background: #888;
+        border-radius: 4px;
+        cursor: grab;
         position: absolute;
-        content: '';
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1;
+        left: 0;
+        transition: left 0.3s ease-in-out;
       }
     `;
 
     this.template = () => html`
-      <div class="carousel">
-        <div class="carousel-track">
-          <slot></slot>
-        </div>
-        <div class="carousel-nav">
+      <div class="carousel-container">
+        <div class="carousel-wrapper">
           <evolv-button-icon
             name="down-caret"
             size="large"
@@ -197,6 +152,9 @@ class Carousel extends Base {
             class="carousel-nav-button previous"
             data-track="${this.previousButtonTrack}"
           ></evolv-button-icon>
+          <div class="carousel">
+            <slot></slot>
+          </div>
           <evolv-button-icon
             name="down-caret"
             size="large"
@@ -205,9 +163,9 @@ class Carousel extends Base {
             data-track="${this.nextButtonTrack}"
           ></evolv-button-icon>
         </div>
-        <div class="carousel-progress">
+        <div class="carousel-scrollbar">
           <div
-            class="carousel-progress-bar"
+            class="carousel-scrollbar-thumb"
             data-track="${this.progressBarTrack}"
           ></div>
         </div>
@@ -216,16 +174,17 @@ class Carousel extends Base {
 
     this.parts = {
       carousel: '.carousel',
-      carouselTrack: '.carousel-track',
-      buttonPrevious: '.carousel-nav-button.previous',
-      buttonNext: '.carousel-nav-button.next',
-      progressContainer: '.carousel-progress',
-      progressBar: '.carousel-progress-bar',
+      leftArrow: '.carousel-nav-button.previous',
+      rightArrow: '.carousel-nav-button.next',
+      scroll: '.carousel-scrollbar',
+      scrollThumb: '.carousel-scrollbar-thumb',
     };
 
     this.onRender = () => {
-      this.progressBarWidth();
-      // this.resizeCarousel();
+      this.viewportWidth = this.clientWidth;
+      this.scrollPosition = 0;
+      this.isDragging = false;
+      this.startX = 0;
     };
   }
 
@@ -233,104 +192,135 @@ class Carousel extends Base {
     return `${this.id}Tile${index}`;
   };
 
-  counter = 1;
-  carouselItems = this.querySelectorAll('evolv-tile-container');
-  tileCount = this.carouselItems.length;
-  layout = parseInt(this.props.layout);
+  updateScrollThumb = () => {
+    const totalScrollableWidth =
+      this.parts.carousel.scrollWidth - this.viewportWidth;
+    const scrollRatio = this.scrollPosition / totalScrollableWidth;
+    const thumbMaxMove =
+      this.parts.scroll.clientWidth - this.parts.scrollThumb.clientWidth;
+    this.parts.scrollThumb.style.left = `${scrollRatio * thumbMaxMove}px`;
+  };
 
-  resizeTileWidth = () => {
-    const layout = parseInt(this.layout);
-    const peek = this.props.peek();
-    const gutter = parseInt(this.props.gutter());
-    let carouselSpacing = Math.round(layout * 60 + gutter * 2 + 20);
-    let tileWidth;
-    const resizeObserver = new ResizeObserver((entries) => {
-      const tileItems = this.querySelectorAll('evolv-tile-container');
-      entries.forEach((entry) => {
-        let adjustedWidth = Math.round(
-          entry.contentRect.width - carouselSpacing
-        );
-        tileItems.forEach((tileItem, index) => {
-          tileWidth =
-            peek === 'standard'
-              ? Math.round(adjustedWidth / (layout + 0.5))
-              : Math.round(adjustedWidth / layout);
-          tileItem.shadowRoot.querySelector(
-            '.tile-container'
-          ).style.width = `${tileWidth}px`;
-        });
-      });
-    });
-    resizeObserver.observe(this.shadowRoot.querySelector('.carousel'));
+  updateArrows = () => {
+    this.parts.leftArrow.style.display =
+      this.scrollPosition === 0 ? 'none' : 'block';
+    this.parts.rightArrow.style.display =
+      this.scrollPosition >=
+      this.parts.carousel.scrollWidth - this.viewportWidth
+        ? 'none'
+        : 'block';
+  };
+
+  setScrollPosition = (pos) => {
+    this.scrollPosition = Math.max(
+      0,
+      Math.min(pos, this.parts.carousel.scrollWidth - this.viewportWidth)
+    );
+    this.parts.carousel.style.transform = `translateX(-${this.scrollPosition}px)`;
+    this.updateArrows();
+    this.updateScrollThumb();
   };
 
   onPreviousClick = () => {
-    this.counter--;
-    if (this.counter < 1) {
-      this.counter = 1;
-    }
-    this.updateCarousel(this.counter);
+    this.parts.leftArrow.addEventListener('click', () => {
+      this.setScrollPosition(this.scrollPosition - this.viewportWidth);
+    });
   };
 
   onNextClick = () => {
-    const denominator = Math.ceil(this.tileCount / this.layout);
-    this.counter++;
-    if (this.counter >= denominator) {
-      this.counter = denominator;
-    }
-    this.updateCarousel(this.counter);
+    this.parts.rightArrow.addEventListener('click', () => {
+      this.setScrollPosition(this.scrollPosition + this.viewportWidth);
+    });
   };
 
-  progressBarWidth = () => {
-    const denominator = Math.ceil(this.tileCount / this.layout);
-    this.parts.progressBar.style.width =
-      this.progressContainerWidth() / denominator + 'px';
+  scrollbarClick = () => {
+    this.parts.scroll.addEventListener('click', (e) => {
+      const rect = this.parts.scroll.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const totalWidth = this.parts.scroll.clientWidth;
+      const scrollRatio = clickX / totalWidth;
+      this.setScrollPosition(
+        scrollRatio * (this.parts.carousel.scrollWidth - this.viewportWidth)
+      );
+    });
   };
 
-  progressContainerClick = (e) => {
-    const denominator = Math.ceil(this.tileCount / this.layout);
-    const clickPosition = e.offsetX;
-    const segmentSize = Math.ceil(this.progressContainerWidth() / denominator);
-    const numberOfSegments = (this.progressContainerWidth() / segmentSize) >> 0;
-    if (clickPosition <= segmentSize) {
-      this.counter = 1;
-    } else if (clickPosition > (numberOfSegments - 1) * segmentSize) {
-      this.counter = 2;
-    }
-    this.updateCarousel(this.counter);
+  scrollThumbMove = () => {
+    // Mouse drag support for scrollbar thumb
+    this.parts.scrollThumb.addEventListener('mousedown', (e) => {
+      this.isDragging = true;
+      startX = e.clientX;
+      document.body.style.userSelect = 'none';
+    });
+    // ✅ Touch support for scrollbar thumb
+    this.parts.scrollThumb.addEventListener('touchstart', (e) => {
+      this.isDragging = true;
+      this.startX = e.touches[0].clientX;
+    });
+    this.parts.scrollThumb.addEventListener('touchmove', (e) => {
+      if (!this.isDragging) return;
+      const dx = e.touches[0].clientX - this.startX;
+      const thumbMaxMove =
+        this.parts.scroll.clientWidth - this.parts.scrollThumb.clientWidth;
+      const scrollDelta =
+        (dx / thumbMaxMove) *
+        (this.parts.carousel.scrollWidth - this.viewportWidth);
+      this.setScrollPosition(this.scrollPosition + scrollDelta);
+      this.startX = e.touches[0].clientX;
+    });
+    this.parts.scrollThumb.addEventListener('touchend', () => {
+      this.isDragging = false;
+    });
   };
 
-  updateCarousel = (counter) => {
-    const denominator = Math.ceil(this.tileCount / this.layout);
-    this.parts.buttonPrevious.style.visibility =
-      counter !== 1 ? 'visible' : 'hidden';
-    this.parts.buttonNext.style.visibility =
-      counter >= denominator ? 'hidden' : 'visible';
-    let position =
-      counter === 1
-        ? 0
-        : this.layout *
-          (this.carouselItems[0].offsetWidth +
-            parseInt(this.props.gutter(), 10));
-    this.parts.carouselTrack.scrollLeft = position;
-    this.parts.progressBar.style.left = `${
-      (this.progressContainerWidth() / denominator) * (counter - 1)
-    }px`;
+  documentListeners = () => {
+    document.addEventListener('mousemove', (e) => {
+      if (!this.isDragging) return;
+      const dx = e.clientX - this.startX;
+      const thumbMaxMove =
+        this.parts.scroll.clientWidth - this.parts.scrollThumb.clientWidth;
+      const scrollDelta =
+        (dx / thumbMaxMove) *
+        (this.parts.carousel.scrollWidth - this.viewportWidth);
+      this.setScrollPosition(this.scrollPosition + scrollDelta);
+      this.startX = e.clientX;
+    });
+
+    document.addEventListener('mouseup', () => {
+      this.isDragging = false;
+      document.body.style.userSelect = '';
+    });
   };
 
-  resizeCarousel = () => {
-    window.addEventListener('resize', () => {
-      this.updateCarousel();
+  carouselListeners = () => {
+    // Touch swipe on carousel itself
+    this.parts.carousel.addEventListener('touchstart', (e) => {
+      this.startX = e.touches[0].clientX;
+      this.isDragging = true;
+    });
+
+    this.parts.carousel.addEventListener('touchmove', (e) => {
+      if (!this.isDragging) return;
+      const deltaX = this.startX - e.touches[0].clientX;
+      this.setScrollPosition(this.scrollPosition + deltaX);
+      this.startX = e.touches[0].clientX;
+    });
+
+    this.parts.carousel.addEventListener('touchend', () => {
+      this.isDragging = false;
     });
   };
 
   initEvents = () => {
-    this.parts.buttonPrevious.addEventListener('click', this.onPreviousClick);
-    this.parts.buttonNext.addEventListener('click', this.onNextClick);
-    this.parts.progressContainer.addEventListener(
-      'click',
-      this.progressContainerClick
-    );
+    this.onPreviousClick();
+    this.onNextClick();
+    this.scrollbarClick();
+    window.addEventListener('resize', () => {
+      this.viewportWidth = document.querySelector(
+        '.carousel-container'
+      ).clientWidth;
+      this.setScrollPosition(scrollPosition);
+    });
   };
 
   contentChangedCallback = () => {
@@ -338,7 +328,6 @@ class Carousel extends Base {
     this.tileItems.forEach((tileItem, index) => {
       tileItem.setAttribute('index', index);
     });
-    this.resizeTileWidth();
     this.initEvents();
   };
 }

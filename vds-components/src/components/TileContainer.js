@@ -23,18 +23,23 @@ class TileContainer extends Base {
     this.tileIndex = this.getAttribute('index');
 
     this.props = {
-      accordionItemIndex: () => this.tileIndex,
       aspectRatio: () => this.carousel.getAttribute('aspect-ratio') || '2/3',
       backgroundColor: () => this.getAttribute('background-color') || 'white',
       backgroundImage: () => this.getAttribute('background-image') || null,
-      height: () => this.getAttribute('height') || 'auto',
-      id: () => this.carousel?.tileContainerId(this.props.accordionItemIndex()),
+      id: () => this.carousel?.tileContainerId(this.tileIndex),
       index: () => this.getAttribute('index'),
       dataTrackIgnore: () => this.getAttribute('data-track-ignore') || false,
       padding: () => this.getAttribute('padding') || '30px',
       showBorder: () => this.getAttribute('show-border') || true,
       showDropShadow: () => this.getAttribute('show-drop-shadow') || false,
       trackName: () => this.getAttribute('track-name') || null,
+      width: () => this.carousel.getAttribute('tile-width') || 304,
+    };
+
+    this.aspectRatioDecimal = () => {
+      const ar = this.props.aspectRatio();
+      var split = ar.split('/');
+      return Math.round(parseInt(split[0], 10) / parseInt(split[1], 10));
     };
 
     this.styles = () => css`
@@ -55,7 +60,7 @@ class TileContainer extends Base {
         border-radius: 12px;
         display: flex;
         flex-direction: column;
-        height: ${this.props.height()};
+        height: ${this.props.width() / this.aspectRatioDecimal()}px;
         outline: none;
         padding: ${this.props.padding()};
         position: relative;

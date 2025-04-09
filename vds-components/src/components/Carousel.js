@@ -61,26 +61,28 @@ class Carousel extends Base {
         display: block;
       }
       .carousel-container {
-        position: relative;
-        max-width: ${this.props.maxWidth()}px;
-        padding: 30px 20px;
-        margin: auto;
-        display: flex;
         align-items: center;
+        display: flex;
         flex-direction: column;
+        margin: auto;
+        max-width: ${this.props.maxWidth()}px;
+        overflow: hidden;
+        padding-bottom: 30px;
+        position: relative;
       }
 
       .carousel-wrapper {
-        overflow: hidden;
+        align-items: center;
+        display: flex;
         position: relative;
         width: 100%;
-        display: flex;
-        align-items: center;
       }
 
       .carousel {
         display: flex;
         gap: ${this.props.gutter()}px;
+        padding: 30px 20px;
+        scroll-snap-type: x mandatory;
         transition: transform 0.3s ease-in-out;
         touch-action: pan-y;
         will-change: transform;
@@ -116,6 +118,7 @@ class Carousel extends Base {
         box-shadow: rgb(255, 255, 255) 0px 0px 0px 0.0625rem;
       }
       .carousel-nav-button.previous {
+        display: none;
         left: 0;
       }
       .carousel-nav-button.next {
@@ -185,7 +188,7 @@ class Carousel extends Base {
     };
 
     this.onRender = () => {
-      this.viewportWidth = this.parts.carouselContainer.clientWidth;
+      this.viewportWidth = this.clientWidth;
       this.scrollPosition = 0;
       this.isDragging = false;
       this.startX = 0;

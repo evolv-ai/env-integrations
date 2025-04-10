@@ -200,6 +200,39 @@ class Carousel extends Base {
     return `${this.id}Tile${index}`;
   };
 
+  getPartialChildOffset = (container, arr = 'next') => {
+    const containerRect = container.getBoundingClientRect();
+    const children = container.children;
+
+    for (let i = 0; i < children.length; i++) {
+      const childRect = children[i].getBoundingClientRect();
+
+      const isPartiallyVisible =
+        childRect.left < containerRect.right &&
+        childRect.right > containerRect.left &&
+        (childRect.left < containerRect.left ||
+          childRect.right > containerRect.right);
+
+      if (isPartiallyVisible) {
+        const distance = Math.round(
+          arr === 'next'
+            ? childRect.left - containerRect.left
+            : containerRect.right - childRect.right
+        );
+        return distance; // Distance in pixels
+      }
+    }
+
+    return null; // None found
+  };
+
+  getStyle = (elem, style) => {
+    return window
+      .getComputedStyle(elem)
+      .getPropertyValue(style)
+      .match(/(\d+)/)[0];
+  };
+
   updateScrollThumb = () => {
     const totalScrollableWidth =
       this.parts.carousel.scrollWidth - this.viewportWidth;
@@ -231,13 +264,19 @@ class Carousel extends Base {
 
   onPreviousClick = () => {
     this.parts.leftArrow.addEventListener('click', () => {
-      this.setScrollPosition(this.scrollPosition - this.viewportWidth);
+      const leftPadding = this.getStyle(this.parts.carousel, 'padding-left');
+      this.setScrollPosition(
+        this.scrollPosition - this.viewportWidth - leftPadding
+      );
     });
   };
 
   onNextClick = () => {
     this.parts.rightArrow.addEventListener('click', () => {
-      this.setScrollPosition(this.scrollPosition + this.viewportWidth);
+      const leftPadding = this.getStyle(this.parts.carousel, 'padding-left');
+      this.setScrollPosition(
+        this.scrollPosition + this.getPartialChildOffset(this) - leftPadding
+      );
     });
   };
 

@@ -5,6 +5,7 @@ const { vds } = window.evolv;
 
 vds.accordionIndex = 0;
 vds.accordions = [];
+vds.carouselIndex = 0;
 vds.tooltipIndex = 0;
 vds.modalIndex = 0;
 vds.breakpoint = null;

@@ -187,12 +187,50 @@ class Carousel extends Base {
       scrollThumb: '.carousel-scroll-thumb',
     };
 
-    this.onRender = () => {
+    this.onConnect = () => {
+      this.hasConnected = true;
+      this.carouselLeftPadding = this.getStyleVal(
+        this.parts.carousel,
+        'padding-left'
+      );
+
+      this.totalScrollableWidth =
+        this.parts.carousel.scrollWidth - this.viewportWidth;
       this.viewportWidth = this.clientWidth;
       this.scrollPosition = 0;
       this.isDragging = false;
       this.startX = 0;
-      this.initEvents();
+
+      this.parts.leftArrow.addEventListener('click', this.onPreviousClick);
+      this.parts.rightArrow.addEventListener('click', this.onNextClick);
+      this.parts.scroll.addEventListener('click', this.onScrollbarClick);
+
+      this.parts.scrollThumb.addEventListener(
+        'mousedown',
+        this.onScrollMouseDown
+      );
+      this.parts.scrollThumb.addEventListener(
+        'touchstart',
+        this.onScrollThumbTouchStart
+      );
+      this.parts.scrollThumb.addEventListener(
+        'touchend',
+        this.onScrollThumbTouchEnd
+      );
+
+      document.addEventListener('mousedown', this.onDocumentMouseDown);
+      document.addEventListener('mouseup', this.onDocumentMouseUp);
+      this.parts.carousel.addEventListener(
+        'touchstart',
+        this.onCarouselTouchStart
+      );
+      this.parts.carousel.addEventListener('touchend', this.onCarouselTouchEnd);
+
+      window.addEventListener('resize', this.onWindowResize);
+    };
+
+    this.onDisconnect = () => {
+      window.removeEventListener('resize', this.onWindowResize);
     };
   }
 
@@ -226,7 +264,7 @@ class Carousel extends Base {
     return null; // None found
   };
 
-  getStyle = (elem, style) => {
+  getStyleVal = (elem, style) => {
     return window
       .getComputedStyle(elem)
       .getPropertyValue(style)
@@ -263,112 +301,112 @@ class Carousel extends Base {
   };
 
   onPreviousClick = () => {
-    this.parts.leftArrow.addEventListener('click', () => {
-      const leftPadding = this.getStyle(this.parts.carousel, 'padding-left');
-      this.setScrollPosition(
-        this.scrollPosition - this.viewportWidth - leftPadding
-      );
-    });
+    this.setScrollPosition(
+      this.scrollPosition - this.viewportWidth - this.carouselLeftPadding
+    );
   };
 
   onNextClick = () => {
-    this.parts.rightArrow.addEventListener('click', () => {
-      const leftPadding = this.getStyle(this.parts.carousel, 'padding-left');
-      this.setScrollPosition(
-        this.scrollPosition + this.getPartialChildOffset(this) - leftPadding
-      );
-    });
+    this.setScrollPosition(
+      this.scrollPosition +
+        this.getPartialChildOffset(this) -
+        this.carouselLeftPadding
+    );
   };
 
-  scrollbarClick = () => {
-    this.parts.scroll.addEventListener('click', (e) => {
-      const rect = this.parts.scroll.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const totalWidth = this.parts.scroll.clientWidth;
-      const scrollRatio = clickX / totalWidth;
-      this.setScrollPosition(
-        scrollRatio * (this.parts.carousel.scrollWidth - this.viewportWidth)
-      );
-    });
+  onScrollbarClick = (evt) => {
+    const rect = this.parts.scroll.getBoundingClientRect();
+    const clickX = evt.clientX - rect.left;
+    const totalWidth = this.parts.scroll.clientWidth;
+    const scrollRatio = clickX / totalWidth;
+    this.setScrollPosition(
+      scrollRatio * (this.parts.carousel.scrollWidth - this.viewportWidth)
+    );
   };
 
-  scrollThumbMove = () => {
-    // Mouse drag support for scrollbar thumb
-    this.parts.scrollThumb.addEventListener('mousedown', (e) => {
-      this.isDragging = true;
-      this.startX = e.clientX;
-      document.body.style.userSelect = 'none';
-    });
-    // ✅ Touch support for scrollbar thumb
-    this.parts.scrollThumb.addEventListener('touchstart', (e) => {
-      this.isDragging = true;
-      this.startX = e.touches[0].clientX;
-    });
-    this.parts.scrollThumb.addEventListener('touchmove', (e) => {
-      if (!this.isDragging) return;
-      const dx = e.touches[0].clientX - this.startX;
-      const thumbMaxMove =
-        this.parts.scroll.clientWidth - this.parts.scrollThumb.clientWidth;
-      const scrollDelta =
-        (dx / thumbMaxMove) *
-        (this.parts.carousel.scrollWidth - this.viewportWidth);
-      this.setScrollPosition(this.scrollPosition + scrollDelta);
-      this.startX = e.touches[0].clientX;
-    });
-    this.parts.scrollThumb.addEventListener('touchend', () => {
-      this.isDragging = false;
-    });
+  onScrollMouseDown = (evt) => {
+    this.isDragging = true;
+    this.startX = evt.clientX;
+    document.body.style.userSelect = 'none';
   };
 
-  documentListeners = () => {
-    document.addEventListener('mousemove', (e) => {
-      if (!this.isDragging) return;
-      const dx = e.clientX - this.startX;
-      const thumbMaxMove =
-        this.parts.scroll.clientWidth - this.parts.scrollThumb.clientWidth;
-      const scrollDelta =
-        (dx / thumbMaxMove) *
-        (this.parts.carousel.scrollWidth - this.viewportWidth);
-      this.setScrollPosition(this.scrollPosition + scrollDelta);
-      this.startX = e.clientX;
-    });
-
-    document.addEventListener('mouseup', () => {
-      this.isDragging = false;
-      document.body.style.userSelect = '';
-    });
+  onScrollThumbTouchMove = (evt) => {
+    if (!this.isDragging) return;
+    const dx = evt.touches[0].clientX - this.startX;
+    const thumbMaxMove =
+      this.parts.scroll.clientWidth - this.parts.scrollThumb.clientWidth;
+    const scrollDelta =
+      (dx / thumbMaxMove) *
+      (this.parts.carousel.scrollWidth - this.viewportWidth);
+    this.setScrollPosition(this.scrollPosition + scrollDelta);
+    this.startX = evt.touches[0].clientX;
   };
 
-  carouselListeners = () => {
-    // Touch swipe on carousel itself
-    this.parts.carousel.addEventListener('touchstart', (e) => {
-      this.startX = e.touches[0].clientX;
-      this.isDragging = true;
-    });
-
-    this.parts.carousel.addEventListener('touchmove', (e) => {
-      if (!this.isDragging) return;
-      const deltaX = this.startX - e.touches[0].clientX;
-      this.setScrollPosition(this.scrollPosition + deltaX);
-      this.startX = e.touches[0].clientX;
-    });
-
-    this.parts.carousel.addEventListener('touchend', () => {
-      this.isDragging = false;
-    });
+  onScrollThumbTouchStart = (evt) => {
+    this.isDragging = true;
+    this.startX = evt.touches[0].clientX;
+    this.parts.scrollThumb.addEventListener(
+      'touchmove',
+      this.onScrollThumbTouchMove
+    );
   };
 
-  initEvents = () => {
-    this.onPreviousClick();
-    this.onNextClick();
-    this.scrollbarClick();
-    this.scrollThumbMove();
-    this.documentListeners();
-    this.carouselListeners();
-    window.addEventListener('resize', () => {
-      this.viewportWidth = this.parts.carouselContainer.clientWidth;
-      this.setScrollPosition(this.scrollPosition);
-    });
+  onScrollThumbTouchEnd = () => {
+    this.isDragging = false;
+    this.parts.scrollThumb.removeEventListener(
+      'touchmove',
+      this.onScrollThumbTouchMove
+    );
+  };
+
+  onDocumentMouseMove = (evt) => {
+    if (!this.isDragging) return;
+    const dx = evt.clientX - this.startX;
+    const thumbMaxMove =
+      this.parts.scroll.clientWidth - this.parts.scrollThumb.clientWidth;
+    const scrollDelta =
+      (dx / thumbMaxMove) *
+      (this.parts.carousel.scrollWidth - this.viewportWidth);
+    this.setScrollPosition(this.scrollPosition + scrollDelta);
+    this.startX = evt.clientX;
+  };
+
+  onDocumentMouseDown = () => {
+    this.isDragging = true;
+    document.body.style.userSelect = 'none';
+    document.body.addEventListener('mousemove', this.onDocumentMouseMove);
+  };
+
+  onDocumentMouseUp = () => {
+    this.isDragging = false;
+    document.body.style.userSelect = '';
+    document.body.removeEventListener('mousemove', this.onDocumentMouseMove);
+  };
+
+  onCarouselTouchStart = (evt) => {
+    this.startX = evt.touches[0].clientX;
+    this.isDragging = true;
+    this.parts.carousel.addEventListener('touchmove', this.onCarouselTouchMove);
+  };
+
+  onCarouselTouchMove = (evt) => {
+    if (!this.isDragging) return;
+    const deltaX = this.startX - evt.touches[0].clientX;
+    this.setScrollPosition(this.scrollPosition + deltaX);
+    this.startX = evt.touches[0].clientX;
+  };
+
+  onCarouselTouchEnd = () => {
+    this.isDragging = false;
+    this.parts.carousel.removeEventListener(
+      'touchmove',
+      this.onCarouselTouchMove
+    );
+  };
+
+  onWindowResize = () => {
+    this.viewportWidth = this.parts.carouselContainer.clientWidth;
+    this.setScrollPosition(this.scrollPosition);
   };
 
   contentChangedCallback = () => {

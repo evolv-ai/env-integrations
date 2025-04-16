@@ -1,0 +1,39 @@
+{
+    "userAgeBucket": "Undefined",
+    "billingState": "GA",
+    "lines": [
+        {
+            "@class": "onevz.soe.omnidl.client.EvolvLines",
+            "lineId": "DE",
+            "operatingSystem": "Android",
+            "category": "Smartphone",
+            "displayName": "Samsung Galaxy S6 edge 64GB in Gold Platinum",
+            "devicePurchaseDate": "07/06/2018",
+            "upgradeEligible": true,
+            "byodDevice": false,
+            "accessRole": "Undefined"
+        },
+        {
+            "@class": "onevz.soe.omnidl.client.EvolvLines",
+            "lineId": "EI",
+            "operatingSystem": null,
+            "category": "Basicphone",
+            "displayName": "Test Device",
+            "devicePurchaseDate": "Undefined",
+            "upgradeEligible": true,
+            "byodDevice": false,
+            "accessRole": "Undefined"
+        },
+        {
+            "@class": "onevz.soe.omnidl.client.EvolvLines",
+            "lineId": "AJ",
+            "operatingSystem": "Apple iOS",
+            "category": "Smartphone",
+            "displayName": "Apple iPhone 11 Pro Max 64GB in Space Gray",
+            "devicePurchaseDate": "03/25/2021",
+            "upgradeEligible": true,
+            "byodDevice": false,
+            "accessRole": "Owner"
+        }
+    ]
+}

@@ -31,10 +31,63 @@ Sets these context variables, both based on `window.vzdl.utils.visitStart`. `vz.
 | 6:00 PM - Midnight | `Evening to Late Night` |
 
 ### `vz.accountDeviceOs`
-Sets this context variable when at the following two URLs:  
-UAD page https://www.verizon.com/digital/nsa/secure/ui/udb/#/  
-MDN Selection page https://www.verizon.com/sales/nextgen/mdnselection.html?mtnFlow=M&fromGnav=true  
+Sets this context variable on the UAD and MDN Selection pages  
+
+### `vz.billingState`
+Sets this context variable on the UAD and MDN Selection pages  
+`vz.billingState` is set to the two lettr state abbreviation, for example `CA`.
+
+### `vz.isUpgradeEligible`
+Sets this context variable on the UAD and MDN Selection pages  
+`vz.isUpgradeEligible` is a boolean that is set to either `true` or `false`, but it looks like `false` is never set by Verizon, so the values are really `true` or `null`.
+
+### `vz.userAgeBucket`
+Sets this context variable on the UAD and MDN Selection pages  
 Example values for are: 
+`vz.userAgeBucket` is set according to the following table. The vzdl includes an anonymous age bucket that is translated into an actual age bucket.
+
+| Anonymous Age Bucket | Actual Age Bucket |
+| -------------------- | ----------------- |
+| `AgeLevel1` | `<18 years` |
+| `AgeLevel2` | `18-24 years` |
+| `AgeLevel3` | `25-34 years` |
+| `AgeLevel4` | `35-44 years` |
+| `AgeLevel5` | `45-54 years` |
+| `AgeLevel6` | `55-64 years` |
+| `AgeLevel7` | `>=65 years` |
+| `Undefined` | `unknown` |
+
+### `vz.accessRole`
+Sets this context variable on the UAD and MDN Selection pages  
+Possible values are: Owner, Manager, Member, Undefined
+
+### `vz.isByod`
+Sets this context variable on the UAD and MDN Selection pages  
+The line is a Bring Your Own Device line. This is true or false
+
+### `vz.category`
+Sets this context variable on the UAD and MDN Selection pages  
+Possible values are: Smartphone, HomeSolutions, Tablet, ConnectedDevice
+
+### `vz.deviceAge`
+Sets this context variable on the UAD and MDN Selection pages  
+
+| Age | Bucket |
+|-|-|
+| <= 7 | `Less than 1 week` |
+| <= 31 | `Less than 1 month` |
+| <= 365 | `Less than 1 year` |
+| <= 365 * 2 | `Less than 2 years` |
+| <= 365 * 3 | `Less than 3 years` |
+| > 365 * 3 | `Over 3 years` |
+
+## `vz.deviceDescription`
+Sets this context variable on the UAD and MDN Selection pages  
+example: "Apple iPhone 12 64GB in (PRODUCT)RED"
+
+### `vz.deviceOperatingSystem`
+Sets this context variable on the UAD and MDN Selection pages  
+Example values are: 
 
 | Account Device OS | Comment |
 | ---------- | --- |
@@ -42,69 +95,28 @@ Example values for are:
 | `Android` |
 | `null` | for a flip phone for instance |
 
-### `vz.billingState`
-Sets this context variable when at the following two URLs:  
-UAD page https://www.verizon.com/digital/nsa/secure/ui/udb/#/  
-MDN Selection page https://www.verizon.com/sales/nextgen/mdnselection.html?mtnFlow=M&fromGnav=true  
-`vz.billingState` is set to the two lettr state abbreviation, for example `CA`.
-
-### `vz.isUpgradeEligible`
-Sets this context variable when at the following two URLs:  
-UAD page https://www.verizon.com/digital/nsa/secure/ui/udb/#/  
-MDN Selection page https://www.verizon.com/sales/nextgen/mdnselection.html?mtnFlow=M&fromGnav=true  
-`vz.isUpgradeEligible` is a boolean that is set to either `true` or `false`, but it looks like `false` is never set by Verizon, so the values are really `true` or `null`.
-
-### `vz.userAgeBucket`
-Sets this context variable when at the following two URLs:  
-UAD page https://www.verizon.com/digital/nsa/secure/ui/udb/#/  
-MDN Selection page https://www.verizon.com/sales/nextgen/mdnselection.html?mtnFlow=M&fromGnav=true  
-Example values for are: 
-`vz.userAgeBucket` is set according to the following table. The vzdl includes an anonymous age bucket that is translated into an actual age bucket.
-
-| Anonymous Age Bucket | Actual Age Bucket | Comment |
-| -------------------- | ----------------- | ------- |
-| `AgeLevel1` | `<18 years` |
-| `AgeLevel2` | `18-24 years` |
-| `AgeLevel3` | `25-34 years` |
-| `AgeLevel4` | `35-44 years` |
-| `AgeLevel5` | `45-54 years` |
-| `AgeLevel6` | `55-64 years` |
-| `AgeLevel7` | `>65 years` | it's actually >= 65 |
-| `Undefined` | `unknown` |
-
-### vzdl Data Structures
-UAD page https://www.verizon.com/digital/nsa/secure/ui/udb/#/  
-
-```
-vzdl
-    park
-        evolv
-            billAccouts
-                billingState
-                mtns
-                    [1..]
-                        deviceInfo
-                                category
-                                displayName
-                                operatingSystem
-                        upgradeEligible
-            userAgeBucket
-```                 
-
-MDN Selection page https://www.verizon.com/sales/nextgen/mdnselection.html?mtnFlow=M&fromGnav=true  
-
+### vzdl Data Structure
 ```
 vzdl
     park
         evolv
             billingState
-            accountDeviceOs
-            isUpgradeEligible
+            lines
+                [1..]
+                accessRole
+                byodDevice
+                category
+                devicePurchaseDate
+                displayName
+                operatingSystem
+                upgradeEligible
             userAgeBucket
-```
+```                 
 
-Data attributes on the MDN selection page pertain to the account holder. The account holder is assumed to be and is mapped to the first mtn on the UTM page.
+The integration pulls the line data attributes from the owner accessRole line, if not present it pulls it from the manager accessRole line.
 
 ### Build and install
+nvm use 18  
 npm run build  
+npm login
 npm publish

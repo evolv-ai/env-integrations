@@ -128,30 +128,29 @@ module.exports = function (config) {
             || location.href == 'https://www.verizon.com/sales/nextgen/mdnselection.html?mtnFlow=M&fromGnav=true' ) {
         waitFor(() => window.vzdl?.park?.evolv, 10000)
         .then(evolvNode => {
-            if (location.href == 'https://www.verizon.com/digital/nsa/secure/ui/udb/#/') { // UAD page
-                if (evolvNode.billAccounts) {
-                    if (evolvNode.billAccounts.billingState) {
-                        evolv.context.set('vz.billingState', evolvNode.billAccounts.billingState);
-                    }
-                    if (evolvNode.billAccounts.mtns) {
-
-                        const mtnsArray = evolvNode.billAccounts.mtns;
-                        mtnsArray.forEach((mtn, index) => {
-                            const contextIndex = index === 0 ? '' : (index + 1).toString();
-                            evolv.context.set('vz.accountDeviceOs' + contextIndex, mtn.deviceInfo?.operatingSystem);
-                            evolv.context.set('vz.isUpgradeEligible' + contextIndex, mtn.upgradeEligible);
-                        });
-                    }
+            if (evolvNode.billingState) {
+                evolv.context.set('vz.billingState', evolvNode.billingState);
+            }
+            if (evolvNode.lines) {
+                const linesArray = evolvNode.lines;
+                let selectedLine = linesArray.find(line =>
+                    line.accessRole && line.accessRole === 'Owner'
+                );
+                if (!selectedLine) {
+                    selectedLine = linesArray.find(line =>
+                        line.accessRole && line.accessRole === 'Manager'
+                    );
                 }
-            } else if (location.href == 'https://www.verizon.com/sales/nextgen/mdnselection.html?mtnFlow=M&fromGnav=true'){ // MDN selection page
-                if (evolvNode.accountDeviceOs) { 
-                    evolv.context.set('vz.accountDeviceOs', evolvNode.accountDeviceOs);
-                }
-                if (evolvNode.billingState) {
-                    evolv.context.set('vz.billingState', evolvNode.billingState);
-                }
-                if (evolvNode.isUpgradeEligible) {
-                    evolv.context.set('vz.isUpgradeEligible', evolvNode.isUpgradeEligible);
+                // If a qualifying line is found, set the line-specific context values
+                if (selectedLine) {
+                    evolv.context.set('vz.accessRole', selectedLine.accessRole);
+                    evolv.context.set('vz.isByodDevice', selectedLine.byodDevice);
+                    evolv.context.set('vz.deviceCategory', selectedLine.category);
+                    evolv.context.set('vz.deviceAge', deviceAge(selectedLine.devicePurchaseDate));
+                    evolv.context.set('vz.deviceDescription', selectedLine.displayName);
+                    evolv.context.set('vz.deviceOperatingSystem', selectedLine.operatingSystem);
+                    evolv.context.set('vz.isUpgradeEligible', selectedLine.upgradeEligible);
+                    evolv.context.set('vz.deviceCount', linesArray.length);
                 }
             }
             if (evolvNode.userAgeBucket) {
@@ -219,7 +218,6 @@ module.exports = function (config) {
     //         >65 years   (AgeLevel7)
     //         unknown     (Undefined)
     //
-    // this data attribute is the same for both the UAD and the MDN selection pages
     function userAgeBucket(vzUserAgeBucket) {
         var userAgeBucket = 'Invalid age level';
 
@@ -250,5 +248,86 @@ module.exports = function (config) {
                 break;
         }
         return userAgeBucket;
+    }
+
+    // set the device age
+    // ====================================================
+    //     there are x buckets
+    //         <18 years   (AgeLevel1)
+    //         18-24 years (AgeLevel2)
+    //         25-34 years (AgeLevel3)
+    //         35-44 years (AgeLevel4)
+    //         45-54 years (AgeLevel5)
+    //         55-64 years (AgeLevel6)
+    //         >65 years   (AgeLevel7)
+    //         unknown     (Undefined)
+    function deviceAge(dateStr) {
+        // Expecting dateStr in "mm/dd/yyyy" format.
+        const parts = dateStr.split('/');
+        if (parts.length !== 3) {
+          return "Invalid date";
+        }
+        
+        // In "mm/dd/yyyy", the first part is the month, second is the day, third is the year.
+        const month = parseInt(parts[0], 10);
+        const day = parseInt(parts[1], 10);
+        const year = parseInt(parts[2], 10);
+        
+        // Validate the parsed numbers.
+        if (isNaN(month) || isNaN(day) || isNaN(year)) {
+          return "Invalid date";
+        }
+        
+        // Create a Date object (JavaScript months are 0-indexed).
+        const inputDate = new Date(year, month - 1, day);
+        
+        // Validate that the constructed date matches the input values (to catch invalid dates like "02/31/2025").
+        if (
+          inputDate.getFullYear() !== year ||
+          inputDate.getMonth() !== month - 1 ||
+          inputDate.getDate() !== day
+        ) {
+          return "Invalid date";
+        }
+        
+        // Normalize the input date to midnight.
+        inputDate.setHours(0, 0, 0, 0);
+        
+        // Get today's date and normalize to midnight.
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Compute tomorrow's date by adding one day to today.
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        // Reject dates that are in the future (beyond tomorrow).
+        if (inputDate.getTime() > tomorrow.getTime()) {
+          return "Invalid date: date is in the future";
+        }
+        
+        // If the input date is either today or tomorrow, it falls in the "today" bucket.
+        if (inputDate.getTime() === today.getTime() || inputDate.getTime() === tomorrow.getTime()) {
+          return "today";
+        }
+        
+        // For past dates, calculate the difference in days.
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const deltaDays = Math.floor((today - inputDate) / msPerDay);
+        
+        // Assign the appropriate bucket.
+        if (deltaDays <= 7) {
+          return "<= 1 week";
+        } else if (deltaDays <= 31) {
+          return "<= 1 mo";
+        } else if (deltaDays < 365) {
+          return "<= 1 year";
+        } else if (deltaDays < 365 * 2) {
+          return "<= 2 years";
+        } else if (deltaDays < 365 * 3) {
+          return "<= 3 years";
+        } else {
+          return "> 3 years";
+        }
     }
 };

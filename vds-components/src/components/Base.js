@@ -49,15 +49,15 @@ class Base extends HTMLElement {
         --font-family-etx: Verizon-NHG-eTX, Helvetica, Arial, sans-serif;
         --font-family-eds: Verizon-NHG-eDS, Helvetica, Arial, sans-serif;
         ${Object.keys(vds.colorTokens)
-          .map(
-            (colorToken) =>
-              mixin`--color-${colorToken}: ${vds.colorTokens[colorToken]};`
-          )
-          .join('')}
+        .map(
+          (colorToken) =>
+            mixin`--color-${colorToken}: ${vds.colorTokens[colorToken]};`,
+        )
+        .join('')}
         --color-overlay: rgba(0, 0, 0, 0.8);
         --color-ghost: ${this.surface === 'dark'
-          ? 'rgba(143, 145, 145, 0.18)'
-          : 'rgba(111, 113, 113, 0.06)'};
+        ? 'rgba(143, 145, 145, 0.18)'
+        : 'rgba(111, 113, 113, 0.06)'};
         --color-primary: ${this.surface === 'dark' ? 'white' : 'black'};
         --color-inverse: ${this.surface === 'dark' ? 'black' : 'white'};
         --outline-focus: var(--color-primary) dashed 0.0625rem !important;
@@ -89,12 +89,12 @@ class Base extends HTMLElement {
             :host([color='${colorToken}']) {
               color: var(--color-${colorToken});
             }
-          `
+          `,
         )
         .join('')}
 
       [hidden] {
-        display: none;
+        display: none !important;
       }
 
       .unbutton {
@@ -140,7 +140,7 @@ class Base extends HTMLElement {
     this.render();
 
     this._onAttributeChangeds.forEach((onAttributeChanged) =>
-      onAttributeChanged()
+      onAttributeChanged(),
     );
   }
 
@@ -205,9 +205,19 @@ class Base extends HTMLElement {
       this.updateValue(
         key,
         utils.functionOrSelector(this._partSelectors[key], this.shadow),
-        this._parts
-      )
+        this._parts,
+      ),
     );
+  };
+
+  renderStyle = () => {
+    this.updateProps();
+    const styleElement = this.shadow.querySelector('style');
+    styleElement.innerHTML = `
+        ${[...this._styles, this.css]
+        .map((style) => utils.functionOrValue(style))
+        .join('')}
+    `;
   };
 
   render = () => {
@@ -215,8 +225,8 @@ class Base extends HTMLElement {
     this.shadow.innerHTML = html`
       <style>
         ${[...this._styles, this.css]
-          .map((style) => utils.functionOrValue(style))
-          .join('')}
+        .map((style) => utils.functionOrValue(style))
+        .join('')}
       </style>
       ${utils.functionOrValue(this.template)}
     `;
@@ -235,7 +245,7 @@ class Base extends HTMLElement {
       .filter((element) => element?.__proto__ instanceof Base)
       .filter(
         (component, index, componentList) =>
-          !componentList.some((c) => c !== component && c.contains(component))
+          !componentList.some((c) => c !== component && c.contains(component)),
       )
       .forEach((component) => {
         component.render();

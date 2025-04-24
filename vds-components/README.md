@@ -171,7 +171,7 @@ Example:
 | `medium` | `Verizon-NHG-eDS` | `0.875rem` | `1.125rem` | `400` |
 | `large` | `Verizon-NHG-eDS` | `1rem` | `1.25rem` | `400` |
 
----
+----
 
 ### Button
 
@@ -227,7 +227,7 @@ window.evolv.vds.ButtonIcon
 
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
-| `name` | The name of the icon | `empty` | `pencil`, `down-caret`, `right-arrow`, `trash-can`, `phone`, `phone-plan`, `phone-protection`, `info`, `close` |
+| `name` | The name of the icon | `empty` | See [Icon](#icon) |
 | `size` | The size of the icon | `small` | `small`, `large` *Refer to Notes* |
 | `title` | The title to be passed to the icon, visible to assistive technologies | `<name>` | `<string>` |
 
@@ -258,9 +258,9 @@ window.evolv.vds.Icon
 
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
-| `name` | The name of the icon, leave blank to supply `svg` icon as content | `null` | `pencil`, `down-caret`, `right-arrow`, `trash-can`, `phone`, `phone-plan`, `phone-protection`, `info`, `close` |
+| `name` | The name of the icon, leave blank to supply `svg` icon as content | `null` | *Refer to Notes* |
 | `color` | The text color of the icon | `inherit` | See [Properties](#properties) |
-| `size` | The font size of the icon, can be a preset size or any `<css-size>` | `small` | `small`, `medium`, `large`, `xlarge`, `<css-size>` *Refer to Notes* |
+| `size` | The font size of the icon, can be a preset size or any `<css-size>` | `small` | `micro`, `small`, `medium`, `large`, `xlarge`, `<css-size>` *Refer to Notes* |
 | `title` | The title to be passed to the icon, visible to assistive technologies | `<name>` | `<string>` |
 | `type` | Whether the icon size is `standAlone`, determined by the `size` attribute, or `inline`, inherited from text size of the parent | `standAlone` | `inline`, `standAlone` |
 
@@ -270,13 +270,37 @@ window.evolv.vds.Icon
 
 | `size` | `width and height` |
 | :----- | :---------- |
+| `micro` | `0.75rem`
 | `small` | `1rem` |
 | `medium` | `1.25rem` |
 | `large` | `1.5rem` |
 | `xlarge` | `1.75rem` |
 | `<css-size>` | `<css-size>` |
 
----
+If `breakpoint` is set, at or above the breakpoint width `standAlone` icons will change size.
+
+| `size` | `width and height` |
+| :----- | :---------- |
+| `micro` | `1rem` |
+| `small` | `1.25rem` |
+| `medium` | `1.5rem` |
+| `large` | `1.75rem` |
+| `xlarge` | `2rem` |
+
+Available icons:
+
+- close
+- down-caret
+- info
+- pencil
+- phone
+- phone-plan
+- phone-protection
+- right-arrow
+- trash-can
+- up-caret
+
+----
 
 ### Modal
 
@@ -304,7 +328,34 @@ $mu('#productArea', 'product-area').inject(render(html`
 `), false).append()
 ```
 
----
+----
+
+### Scrollbar
+
+The `<evolv-scrollbar>` component creates a scrollbar with click, drag, and keyboard interactions. It's currently only
+designed to work within the shadow DOM of other components but could be upgraded to a stand-alone component if there was
+a need for it. It applies styles to the `parts.scrollArea` of the parent component to enable scrolling and disable the
+default scrollbar.
+
+#### Tag
+
+```js
+<evolv-scrollbar></evolv-scrollbar>
+```
+
+#### Properties
+
+| Name | Description | Default | Accepts |
+| :--- | :---------- | :------ | :------ |
+| `hover-thickness` | The thickness of the scrollbar track on hover. | `4px` | `<css-length>` |
+| `length` | The length of the scrollbar. | `<auto>` | `<css-length>` |
+| `orientation` | Whether the scrollbar is vertical or horizontal | `vertical` | `vertical`, `horizontal` |
+| `scroll-area` | A selector for another element inside the shadow DOM of the parent component | `null` | `<css-selector>` |
+| `thickness` | The thickness of the scrollbar track. | `4px` | `<css-length>` |
+| `thumbColor` | The color of the scrollbar thumb. | `var(--color-gray-44)` | `<css-color>` |
+| `thumbHoverColor` | The color of the scrollbar thumb on hover. | `var(--color-gray-20)` | `<css-color>` |
+
+----
 
 ### TextLink
 
@@ -334,28 +385,7 @@ window.evolv.vds.TextLink
 | `small` | `0.75rem` |
 | `large` | `1rem` |
 
----
-
-### Tooltip
-
-**Released in version 0.4.0**
-
-#### Tag
-
-```html
-<evolv-tooltip content-title="Lorem ipusum">Nulla facilis eos dolorem totam est explicabo fuga. Cum magnam laudantium et itaque rerum sit. Amet laudantium nesciunt consequuntur nam accusamus odit. Sequi rerum et optio et aspernatur quam. Dolores nobis quos suscipit. Aut fugiat ipsam praesentium aliquid ut minima exercitationem illum. Natus explicabo rerum fugit in. Ut voluptatem nemo et. Nobis rem ut repellendus consectetur velit. Consequatur est aperiam praesentium illo facilis. Unde voluptas cumque et aliquid neque autem vel nam. Sit rerum aspernatur minima. Aut sequi vitae et natus est voluptas necessitatibus.</evolv-tooltip>
-```
-
-#### Properties
-
-| Name | Description | Default | Accepts |
-| :--- | :---------- | :------ | :------ |
-| `size` | Renders the tooltip in the correpsponding size. Requires `type` to be `standAlone`. **Coming soon!** | `large` | `large`, `small` |
-| `content-max-height` | The maximum height of the tooltip content 
-| `content-title` | A title to be displayed above the tooltip content | | `<string>` |
-| `type` | Whether the tooltip button is `inline`, inherited from the text size of the parent, or `standAlone`, determined by the `size` attribute | `inline` | `inline`, `standAlone` |
-
----
+----
 
 ### Title
 
@@ -394,3 +424,24 @@ The `primitive` attribute, if left blank, is assigned a default heading tag corr
 | `large` | `h2` |
 | `xlarge` | `h1` |
 | `2xlarge` | `h1` |
+
+----
+
+### Tooltip
+
+**Released in version 0.4.0**
+
+#### Tag
+
+```html
+<evolv-tooltip content-title="Lorem ipusum">Nulla facilis eos dolorem totam est explicabo fuga. Cum magnam laudantium et itaque rerum sit. Amet laudantium nesciunt consequuntur nam accusamus odit. Sequi rerum et optio et aspernatur quam. Dolores nobis quos suscipit. Aut fugiat ipsam praesentium aliquid ut minima exercitationem illum. Natus explicabo rerum fugit in. Ut voluptatem nemo et. Nobis rem ut repellendus consectetur velit. Consequatur est aperiam praesentium illo facilis. Unde voluptas cumque et aliquid neque autem vel nam. Sit rerum aspernatur minima. Aut sequi vitae et natus est voluptas necessitatibus.</evolv-tooltip>
+```
+
+#### Properties
+
+| Name | Description | Default | Accepts |
+| :--- | :---------- | :------ | :------ |
+| `size` | Renders the tooltip in the correpsponding size. Requires `type` to be `standAlone`. **Coming soon!** | `large` | `large`, `small` |
+| `content-max-height` | The maximum height of the tooltip content 
+| `content-title` | A title to be displayed above the tooltip content | | `<string>` |
+| `type` | Whether the tooltip button is `inline`, inherited from the text size of the parent, or `standAlone`, determined by the `size` attribute | `inline` | `inline`, `standAlone` |

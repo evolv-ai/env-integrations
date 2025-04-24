@@ -5,6 +5,7 @@ const { vds } = window.evolv;
 
 vds.accordionIndex = 0;
 vds.accordions = [];
+vds.carouselIndex = 0;
 vds.tooltipIndex = 0;
 vds.modalIndex = 0;
 vds.breakpoint = null;
@@ -114,8 +115,15 @@ vds.keyCode = {
 vds.focusable =
   'evolv-button, evolv-button-icon, evolv-text-link, button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled]), details:not([disabled]), summary:not(:disabled)';
 
-vds.isScrollable = (element) =>
-  element?.scrollHeight > element?.offsetHeight || false;
+vds.isScrollable = (element, orientation = 'vertical') => {
+  if (!element) {
+    return false;
+  }
+  const { offsetHeight, offsetWidth, scrollHeight, scrollWidth } = element;
+  const offsetLength = orientation === 'horizontal' ? offsetWidth : offsetHeight;
+  const scrollLength = orientation === 'horizontal' ? scrollWidth : scrollHeight;
+  return scrollLength > offsetLength;
+}
 
 vds.keyScrolling = (event, element) => {
   const { keyCode } = vds;

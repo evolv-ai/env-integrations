@@ -6,9 +6,9 @@ export default [
   {
     input: `./src/intermediate/version.js`,
     output: {
-      file: `./src/imports/version.js`
+      file: `./src/imports/version.js`,
     },
-    plugins: [json()]
+    plugins: [json()],
   },
   {
     input: `./src/intermediate/init-contents.js`,
@@ -18,11 +18,13 @@ export default [
     },
     treeshake: false,
     preserveEntrySignatures: 'strict',
-    plugins: [minifyTaggedTemplates({
-      include: '**/*.js',
-      tagNames: ['css', 'html', 'mixin'],
-    })]
-  },   
+    plugins: [
+      minifyTaggedTemplates({
+        include: '**/*.js',
+        tagNames: ['css', 'html', 'mixin'],
+      }),
+    ],
+  },
   {
     input: `./src/main.js`,
     output: {
@@ -30,15 +32,15 @@ export default [
       format: 'es',
       exports: 'auto',
     },
-    preserveEntrySignatures: 'strict'
+    preserveEntrySignatures: 'strict',
   },
   {
     input: `./src/main.js`,
     output: {
       file: `./dist/cjs/index.js`,
       format: 'cjs',
-      exports: 'auto'
+      exports: 'auto',
     },
-    preserveEntrySignatures: 'strict'
+    preserveEntrySignatures: 'strict',
   },
-]
+];

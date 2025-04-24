@@ -8,18 +8,13 @@ class TooltipContent extends Base {
   bodyObserver = null;
   hasScrollbar = false;
   disableOnContentScroll = false;
-  scrollToThumbRatio = null;
-  thumbTop = null;
-  thumbTopMax = null;
-  thumbHeight = null;
-  thumbToScrollRatio = null;
 
   constructor() {
     super();
 
     this.index = this.dataset.tooltipIndex;
     this.tooltip = document.querySelector(
-      `evolv-tooltip[data-tooltip-index="${this.index}"]`
+      `evolv-tooltip[data-tooltip-index="${this.index}"]`,
     );
 
     this.props = {
@@ -116,61 +111,6 @@ class TooltipContent extends Base {
         display: none;
       }
 
-      :host([scroll]) .content-scroll {
-          overflow-y: scroll;
-      }
-        
-      :host([scroll]:not([modal])) .content-scroll::-webkit-scrollbar {
-        display: none; /* For Chrome, Safari, and Opera */
-      }
-
-      :host([scroll]:not([modal])) .content-scroll {
-        scrollbar-width: none; /* For Firefox */
-        -ms-overflow-style: none; /* For Internet Explorer and Edge */
-      }
-
-      :host([scroll]) .scrollbar-track {
-        position: absolute;
-        width: 4px;
-        background-color: var(--color-gray-85);
-        display: block;
-        top: 0px;
-        right: 4px;
-        bottom: 0px;
-        cursor: pointer;
-        border-radius: 2px;
-      }
-
-      :host([scroll]) .scrollbar-thumb {
-        position: absolute;
-        height: var(--thumb-height);
-        width: 4px;
-        background-color: var(--color-gray-44);
-        display: block;
-        right: 0;
-        cursor: grab;
-        border-radius: 2px;
-        transform: translateY(var(--thumb-top));
-      }
-
-      :host([scroll][mousedown]) .scrollbar-thumb {
-        cursor: grabbing;
-      }
-
-      :host([scroll]) .scrollbar-track::before,
-      :host([scroll]) .scrollbar-thumb::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: -22px;
-        width: 48px;
-      }
-
-      :host([scroll]) .scrollbar-thumb:hover {
-        background-color: black;
-      }
-
       :host([mousedown]) {
         -webkit-touch-callout: none;
         -webkit-user-select: none;
@@ -250,15 +190,13 @@ class TooltipContent extends Base {
                 aria-relevant="all"
               >
                 <div class="content-inner">
-                  <div class="content-scroll text-body-small">
+                  <div class="scroll-area text-body-small">
                     ${this.contentTitle
                       ? `<span class="title">${this.contentTitle}</span>`
                       : ''}
                     <slot></slot>
                   </div>
-                  <div class="scrollbar-track">
-                    <div class="scrollbar-thumb"></div>
-                  </div>
+                  <evolv-scrollbar></evolv-scrollbar>
                 </div>
                 <button class="close unbutton">Close</button>
               </div>
@@ -267,9 +205,8 @@ class TooltipContent extends Base {
 
     this.parts = {
       content: '.content',
-      scrollElement: '.content-scroll',
-      scrollbarTrack: '.scrollbar-track',
-      scrollbarThumb: '.scrollbar-thumb',
+      scrollBar: 'evolv-scrollbar',
+      scrollArea: '.scroll-area',
       modal: '.modal',
     };
 
@@ -283,17 +220,29 @@ class TooltipContent extends Base {
       if (this.isModal) {
         this.toggleAttribute('modal', true);
       } else {
-        this.hasScrollbar = vds.isScrollable(this.parts.scrollElement);
-        this.toggleAttribute('scroll', this.hasScrollbar);
         this.positionContent();
-
-        if (this.hasScrollbar) {
-          this.initScrollbar();
-        }
+        this.parts.scrollBar.addEventListener(
+          'evolv:scrollbar-thumb-mousedown',
+          () => {
+            this.disableOnContentScroll = true;
+            this.tooltip.disableClick = true;
+          },
+        );
+        this.parts.scrollBar.addEventListener(
+          'evolv:scrollbar-thumb-mouseup',
+          () => {
+            this.tooltip.disableClick = false;
+            this.disableOnContentScroll = false;
+          },
+        );
       }
 
       if (this.parts.modal) {
         this.parts.modal.onDisconnect = () => this.tooltip.removeContent();
+      }
+
+      if (this.parts.scrollBar.hasAttribute('scroll')) {
+        this.hasScrollbar = true;
       }
     };
 
@@ -302,7 +251,7 @@ class TooltipContent extends Base {
 
   observeBodySize = () => {
     this.bodyObserver = new ResizeObserver(this.positionContent).observe(
-      document.body
+      document.body,
     );
   };
 
@@ -343,114 +292,26 @@ class TooltipContent extends Base {
     utils.updateProperty(
       '--button-left',
       `${Math.round(buttonRect.left)}px`,
-      this
+      this,
     );
     utils.updateProperty(
       '--button-top',
       `${Math.round(buttonRect.top - bodyTop)}px`,
-      this
+      this,
     );
     utils.updateProperty(
       '--button-height',
       `${Math.round(buttonRect.height)}px`,
-      this
+      this,
     );
     utils.updateProperty(
       '--button-width',
       `${Math.round(buttonRect.width)}px`,
-      this
+      this,
     );
     utils.updateProperty('--gap', `${Math.round(gap)}px`, this);
     utils.updateProperty('--height', `${Math.round(height)}px`, this);
     utils.updateProperty('--offset-x', `${offsetX.toFixed(2)}px`, this);
-  };
-
-  initScrollbar = () => {
-    const { offsetHeight, scrollHeight } = this.parts.scrollElement;
-    this.thumbHeight = Math.round((offsetHeight * offsetHeight) / scrollHeight);
-    this.thumbTop = 0;
-    this.thumbTopMax = offsetHeight - this.thumbHeight;
-    this.thumbToScrollRatio = scrollHeight / offsetHeight;
-    this.scrollToThumbRatio = 1 / this.thumbToScrollRatio;
-    utils.updateProperty('--thumb-height', `${this.thumbHeight}px`, this);
-    this.onContentScroll();
-    this.parts.scrollElement.addEventListener('scroll', this.onContentScroll);
-    this.parts.scrollbarTrack.addEventListener(
-      'click',
-      this.onScrollbarTrackClick
-    );
-    this.parts.scrollbarThumb.addEventListener(
-      'mousedown',
-      this.onScrollbarThumbMousedown
-    );
-    document.body.addEventListener('mouseup', this.onScrollbarThumbMouseup);
-  };
-
-  onContentScroll = () => {
-    if (this.disableOnContentScroll) {
-      return;
-    }
-
-    this.thumbTop = Math.round(
-      this.parts.scrollElement.scrollTop * this.scrollToThumbRatio
-    );
-    utils.updateProperty('--thumb-top', `${this.thumbTop}px`, this);
-  };
-
-  onScrollbarTrackClick = ({ clientY }) => {
-    const trackRect = this.parts.scrollbarTrack.getBoundingClientRect();
-    this.tooltip.disableClick = true;
-    setTimeout(() => {
-      this.tooltip.disableClick = false;
-    }, 0);
-    const scrollTop = Math.round(
-      (clientY - trackRect.y - this.thumbHeight / 2) * this.thumbToScrollRatio
-    );
-    this.parts.scrollElement.scrollTo({ top: scrollTop, behavior: 'smooth' });
-  };
-
-  onScrollbarThumbMousedown = () => {
-    this.disableOnContentScroll = true;
-    this.tooltip.disableClick = true;
-    this.thumbMousemoveListener = document.body.addEventListener(
-      'mousemove',
-      this.onScrollbarThumbMousemove
-    );
-    this.toggleAttribute('mousedown', true);
-  };
-
-  onScrollbarThumbMouseup = () => {
-    setTimeout(() => {
-      this.disableOnContentScroll = false;
-      this.tooltip.disableClick = false;
-    }, 0);
-    document.body.removeEventListener(
-      'mousemove',
-      this.onScrollbarThumbMousemove
-    );
-    this.toggleAttribute('mousedown', false);
-  };
-
-  onScrollbarThumbMousemove = ({ movementY }) => {
-    if (!movementY) {
-      return;
-    }
-
-    let thumbTopNew = this.thumbTop + movementY;
-
-    if (thumbTopNew < 0) {
-      thumbTopNew = 0;
-    } else if (thumbTopNew > this.thumbTopMax) {
-      thumbTopNew = this.thumbTopMax;
-    }
-
-    if (thumbTopNew === this.thumbTop) {
-      return;
-    }
-
-    this.thumbTop = thumbTopNew;
-    this.style.setProperty('--thumb-top', `${thumbTopNew}px`);
-    this.parts.scrollElement.scrollTop = thumbTopNew * this.thumbToScrollRatio;
   };
 }
 

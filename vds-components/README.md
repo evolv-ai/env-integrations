@@ -227,7 +227,7 @@ window.evolv.vds.ButtonIcon
 
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
-| `name` | The name of the icon | `empty` | `pencil`, `down-caret`, `right-arrow`, `trash-can`, `phone`, `phone-plan`, `phone-protection`, `info`, `close` |
+| `name` | The name of the icon | `empty` | See [Icon](#icon) |
 | `size` | The size of the icon | `small` | `small`, `large` *Refer to Notes* |
 | `title` | The title to be passed to the icon, visible to assistive technologies | `<name>` | `<string>` |
 
@@ -258,9 +258,9 @@ window.evolv.vds.Icon
 
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
-| `name` | The name of the icon, leave blank to supply `svg` icon as content | `null` | `pencil`, `down-caret`, `right-arrow`, `trash-can`, `phone`, `phone-plan`, `phone-protection`, `info`, `close` |
+| `name` | The name of the icon, leave blank to supply `svg` icon as content | `null` | *Refer to Notes* |
 | `color` | The text color of the icon | `inherit` | See [Properties](#properties) |
-| `size` | The font size of the icon, can be a preset size or any `<css-size>` | `small` | `small`, `medium`, `large`, `xlarge`, `<css-size>` *Refer to Notes* |
+| `size` | The font size of the icon, can be a preset size or any `<css-size>` | `small` | `micro`, `small`, `medium`, `large`, `xlarge`, `<css-size>` *Refer to Notes* |
 | `title` | The title to be passed to the icon, visible to assistive technologies | `<name>` | `<string>` |
 | `type` | Whether the icon size is `standAlone`, determined by the `size` attribute, or `inline`, inherited from text size of the parent | `standAlone` | `inline`, `standAlone` |
 
@@ -270,12 +270,35 @@ window.evolv.vds.Icon
 
 | `size` | `width and height` |
 | :----- | :---------- |
+| `micro` | `0.75rem`
 | `small` | `1rem` |
 | `medium` | `1.25rem` |
 | `large` | `1.5rem` |
 | `xlarge` | `1.75rem` |
 | `<css-size>` | `<css-size>` |
 
+If `breakpoint` is set, at or above the breakpoint width `standAlone` icons will change size.
+
+| `size` | `width and height` |
+| :----- | :---------- |
+| `micro` | `1rem` |
+| `small` | `1.25rem` |
+| `medium` | `1.5rem` |
+| `large` | `1.75rem` |
+| `xlarge` | `2rem` |
+
+Available icons:
+
+- close
+- down-caret
+- info
+- pencil
+- phone
+- phone-plan
+- phone-protection
+- right-arrow
+- trash-can
+- up-caret
 ---
 
 ### Modal

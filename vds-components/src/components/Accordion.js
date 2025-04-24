@@ -14,7 +14,7 @@ class Accordion extends Base {
     'type',
     'title-size',
     'title-bold',
-    'title-primitive'
+    'title-primitive',
   ];
 
   accordionItems = [];
@@ -30,8 +30,7 @@ class Accordion extends Base {
     this.props = {
       breakpoint: () =>
         this.getAttribute('breakpoint') || vds.breakpoint || '768px',
-      disableTrack: () =>
-        this.getAttribute('disable-track') === 'true',
+      disableTrack: () => this.getAttribute('disable-track') === 'true',
       duration: () => parseFloat(this.getAttribute('duration')) || 330,
       id: () => this.getAttribute('id') || `accordion-${this.accordionIndex}`,
       openFirst: () => this.getAttribute('open-first') === 'true',
@@ -49,6 +48,10 @@ class Accordion extends Base {
         display: block;
       }
     `;
+
+    this.template = html`<div class="accordion">
+      <slot></slot>
+    </div>`;
 
     this.onAttributeChanged = () => this.renderChildren();
   }
@@ -193,10 +196,10 @@ class Accordion extends Base {
     this.accordionItems.forEach((accordionItem, index) => {
       accordionItem.setAttribute('index', index);
       this.accordionHeaders[index] = accordionItem.querySelector(
-        'evolv-accordion-header'
+        'evolv-accordion-header',
       );
       this.accordionDetails[index] = accordionItem.querySelector(
-        'evolv-accordion-details'
+        'evolv-accordion-details',
       );
     });
     this.initEvents();

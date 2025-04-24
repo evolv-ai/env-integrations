@@ -14,6 +14,7 @@ import Modal from '../components/Modal.js';
 import ModalBody from '../components/ModalBody.js';
 import ModalFooter from '../components/ModalFooter.js';
 import ModalTitle from '../components/ModalTitle.js';
+import Scrollbar from '../components/Scrollbar.js';
 import TextLink from '../components/TextLink.js';
 import TileContainer from '../components/TileContainer.js';
 import Tooltip from '../components/Tooltip.js';
@@ -36,6 +37,7 @@ const components = {
   'evolv-modal-body': ModalBody,
   'evolv-modal-footer': ModalFooter,
   'evolv-modal-title': ModalTitle,
+  'evolv-scrollbar': Scrollbar,
   'evolv-text-link': TextLink,
   'evolv-tile-container': TileContainer,
   'evolv-tooltip': Tooltip,

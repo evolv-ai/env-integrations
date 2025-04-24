@@ -12,21 +12,60 @@ class Carousel extends Base {
     'peek',
     'next-button-track',
     'pagination-display',
-    'previous-button-track',
+    'prev-button-track',
     'progress-bar-track',
     'tile-height',
     'tile-width',
   ];
 
-  tileItems = [];
+  tiles = [];
+  scroll = false;
+  carousel = this;
+  nextObserver;
+  prevObserver;
+
+  get viewport() {
+    return new DOMRect(
+      this.parts.track.scrollLeft,
+      0,
+      this.parts.carouselInner.offsetWidth,
+      this.parts.carouselInner.offsetHeight,
+    );
+  }
+
+  get nextTile() {
+    let i = this.tiles.length - 1;
+    let nextTile = this.tiles[i];
+    while (i--) {
+      if (this.isVisible(this.tiles[i])) {
+        return nextTile;
+      }
+      nextTile = this.tiles[i];
+    }
+  }
+
+  get prevTile() {
+    let firstVisibleIndex;
+    let lastVisibleIndex;
+    for (let i = 0; i < this.tiles.length; i++) {
+      if (this.isVisible(this.tiles[i])) {
+        firstVisibleIndex ??= i;
+        lastVisibleIndex = i;
+      } else if (firstVisibleIndex) {
+        break;
+      }
+    }
+
+    const visibleTileCount = lastVisibleIndex - firstVisibleIndex + 1;
+    const prevTileIndex = Math.max(firstVisibleIndex - visibleTileCount, 0);
+    return this.tiles[prevTileIndex];
+  }
 
   constructor() {
     super();
 
     this.carouselIndex = vds.carouselIndex;
     vds.carouselIndex += 1;
-    this.previousArrow = `evolv-icon {transform:rotate(90deg)}`;
-    this.nextArrow = `evolv-icon {transform:rotate(270deg)}`;
 
     this.props = {
       aspectRatio: () => this.getAttribute('aspect-ratio') || '4/5',
@@ -34,7 +73,8 @@ class Carousel extends Base {
         this.getAttribute('breakpoint') || vds.breakpoint || '768px',
       dataTrackIgnore: () => this.getAttribute('data-track-ignore') || false,
       gutter: () => this.getAttribute('gutter') || '24',
-      id: () => this.getAttribute('id') || `carousel${this.carouselIndex}`,
+      id: () =>
+        this.getAttribute('id') || `evolv-carousel-${this.carouselIndex}`,
       layout: () => this.getAttribute('layout') || '3',
       maxHeight: () => Math.round(parseInt(this.props.maxWidth()) - 60 / 2),
       maxWidth: () => this.getAttribute('max-width') || 1272,
@@ -44,9 +84,9 @@ class Carousel extends Base {
       paginationDisplay: () =>
         parseFloat(this.getAttribute('pagination-display')) || 'persistent',
       peek: () => this.getAttribute('peek') || 'standard',
-      previousButtonTrack: () =>
-        this.getAttribute('previous-button-track') ||
-        `previous button | ${this.props.id()}`,
+      prevButtonTrack: () =>
+        this.getAttribute('prev-button-track') ||
+        `prev button | ${this.props.id()}`,
       scrollTrack: () =>
         this.getAttribute('scroll-track') ||
         `progress bar | ${this.props.id()}`,
@@ -60,353 +100,328 @@ class Carousel extends Base {
       :host {
         display: block;
       }
-      .carousel-container {
-        align-items: center;
-        display: flex;
-        flex-direction: column;
-        margin: auto;
-        max-width: ${this.props.maxWidth()}px;
-        overflow: hidden;
-        padding-bottom: 30px;
-        position: relative;
-      }
-
-      .carousel-wrapper {
-        align-items: center;
-        display: flex;
-        position: relative;
-        width: 100%;
-      }
 
       .carousel {
         display: flex;
-        gap: ${this.props.gutter()}px;
-        padding: 30px 20px;
-        scroll-snap-type: x mandatory;
-        transition: transform 0.3s ease-in-out;
-        touch-action: pan-y;
-        will-change: transform;
+        flex-direction: column;
+        align-items: center;
+        max-width: ${this.props.maxWidth()}px;
+        padding: 30px 0;
+        gap: 32px;
       }
 
-      .carousel-nav-button {
+      .carousel-inner {
+        position: relative;
+        display: flex;
+        width: 100%;
+      }
+
+      .track {
+        display: flex;
+        gap: ${this.props.gutter()}px;
+        overflow-x: scroll;
+        scroll-snap-type: x mandatory;
+        padding: ${this.props.gutter()}px;
+      }
+
+      .track.dragging {
+        scroll-snap-type: none;
+      }
+
+      .nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 3;
+      }
+
+      .nav.prev {
+        left: 0;
+        margin-left: 12px;
+      }
+
+      .nav.next {
+        right: 0;
+        margin-right: 12px;
+      }
+
+      .nav-button {
         align-items: center;
-        background-clip: padding-box;
-        background-color: rgb(255, 255, 255);
+        background-color: white;
         border-radius: 50%;
         border: none;
-        box-shadow: rgb(255, 255, 255) 0px 0px 0px 0.0625rem;
         box-sizing: border-box;
         cursor: pointer;
         display: flex;
         justify-content: center;
-        margin: 0px;
         outline: none;
-        padding: 0px;
-        pointer-events: auto;
-        position: absolute;
-        text-align: center;
+        padding: 0;
+        position: relative;
         text-decoration: none;
         touch-action: manipulation;
-        top: 50%;
-        transition: 0.1s ease-out;
-        transform: translateY(-50%);
-        vertical-align: middle;
-        z-index: 10;
+        transition: box-shadow 0.1s ease-out;
+        width: 1.75rem;
+        height: 1.75rem;
+        -webkit-tap-highlight-color: transparent;
       }
-      .carousel-nav-button:hover {
-        outline: none;
-        box-shadow: rgb(255, 255, 255) 0px 0px 0px 0.0625rem;
-      }
-      .carousel-nav-button.previous {
-        display: none;
-        left: 0;
-      }
-      .carousel-nav-button.next {
-        right: 0;
-      }
-      .carousel-scroll {
-        margin-top: 10px;
-        width: 96px;
-        height: 8px;
-        background: #ccc;
-        border-radius: 4px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        position: relative;
-      }
-      .carousel-scroll-thumb {
-        width: 24px;
-        height: 100%;
-        background: #888;
-        border-radius: 4px;
-        cursor: grab;
+
+      .nav-button::after {
+        content: '';
         position: absolute;
-        left: 0;
-        transition: left 0.3s ease-in-out;
+        width: 100%;
+        height: 100%;
+        margin: -1px;
+        border-radius: 50%;
+        box-shadow:
+          rgba(0, 0, 0, 0.12) 0 1px 10px,
+          rgba(0, 0, 0, 0.05) 0 2px 4px;
+        z-index: -1;
+      }
+
+      .nav-button:hover::after {
+        box-shadow:
+          rgba(0, 0, 0, 0.12) 0 1px 11px,
+          rgba(0, 0, 0, 0.05) 0 3px 5px;
+      }
+
+      .nav-button:hover {
+        outline: none;
+        box-shadow: rgb(255, 255, 255) 0 0 0 0.0625rem;
+      }
+
+      .nav-hit-area {
+        height: 2.75rem;
+        width: 2.75rem;
+        display: block;
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        text-align: center;
+        transform: translate(-50%, -50%);
+      }
+
+      .nav-icon {
+        position: relative;
+        bottom: 0;
+        width: 0.75rem;
+        height: 0.75rem;
+        pointer-events: none;
+      }
+
+      .nav-icon.prev {
+        right: 0.125rem;
+      }
+
+      .nav-icon.next {
+        left: 0.125rem;
+      }
+
+      .carousel:not([scroll]) .nav-button {
+        display: none;
+      }
+
+      @media (min-width: ${this.breakpoint}) {
+        .nav-button {
+          width: 2.5rem;
+          height: 2.5rem;
+        }
+
+        .nav-icon {
+          width: 1rem;
+          height: 1rem;
+        }
       }
     `;
 
     this.template = () => html`
-      <div class="carousel-container">
-        <evolv-button-icon
-          name="down-caret"
-          size="large"
-          css="${this.previousArrow}"
-          class="carousel-nav-button previous"
-          data-track="${this.props.previousButtonTrack()}"
-        ></evolv-button-icon>
-        <div class="carousel-wrapper">
-          <div class="carousel">
+      <div class="carousel">
+        <div class="carousel-inner">
+          <div class="nav prev">
+            <button
+              class="nav-button prev"
+              data-track="${this.prevButtonTrack}"
+              aria-label="previous page of tiles"
+            >
+              <div class="nav-hit-area"></div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 21.6 21.6"
+                width="16"
+                height="16"
+                class="nav-icon prev"
+              >
+                <polygon
+                  points="14.74336 20.10078 5.44258 10.8 14.74336 1.49922 16.15742 2.91328 8.2707 10.8 16.15742 18.68672 14.74336 20.10078"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="track scroll-area">
             <slot></slot>
           </div>
+          <div class="nav next">
+            <button
+              class="nav-button next"
+              data-track="${this.prevButtonTrack}"
+              aria-label="next page of tiles"
+            >
+              <div class="nav-hit-area"></div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 21.6 21.6"
+                width="16"
+                height="16"
+                class="nav-icon next"
+              >
+                <polygon
+                  points="6.85664 20.10127 5.44258 18.68721 13.3293 10.79951 5.44258 2.91279 6.85664 1.49873 16.15742 10.79951 6.85664 20.10127"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
-        <evolv-button-icon
-          name="down-caret"
-          size="large"
-          css="${this.nextArrow}"
-          class="carousel-nav-button next"
-          data-track="${this.props.nextButtonTrack()}"
-        ></evolv-button-icon>
-        <div class="carousel-scroll">
-          <div
-            class="carousel-scroll-thumb"
-            data-track="${this.props.scrollTrack()}"
-          ></div>
-        </div>
+        <evolv-scrollbar
+          class="pagination"
+          orientation="horizontal"
+          hover-thickness="8px"
+          thumb-hover-color="var(--color-gray-44)"
+          data-track="${this.props.scrollTrack()}"
+        >
+        </evolv-scrollbar>
       </div>
     `;
 
     this.parts = {
-      carouselContainer: '.carousel-container',
-      carouselWrapper: '.carousel-wrapper',
       carousel: '.carousel',
-      leftArrow: '.carousel-nav-button.previous',
-      rightArrow: '.carousel-nav-button.next',
-      scroll: '.carousel-scroll',
+      carouselInner: '.carousel-inner',
+      track: '.track',
+      scrollArea: '.scroll-area',
+      contents: '.contents',
+      prev: '.nav-button.prev',
+      next: '.nav-button.next',
+      pagination: '.pagination',
       scrollThumb: '.carousel-scroll-thumb',
     };
 
-    this.onConnect = () => {
-      this.hasConnected = true;
-      this.carouselLeftPadding = this.getStyleVal(
-        this.parts.carousel,
-        'padding-left'
-      );
-
-      this.totalScrollableWidth =
-        this.parts.carousel.scrollWidth - this.viewportWidth;
-      this.viewportWidth = this.clientWidth;
-      this.scrollPosition = 0;
-      this.isDragging = false;
-      this.startX = 0;
-
-      this.parts.leftArrow.addEventListener('click', this.onPreviousClick);
-      this.parts.rightArrow.addEventListener('click', this.onNextClick);
-      this.parts.scroll.addEventListener('click', this.onScrollbarClick);
-
-      this.parts.scrollThumb.addEventListener(
-        'mousedown',
-        this.onScrollMouseDown
-      );
-      this.parts.scrollThumb.addEventListener(
-        'touchstart',
-        this.onScrollThumbTouchStart
-      );
-      this.parts.scrollThumb.addEventListener(
-        'touchend',
-        this.onScrollThumbTouchEnd
-      );
-
-      document.addEventListener('mousedown', this.onDocumentMouseDown);
-      document.addEventListener('mouseup', this.onDocumentMouseUp);
+    this.onRender = () => {
+      new ResizeObserver(this.detectScroll).observe(this.parts.track);
       this.parts.carousel.addEventListener(
-        'touchstart',
-        this.onCarouselTouchStart
+        'evolv:scrollbar-thumb-mousedown',
+        () => {
+          this.parts.track.classList.add('dragging');
+        },
       );
-      this.parts.carousel.addEventListener('touchend', this.onCarouselTouchEnd);
 
-      window.addEventListener('resize', this.onWindowResize);
+      this.parts.carousel.addEventListener(
+        'evolv:scrollbar-thumb-mouseup',
+        () => {
+          this.parts.track.classList.remove('dragging');
+        },
+      );
+
+      this.parts.prev.addEventListener('click', this.onPrevClick);
+      this.parts.next.addEventListener('click', this.onNextClick);
+
+      this.tiles = [...this.querySelectorAll(':scope > *')];
+      this.initNavObserver();
+
+      const { pagination } = this.parts;
+      pagination.onTrackClick = this.onScrollbarTrackClick.bind(pagination);
     };
 
-    this.onDisconnect = () => {
-      window.removeEventListener('resize', this.onWindowResize);
+    this.onConnect = () => {
+      new ResizeObserver(this.detectScroll).observe(this);
+      this.tiles = [...this.querySelectorAll(':scope > *')];
     };
   }
 
+  contentChangedCallback = () => {
+    this.initNavObserver();
+  };
+
   tileContainerId = (index) => {
-    return `${this.id}Tile${index}`;
+    return `${this.id}-tile-${index}`;
   };
 
-  getPartialChildOffset = (container, arr = 'next') => {
-    const containerRect = container.getBoundingClientRect();
-    const children = container.children;
+  isVisible = (tile) => {
+    const { viewport } = this;
+    return (
+      tile.offsetLeft >= viewport.left &&
+      tile.offsetLeft + tile.clientWidth <= viewport.right
+    );
+  };
 
-    for (let i = 0; i < children.length; i++) {
-      const childRect = children[i].getBoundingClientRect();
-
-      const isPartiallyVisible =
-        childRect.left < containerRect.right &&
-        childRect.right > containerRect.left &&
-        (childRect.left < containerRect.left ||
-          childRect.right > containerRect.right);
-
-      if (isPartiallyVisible) {
-        const distance = Math.round(
-          arr === 'next'
-            ? childRect.left - containerRect.left
-            : containerRect.right - childRect.right
-        );
-        return distance; // Distance in pixels
-      }
+  detectScroll = () => {
+    const scrollPrev = this.scroll;
+    this.scroll = vds.isScrollable(this.parts.track, 'horizontal');
+    if (scrollPrev !== this.scroll) {
+      this.parts.pagination.render();
+      this.parts.carousel.toggleAttribute('scroll', this.scroll);
     }
-
-    return null; // None found
   };
 
-  getStyleVal = (elem, style) => {
-    return window
-      .getComputedStyle(elem)
-      .getPropertyValue(style)
-      .match(/(\d+)/)[0];
-  };
+  initNavObserver = () => {
+    this.prevObserver && this.prevObserver.disconnect();
+    this.nextObserver && this.nextObserver.disconnect();
 
-  updateScrollThumb = () => {
-    const totalScrollableWidth =
-      this.parts.carousel.scrollWidth - this.viewportWidth;
-    const scrollRatio = this.scrollPosition / totalScrollableWidth;
-    const thumbMaxMove =
-      this.parts.scroll.clientWidth - this.parts.scrollThumb.clientWidth;
-    this.parts.scrollThumb.style.left = `${scrollRatio * thumbMaxMove}px`;
-  };
-
-  updateArrows = () => {
-    this.parts.leftArrow.style.display =
-      this.scrollPosition === 0 ? 'none' : 'block';
-    this.parts.rightArrow.style.display =
-      this.scrollPosition >=
-      this.parts.carousel.scrollWidth - this.viewportWidth
-        ? 'none'
-        : 'block';
-  };
-
-  setScrollPosition = (pos) => {
-    this.scrollPosition = Math.max(
-      0,
-      Math.min(pos, this.parts.carousel.scrollWidth - this.viewportWidth)
+    this.prevObserver = new IntersectionObserver(
+      (records) => {
+        records.forEach((record) => {
+          this.parts.prev.parentNode.toggleAttribute(
+            'hidden',
+            record.intersectionRatio >= 0.75,
+          );
+        });
+      },
+      {
+        root: this.parts.carouselInner,
+        threshold: 0.75,
+      },
     );
-    this.parts.carousel.style.transform = `translateX(-${this.scrollPosition}px)`;
-    this.updateArrows();
-    this.updateScrollThumb();
-  };
 
-  onPreviousClick = () => {
-    this.setScrollPosition(
-      this.scrollPosition - this.viewportWidth - this.carouselLeftPadding
+    this.nextObserver = new IntersectionObserver(
+      (records) => {
+        records.forEach((record) => {
+          this.parts.next.parentNode.toggleAttribute(
+            'hidden',
+            record.intersectionRatio >= 0.75,
+          );
+        });
+      },
+      {
+        root: this.parts.carouselInner,
+        threshold: 0.75,
+      },
     );
+
+    this.prevObserver.observe(this.tiles[0]);
+    this.nextObserver.observe(this.tiles.at(-1));
   };
 
   onNextClick = () => {
-    this.setScrollPosition(
-      this.scrollPosition +
-        this.getPartialChildOffset(this) -
-        this.carouselLeftPadding
-    );
+    this.parts.track.scrollTo({
+      left: this.nextTile.offsetLeft,
+      behavior: 'smooth',
+    });
   };
 
-  onScrollbarClick = (evt) => {
-    const rect = this.parts.scroll.getBoundingClientRect();
-    const clickX = evt.clientX - rect.left;
-    const totalWidth = this.parts.scroll.clientWidth;
-    const scrollRatio = clickX / totalWidth;
-    this.setScrollPosition(
-      scrollRatio * (this.parts.carousel.scrollWidth - this.viewportWidth)
-    );
+  onPrevClick = () => {
+    this.parts.track.scrollTo({
+      left: this.prevTile.offsetLeft,
+      behavior: 'smooth',
+    });
   };
 
-  onScrollMouseDown = (evt) => {
-    this.isDragging = true;
-    this.startX = evt.clientX;
-    document.body.style.userSelect = 'none';
-  };
+  // Overrides default scrollbar click behavior, so 'this' refers to the scrollbar
+  onScrollbarTrackClick = function ({ target, clientX }) {
+    const thumbRect = this.parts.thumb.getBoundingClientRect();
 
-  onScrollThumbTouchMove = (evt) => {
-    if (!this.isDragging) return;
-    const dx = evt.touches[0].clientX - this.startX;
-    const thumbMaxMove =
-      this.parts.scroll.clientWidth - this.parts.scrollThumb.clientWidth;
-    const scrollDelta =
-      (dx / thumbMaxMove) *
-      (this.parts.carousel.scrollWidth - this.viewportWidth);
-    this.setScrollPosition(this.scrollPosition + scrollDelta);
-    this.startX = evt.touches[0].clientX;
-  };
-
-  onScrollThumbTouchStart = (evt) => {
-    this.isDragging = true;
-    this.startX = evt.touches[0].clientX;
-    this.parts.scrollThumb.addEventListener(
-      'touchmove',
-      this.onScrollThumbTouchMove
-    );
-  };
-
-  onScrollThumbTouchEnd = () => {
-    this.isDragging = false;
-    this.parts.scrollThumb.removeEventListener(
-      'touchmove',
-      this.onScrollThumbTouchMove
-    );
-  };
-
-  onDocumentMouseMove = (evt) => {
-    if (!this.isDragging) return;
-    const dx = evt.clientX - this.startX;
-    const thumbMaxMove =
-      this.parts.scroll.clientWidth - this.parts.scrollThumb.clientWidth;
-    const scrollDelta =
-      (dx / thumbMaxMove) *
-      (this.parts.carousel.scrollWidth - this.viewportWidth);
-    this.setScrollPosition(this.scrollPosition + scrollDelta);
-    this.startX = evt.clientX;
-  };
-
-  onDocumentMouseDown = () => {
-    this.isDragging = true;
-    document.body.style.userSelect = 'none';
-    document.body.addEventListener('mousemove', this.onDocumentMouseMove);
-  };
-
-  onDocumentMouseUp = () => {
-    this.isDragging = false;
-    document.body.style.userSelect = '';
-    document.body.removeEventListener('mousemove', this.onDocumentMouseMove);
-  };
-
-  onCarouselTouchStart = (evt) => {
-    this.startX = evt.touches[0].clientX;
-    this.isDragging = true;
-    this.parts.carousel.addEventListener('touchmove', this.onCarouselTouchMove);
-  };
-
-  onCarouselTouchMove = (evt) => {
-    if (!this.isDragging) return;
-    const deltaX = this.startX - evt.touches[0].clientX;
-    this.setScrollPosition(this.scrollPosition + deltaX);
-    this.startX = evt.touches[0].clientX;
-  };
-
-  onCarouselTouchEnd = () => {
-    this.isDragging = false;
-    this.parts.carousel.removeEventListener(
-      'touchmove',
-      this.onCarouselTouchMove
-    );
-  };
-
-  onWindowResize = () => {
-    this.viewportWidth = this.parts.carouselContainer.clientWidth;
-    this.setScrollPosition(this.scrollPosition);
+    if (clientX < thumbRect.left) {
+      this.parts.parent.onPrevClick();
+    } else if (clientX > thumbRect.right) {
+      this.parts.parent.onNextClick();
+    }
   };
 
   contentChangedCallback = () => {

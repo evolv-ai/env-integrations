@@ -42,13 +42,13 @@ class Tooltip extends Base {
         this.getAttribute('title') ||
         null,
       contentWidth: () => '14rem',
-      detectTouchDevice: () => this.getAttribute('detect-touch-device') !== "false",
+      detectTouchDevice: () =>
+        this.getAttribute('detect-touch-device') !== 'false',
       hoverDelay: () => parseInt(this.getAttribute('hover-delay')) || 400,
-      isModal: () => this.props.detectTouchDevice()
-        ? this.props.isTouchDevice()
-        : !window
-          .matchMedia(`(min-width: ${this.breakpoint})`)
-          .matches,
+      isModal: () =>
+        this.props.detectTouchDevice()
+          ? this.props.isTouchDevice()
+          : !window.matchMedia(`(min-width: ${this.breakpoint})`).matches,
       isTouchDevice: () => utils.isTouchDevice(),
       modalDuration: () => this.getAttribute('modal-duration') || 400,
       size: () => this.getAttribute('size') || 'medium',
@@ -153,7 +153,7 @@ class Tooltip extends Base {
   observePositionY = () => {
     const rootMarginTop = -Math.round(
       utils.cssSizeToValue(this.contentGap) +
-        utils.cssSizeToValue(this.contentMaxHeight)
+        utils.cssSizeToValue(this.contentMaxHeight),
     );
 
     new IntersectionObserver(
@@ -162,21 +162,21 @@ class Tooltip extends Base {
           this.content.toggleAttribute(
             'below',
             !entry.isIntersecting &&
-              entry.boundingClientRect?.top < entry.rootBounds?.top
+              entry.boundingClientRect?.top < entry.rootBounds?.top,
           );
         });
       },
       {
         rootMargin: `${rootMarginTop}px 0px 0px 0px`,
         threshold: [1],
-      }
+      },
     ).observe(this.parts.button);
   };
 
   insertContent = () => {
     this.parts.button.setAttribute('aria-expanded', 'true');
     this.updateProp('content');
-    if (!(this.props.isModal())) {
+    if (!this.props.isModal()) {
       this.content.addEventListener('mouseenter', this.onMouseenter);
       this.content.addEventListener('mouseleave', this.onMouseleave);
       this.content.addEventListener('click', this.onClick);
@@ -188,7 +188,7 @@ class Tooltip extends Base {
     this.parts.button.setAttribute('aria-expanded', 'false');
     document.body.removeEventListener(
       'mouseup',
-      this.content.onScrollbarThumbMouseup
+      this.content.onScrollbarThumbMouseup,
     );
 
     this.content.remove();
@@ -215,11 +215,11 @@ class Tooltip extends Base {
       return;
     }
 
-    const { scrollElement } = this.content.parts;
-    const scrollTopNew = vds.keyScrolling(event, scrollElement);
+    const { scrollArea } = this.content.parts;
+    const scrollTopNew = vds.keyScrolling(event, scrollArea);
 
     if (scrollTopNew !== null) {
-      scrollElement.scrollTo({
+      scrollArea.scrollTo({
         top: scrollTopNew,
         behavior: 'smooth',
       });

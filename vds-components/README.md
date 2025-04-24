@@ -355,6 +355,17 @@ default scrollbar.
 | `thumbColor` | The color of the scrollbar thumb. | `var(--color-gray-44)` | `<css-color>` |
 | `thumbHoverColor` | The color of the scrollbar thumb on hover. | `var(--color-gray-20)` | `<css-color>` |
 
+#### Events
+
+These are events dispatched by the scrollbar to be used by the parent component.
+
+| Part | Name | Description |
+| :--- | :--- | :---------- |
+| `track` | `evolv:scrollbar-track-click-start` | Fires when the handling of a track click event begins. |
+| `track` | `evolv:scrollbar-track-click-end` | Fires when the handling of a track click event ends. |
+| `thumb` | `evolv:scrollbar-thumb-mousedown` | Fires with mousedown on the scrollbar thumb. |
+| `thumb` | `evolv:scrollbar-thumb-mouseup` | Fires with mouseup on the scrollbar thumb. |
+
 ----
 
 ### TextLink
@@ -385,7 +396,28 @@ window.evolv.vds.TextLink
 | `small` | `0.75rem` |
 | `large` | `1rem` |
 
-----
+---
+
+### Tooltip
+
+**Released in version 0.4.0**
+
+#### Tag
+
+```html
+<evolv-tooltip content-title="Lorem ipusum">Nulla facilis eos dolorem totam est explicabo fuga. Cum magnam laudantium et itaque rerum sit. Amet laudantium nesciunt consequuntur nam accusamus odit. Sequi rerum et optio et aspernatur quam. Dolores nobis quos suscipit. Aut fugiat ipsam praesentium aliquid ut minima exercitationem illum. Natus explicabo rerum fugit in. Ut voluptatem nemo et. Nobis rem ut repellendus consectetur velit. Consequatur est aperiam praesentium illo facilis. Unde voluptas cumque et aliquid neque autem vel nam. Sit rerum aspernatur minima. Aut sequi vitae et natus est voluptas necessitatibus.</evolv-tooltip>
+```
+
+#### Properties
+
+| Name | Description | Default | Accepts |
+| :--- | :---------- | :------ | :------ |
+| `size` | Renders the tooltip in the correpsponding size. Requires `type` to be `standAlone`. **Coming soon!** | `large` | `large`, `small` |
+| `content-max-height` | The maximum height of the tooltip content 
+| `content-title` | A title to be displayed above the tooltip content | | `<string>` |
+| `type` | Whether the tooltip button is `inline`, inherited from the text size of the parent, or `standAlone`, determined by the `size` attribute | `inline` | `inline`, `standAlone` |
+
+---
 
 ### Title
 
@@ -442,6 +474,6 @@ The `primitive` attribute, if left blank, is assigned a default heading tag corr
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
 | `size` | Renders the tooltip in the correpsponding size. Requires `type` to be `standAlone`. **Coming soon!** | `large` | `large`, `small` |
-| `content-max-height` | The maximum height of the tooltip content 
+| `content-max-height` | The maximum height of the tooltip content
 | `content-title` | A title to be displayed above the tooltip content | | `<string>` |
 | `type` | Whether the tooltip button is `inline`, inherited from the text size of the parent, or `standAlone`, determined by the `size` attribute | `inline` | `inline`, `standAlone` |

@@ -28,6 +28,8 @@ class Scrollbar extends Base {
     super();
 
     this.props = {
+      hoverThickness: () => this.getAttribute('hover-thickness') || '4px',
+      length: () => this.getAttribute('length') || null,
       orientation: () =>
         this.getAttribute('orientation') === 'horizontal'
           ? 'horizontal'
@@ -35,9 +37,7 @@ class Scrollbar extends Base {
       scrollAreaSelector: () => this.getAttribute('scroll-area') || null,
       startPosition: () =>
         this.props.orientation() === 'horizontal' ? 'left' : 'top',
-      length: () => this.getAttribute('length') || null,
       thickness: () => this.getAttribute('thickness') || '4px',
-      hoverThickness: () => this.getAttribute('hover-thickness') || '4px',
       thumbColor: () =>
         this.getAttribute('thumb-color') || 'var(--color-gray-44)',
       thumbHoverColor: () =>
@@ -158,6 +158,7 @@ class Scrollbar extends Base {
     this.onRender = () => {
       if (
         this.parts.scrollArea &&
+        this.parts.parent &&
         vds.isScrollable(this.parts.scrollArea, this.orientation)
       ) {
         this.thumbStart = 0;

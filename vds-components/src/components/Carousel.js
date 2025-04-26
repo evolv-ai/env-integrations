@@ -94,7 +94,7 @@ class Carousel extends Base {
       dataTrackIgnore: () => this.getAttribute('data-track-ignore') || false,
       disabled: () =>
         (this.hasAttribute('disabled') &&
-          this.getAttribute('disabled' !== 'false')) ||
+          this.getAttribute('disabled') !== 'false') ||
         false,
       gutter: () => this.getAttribute('gutter') || '24',
       id: () =>
@@ -129,19 +129,19 @@ class Carousel extends Base {
       }
 
       ${this.disabled
-        ? `
-        :host([disabled]),
-        :host([disabled]) .carousel,
-        :host([disabled]) .carousel-inner,
-        :host([disabled]) .track {
-          display: contents;
-        }
-  
-        :host([disabled]) .nav-button,
-        :host([disabled]) .pagination {
-          display: none;
-        }
-      `
+        ? css`
+            :host([disabled]),
+            :host([disabled]) .carousel,
+            :host([disabled]) .carousel-inner,
+            :host([disabled]) .track {
+              display: contents;
+            }
+
+            :host([disabled]) .nav-button,
+            :host([disabled]) .pagination {
+              display: none;
+            }
+          `
         : ''}
 
       .carousel {

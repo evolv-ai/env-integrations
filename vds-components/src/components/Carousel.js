@@ -424,7 +424,7 @@ class Carousel extends Base {
     return `${this.id}-tile-${index}`;
   };
 
-  // The percentage of the tile that is within the viewport, rounded to a quarter pixel
+  // The percentage of the tile that is within the viewport
   visibility = (tile) => {
     const { viewport } = this;
     const tileLeft = tile.offsetLeft;
@@ -434,13 +434,13 @@ class Carousel extends Base {
 
     if (tileLeft <= viewportRight && viewportLeft <= tileRight) {
       return (
-        (4 *
+        (100 *
           Math.round(
             (Math.min(tileRight, viewportRight) -
               Math.max(tileLeft, viewportLeft)) /
               tile.offsetWidth,
           )) /
-        4
+        100
       );
     }
 

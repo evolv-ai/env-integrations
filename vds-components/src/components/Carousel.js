@@ -58,26 +58,26 @@ class Carousel extends Base {
   }
 
   get prevTile() {
-    let firstVisibleIndex;
-    let lastVisibleIndex;
-    let firstPartiallyVisibleIndex;
+    let firstWholeTileIndex;
+    let lastWholeTileIndex;
+    let firstPartialTileIndex;
     for (let i = 0; i < this.tiles.length; i++) {
       const visibility = this.visibility(this.tiles[i]);
       if (visibility === 1) {
-        firstVisibleIndex ??= i;
-        lastVisibleIndex = i;
+        firstWholeTileIndex ??= i;
+        lastWholeTileIndex = i;
       } else if (visibility > 0) {
-        firstPartiallyVisibleIndex ??= i;
-      } else if (firstVisibleIndex) {
+        firstPartialTileIndex ??= i;
+      } else if (firstWholeTileIndex) {
         break;
       }
     }
 
     // If no fully visible tiles, fallback to the first partially visible tile
-    firstVisibleIndex ??= firstPartiallyVisibleIndex || 0;
-    lastVisibleIndex ??= firstPartiallyVisibleIndex || 0;
-    const visibleTileCount = lastVisibleIndex - firstVisibleIndex + 1;
-    const prevTileIndex = Math.max(firstVisibleIndex - visibleTileCount, 0);
+    firstWholeTileIndex ??= firstPartialTileIndex || 0;
+    lastWholeTileIndex ??= firstPartialTileIndex || 0;
+    const visibleTileCount = lastWholeTileIndex - firstWholeTileIndex + 1;
+    const prevTileIndex = Math.max(firstWholeTileIndex - visibleTileCount, 0);
     return this.tiles[prevTileIndex];
   }
 

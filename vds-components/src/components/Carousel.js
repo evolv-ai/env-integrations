@@ -7,16 +7,19 @@ class Carousel extends Base {
     ...this.observedAttributes,
     'aspect-ratio',
     'data-track-ignore',
+    'disabled',
     'gutter',
     'id',
     'layout',
-    'peek',
+    'max-width',
     'next-button-track',
     'pagination-display',
+    'peek',
     'prev-button-track',
     'progress-bar-track',
     'tile-height',
     'tile-width',
+    'track-padding',
   ];
 
   tiles = [];
@@ -125,17 +128,21 @@ class Carousel extends Base {
         width: 100%;
       }
 
-      :host([disabled]),
-      :host([disabled]) .carousel,
-      :host([disabled]) .carousel-inner,
-      :host([disabled]) .track {
-        display: contents;
-      }
-
-      :host([disabled]) .nav-button,
-      :host([disabled]) .pagination {
-        display: none;
-      }
+      ${this.disabled
+        ? `
+        :host([disabled]),
+        :host([disabled]) .carousel,
+        :host([disabled]) .carousel-inner,
+        :host([disabled]) .track {
+          display: contents;
+        }
+  
+        :host([disabled]) .nav-button,
+        :host([disabled]) .pagination {
+          display: none;
+        }
+      `
+        : ''}
 
       .carousel {
         display: flex;

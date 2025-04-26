@@ -49,15 +49,15 @@ class Base extends HTMLElement {
         --font-family-etx: Verizon-NHG-eTX, Helvetica, Arial, sans-serif;
         --font-family-eds: Verizon-NHG-eDS, Helvetica, Arial, sans-serif;
         ${Object.keys(vds.colorTokens)
-        .map(
-          (colorToken) =>
-            mixin`--color-${colorToken}: ${vds.colorTokens[colorToken]};`,
-        )
-        .join('')}
+          .map(
+            (colorToken) =>
+              mixin`--color-${colorToken}: ${vds.colorTokens[colorToken]};`,
+          )
+          .join('')}
         --color-overlay: rgba(0, 0, 0, 0.8);
         --color-ghost: ${this.surface === 'dark'
-        ? 'rgba(143, 145, 145, 0.18)'
-        : 'rgba(111, 113, 113, 0.06)'};
+          ? 'rgba(143, 145, 145, 0.18)'
+          : 'rgba(111, 113, 113, 0.06)'};
         --color-primary: ${this.surface === 'dark' ? 'white' : 'black'};
         --color-inverse: ${this.surface === 'dark' ? 'black' : 'white'};
         --outline-focus: var(--color-primary) dashed 0.0625rem !important;
@@ -148,8 +148,6 @@ class Base extends HTMLElement {
     this._onDisconnects.forEach((onDisconnect) => onDisconnect());
   }
 
-  contentChangedCallback = null;
-
   get props() {
     return this._props;
   }
@@ -215,8 +213,8 @@ class Base extends HTMLElement {
     const styleElement = this.shadow.querySelector('style');
     styleElement.innerHTML = `
         ${[...this._styles, this.css]
-        .map((style) => utils.functionOrValue(style))
-        .join('')}
+          .map((style) => utils.functionOrValue(style))
+          .join('')}
     `;
   };
 
@@ -225,8 +223,8 @@ class Base extends HTMLElement {
     this.shadow.innerHTML = html`
       <style>
         ${[...this._styles, this.css]
-        .map((style) => utils.functionOrValue(style))
-        .join('')}
+          .map((style) => utils.functionOrValue(style))
+          .join('')}
       </style>
       ${utils.functionOrValue(this.template)}
     `;

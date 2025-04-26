@@ -29,7 +29,7 @@ class Scrollbar extends Base {
 
     this.props = {
       hoverThickness: () => this.getAttribute('hover-thickness') || '4px',
-      length: () => this.getAttribute('length') || null,
+      length: () => this.getAttribute('length') || '100%',
       orientation: () =>
         this.getAttribute('orientation') === 'horizontal'
           ? 'horizontal'
@@ -58,18 +58,20 @@ class Scrollbar extends Base {
         display: flex;
         align-items: center;
         justify-content: center;
+        ${this.either('height|width')}: 100%;
         ${this.either('width|height')}: ${this.hoverThickness};
       }
 
       .scrollbar-track {
         position: relative;
+        ${this.either('height|width')}: ${this.length};
         ${this.either('width|height')}: var(--thickness);
-        ${this.length ? `${this.either('height|width')}: ${this.length}` : ''};
         min-${this.either('height|width')}: 96px;
         border-radius: var(--border-radius);
         background-color: var(--color-gray-85);
         transition: ${this.either('width|height')} 100ms linear, border-radius 100ms linear;
         cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
       }
 
       .scrollbar-track:hover {
@@ -298,7 +300,6 @@ class Scrollbar extends Base {
   };
 
   updateLengths = utils.throttle(() => {
-    console.log('updateLengths');
     this.isHorizontal = this.orientation === 'horizontal';
 
     const { offsetWidth, offsetHeight, scrollWidth, scrollHeight } =

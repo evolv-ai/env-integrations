@@ -1,21 +1,25 @@
 import vds from '../imports/vds';
 import Base from './Base';
+import utils from '../imports/utils';
 
 class Carousel extends Base {
   static observedAttributes = [
     ...this.observedAttributes,
     'aspect-ratio',
     'data-track-ignore',
+    'disabled',
     'gutter',
     'id',
     'layout',
-    'peek',
+    'max-width',
     'next-button-track',
     'pagination-display',
+    'peek',
     'prev-button-track',
     'progress-bar-track',
     'tile-height',
     'tile-width',
+    'track-padding',
   ];
 
   tiles = [];
@@ -25,39 +29,55 @@ class Carousel extends Base {
   prevObserver;
 
   get viewport() {
+    const { parts } = this;
     return new DOMRect(
-      this.parts.track.scrollLeft,
+      parts.track.scrollLeft,
       0,
-      this.parts.carouselInner.offsetWidth,
-      this.parts.carouselInner.offsetHeight,
+      parts.carouselInner.offsetWidth,
+      parts.carouselInner.offsetHeight,
     );
   }
 
   get nextTile() {
     let i = this.tiles.length - 1;
-    let nextTile = this.tiles[i];
+    let nextWholeTile = this.tiles[i];
+    let nextPartialTile;
+
     while (i--) {
-      if (this.isVisible(this.tiles[i])) {
-        return nextTile;
+      const visibility = this.visibility(this.tiles[i]);
+      if (visibility === 1) {
+        return nextWholeTile;
+      } else if (visibility > 0) {
+        nextPartialTile = this.tiles[i];
       }
-      nextTile = this.tiles[i];
+      nextWholeTile = this.tiles[i];
     }
+
+    // If no fully visible tiles, fallback to the first partially visible tile
+    return nextPartialTile || this.tiles.at(-1);
   }
 
   get prevTile() {
-    let firstVisibleIndex;
-    let lastVisibleIndex;
+    let firstWholeTileIndex;
+    let lastWholeTileIndex;
+    let firstPartialTileIndex;
     for (let i = 0; i < this.tiles.length; i++) {
-      if (this.isVisible(this.tiles[i])) {
-        firstVisibleIndex ??= i;
-        lastVisibleIndex = i;
-      } else if (firstVisibleIndex) {
+      const visibility = this.visibility(this.tiles[i]);
+      if (visibility === 1) {
+        firstWholeTileIndex ??= i;
+        lastWholeTileIndex = i;
+      } else if (visibility > 0) {
+        firstPartialTileIndex ??= i;
+      } else if (firstWholeTileIndex) {
         break;
       }
     }
 
-    const visibleTileCount = lastVisibleIndex - firstVisibleIndex + 1;
-    const prevTileIndex = Math.max(firstVisibleIndex - visibleTileCount, 0);
+    // If no fully visible tiles, fallback to the first partially visible tile
+    firstWholeTileIndex ??= firstPartialTileIndex || 0;
+    lastWholeTileIndex ??= firstPartialTileIndex || 0;
+    const visibleTileCount = lastWholeTileIndex - firstWholeTileIndex + 1;
+    const prevTileIndex = Math.max(firstWholeTileIndex - visibleTileCount, 0);
     return this.tiles[prevTileIndex];
   }
 
@@ -72,6 +92,10 @@ class Carousel extends Base {
       breakpoint: () =>
         this.getAttribute('breakpoint') || vds.breakpoint || '768px',
       dataTrackIgnore: () => this.getAttribute('data-track-ignore') || false,
+      disabled: () =>
+        (this.hasAttribute('disabled') &&
+          this.getAttribute('disabled') !== 'false') ||
+        false,
       gutter: () => this.getAttribute('gutter') || '24',
       id: () =>
         this.getAttribute('id') || `evolv-carousel-${this.carouselIndex}`,
@@ -92,20 +116,39 @@ class Carousel extends Base {
         `progress bar | ${this.props.id()}`,
       tileHeight: () => this.getAttribute('tile-height') || null,
       tileWidth: () => this.getAttribute('tile-width') || null,
+      trackPadding: () => this.getAttribute('track-padding') || '24px 0',
     };
 
     this.onAttributeChanged = () => this.renderChildren();
 
     this.styles = () => css`
       :host {
+        position: relative;
         display: block;
+        width: 100%;
       }
+
+      ${this.disabled
+        ? css`
+            :host([disabled]),
+            :host([disabled]) .carousel,
+            :host([disabled]) .carousel-inner,
+            :host([disabled]) .track {
+              display: contents;
+            }
+
+            :host([disabled]) .nav-button,
+            :host([disabled]) .pagination {
+              display: none;
+            }
+          `
+        : ''}
 
       .carousel {
         display: flex;
         flex-direction: column;
         align-items: center;
-        max-width: ${this.props.maxWidth()}px;
+        max-width: ${this.maxWidth}px;
         padding: 30px 0;
         gap: 32px;
       }
@@ -118,10 +161,10 @@ class Carousel extends Base {
 
       .track {
         display: flex;
-        gap: ${this.props.gutter()}px;
+        gap: ${this.gutter}px;
         overflow-x: scroll;
         scroll-snap-type: x mandatory;
-        padding: ${this.props.gutter()}px;
+        padding: ${this.trackPadding};
       }
 
       .track.dragging {
@@ -286,7 +329,8 @@ class Carousel extends Base {
           orientation="horizontal"
           hover-thickness="8px"
           thumb-hover-color="var(--color-gray-44)"
-          data-track="${this.props.scrollTrack()}"
+          data-track="${this.scrollTrack}"
+          length="96px"
         >
         </evolv-scrollbar>
       </div>
@@ -305,26 +349,34 @@ class Carousel extends Base {
     };
 
     this.onRender = () => {
+      if (this.disabled) {
+        return;
+      }
+
       new ResizeObserver(this.detectScroll).observe(this.parts.track);
+
       this.parts.carousel.addEventListener(
         'evolv:scrollbar-thumb-mousedown',
         () => {
+          document.body.addEventListener(
+            'evolv:scrollbar-thumb-mouseup',
+            () => {
+              this.parts.track.classList.remove('dragging');
+              document.body.removeEventListener(
+                'evolv:scrollbar-thumb-mouseup',
+                () => {},
+              );
+            },
+          );
+
           this.parts.track.classList.add('dragging');
         },
       );
 
-      this.parts.carousel.addEventListener(
-        'evolv:scrollbar-thumb-mouseup',
-        () => {
-          this.parts.track.classList.remove('dragging');
-        },
-      );
+      this.tiles = [...this.querySelectorAll(':scope > *')];
 
       this.parts.prev.addEventListener('click', this.onPrevClick);
       this.parts.next.addEventListener('click', this.onNextClick);
-
-      this.tiles = [...this.querySelectorAll(':scope > *')];
-      this.initNavObserver();
 
       const { pagination } = this.parts;
       pagination.onTrackClick = this.onScrollbarTrackClick.bind(pagination);
@@ -336,65 +388,81 @@ class Carousel extends Base {
     };
   }
 
+  connectedCallback() {
+    const navObserverOptions = {
+      root: this.parts.carouselInner,
+      threshold: 0.75,
+    };
+
+    this.prevObserver = new IntersectionObserver((records) => {
+      records.forEach((record) => {
+        this.parts.prev.parentNode.toggleAttribute(
+          'hidden',
+          record.intersectionRatio >= 0.75,
+        );
+      });
+    }, navObserverOptions);
+
+    this.nextObserver = new IntersectionObserver((records) => {
+      records.forEach((record) => {
+        this.parts.next.parentNode.toggleAttribute(
+          'hidden',
+          record.intersectionRatio >= 0.75,
+        );
+      });
+    }, navObserverOptions);
+
+    super.connectedCallback();
+  }
+
   contentChangedCallback = () => {
-    this.initNavObserver();
+    this.tiles = [...this.querySelectorAll(':scope > *')];
+    this.initNavObservers();
   };
 
   tileContainerId = (index) => {
     return `${this.id}-tile-${index}`;
   };
 
-  isVisible = (tile) => {
+  // The percentage of the tile that is within the viewport
+  visibility = (tile) => {
     const { viewport } = this;
-    return (
-      tile.offsetLeft >= viewport.left &&
-      tile.offsetLeft + tile.clientWidth <= viewport.right
-    );
+    const tileLeft = tile.offsetLeft;
+    const tileRight = tileLeft + tile.offsetWidth;
+    const viewportLeft = viewport.left;
+    const viewportRight = viewport.right;
+
+    if (tileLeft <= viewportRight && viewportLeft <= tileRight) {
+      return (
+        (100 *
+          Math.round(
+            (Math.min(tileRight, viewportRight) -
+              Math.max(tileLeft, viewportLeft)) /
+              tile.offsetWidth,
+          )) /
+        100
+      );
+    }
+
+    return 0;
   };
 
-  detectScroll = () => {
+  detectScroll = utils.throttle(() => {
     const scrollPrev = this.scroll;
     this.scroll = vds.isScrollable(this.parts.track, 'horizontal');
     if (scrollPrev !== this.scroll) {
       this.parts.pagination.render();
       this.parts.carousel.toggleAttribute('scroll', this.scroll);
     }
-  };
+  });
 
-  initNavObserver = () => {
+  initNavObservers = () => {
+    if (this.tiles.length === 0 && !(this.prevObserver && this.nextObserver)) {
+      return;
+    }
+
     this.prevObserver && this.prevObserver.disconnect();
     this.nextObserver && this.nextObserver.disconnect();
-
-    this.prevObserver = new IntersectionObserver(
-      (records) => {
-        records.forEach((record) => {
-          this.parts.prev.parentNode.toggleAttribute(
-            'hidden',
-            record.intersectionRatio >= 0.75,
-          );
-        });
-      },
-      {
-        root: this.parts.carouselInner,
-        threshold: 0.75,
-      },
-    );
-
-    this.nextObserver = new IntersectionObserver(
-      (records) => {
-        records.forEach((record) => {
-          this.parts.next.parentNode.toggleAttribute(
-            'hidden',
-            record.intersectionRatio >= 0.75,
-          );
-        });
-      },
-      {
-        root: this.parts.carouselInner,
-        threshold: 0.75,
-      },
-    );
-
     this.prevObserver.observe(this.tiles[0]);
     this.nextObserver.observe(this.tiles.at(-1));
   };
@@ -422,13 +490,6 @@ class Carousel extends Base {
     } else if (clientX > thumbRect.right) {
       this.parts.parent.onNextClick();
     }
-  };
-
-  contentChangedCallback = () => {
-    this.tileItems = this.querySelectorAll('evolv-tile-container');
-    this.tileItems.forEach((tileItem, index) => {
-      tileItem.setAttribute('index', index);
-    });
   };
 }
 

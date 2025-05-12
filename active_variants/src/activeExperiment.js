@@ -24,7 +24,7 @@ export function getActiveExperimentData(eid){
             const updateIfChanged = ()=> requestAnimationFrame(()=> {
                 getExperiment(eid).then(data=>{
                     const cachedData = Cached_ExperiemntData[eid];
-                    if ((cachedData?.activeVariants?.length || 0) !== (data?.activeVariants?.length || 0)){
+                    if (!cachedData || (cachedData?.activeVariants?.length || 0) !== (data?.activeVariants?.length || 0)){
                         Cached_ExperiemntData[eid] = {...data, activeVariants:[...(data?.activeVariants || [])]};
                         fnc(data);
                     }

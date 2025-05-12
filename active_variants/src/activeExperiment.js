@@ -22,11 +22,14 @@ export function getActiveExperimentData(eid){
         // ...data,
         on(eventName, fnc){
             const updateIfChanged = ()=> requestAnimationFrame(()=> {
-                getExperiment(eid).then(data=>{
+                const confirmation = findConfirmedAllocation(eid);
+                if (!confirmation) return;
+
+                getExperimentWithNames(eid).then(data=>{
                     const cachedData = Cached_ExperiemntData[eid];
                     if (!cachedData || (cachedData?.activeVariants?.length || 0) !== (data?.activeVariants?.length || 0)){
                         Cached_ExperiemntData[eid] = {...data, activeVariants:[...(data?.activeVariants || [])]};
-                        fnc(data);
+                        fnc({...confirmation, ...data});
                     }
                 })
             })
@@ -55,7 +58,7 @@ export function getActiveExperimentData(eid){
 }
 
 
-function getExperiment(experimentId){
+function getExperimentWithNames(experimentId){
     return evolv.client.getConfig('_experiments').then(experiments=>{
         return evolv.client.getConfig('_display_names').then(displayNames=>{
             if (!displayNames || !experiments) return;
@@ -111,3 +114,12 @@ function extractActiveExperimentVariants(experiment, activeVariants, variantDisp
         name: variantDisplayNames[vId]
       }));
 }
+
+
+
+  function findConfirmedAllocation(eid) {
+    const experiments = window.evolv.context.get('experiments');
+    const allocation = experiments.allocations.find(a=> a.eid === eid);
+    const confirmation = experiments.confirmations.find(c=>c.cid === allocation.cid);
+    return confirmation && allocation;
+  }

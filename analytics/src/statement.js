@@ -20,8 +20,6 @@ function setExpression(exp, values, append, context){
     obj[key] += values;
   } else{
     obj[key] = values;
-    console.info('values bound', key, obj[key])
-
   }
 }
 

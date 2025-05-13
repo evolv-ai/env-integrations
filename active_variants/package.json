@@ -1,0 +1,38 @@
+{
+    "name": "@evolv-delivery/active_variants",
+    "version": "0.4.0",
+    "description": "Provides access to variant names for active projects",
+    "main": "dist/index.js",
+    "files": [
+      "dist",
+      "README.md",
+      "LICENSE"
+    ],
+    "jest": {
+      "preset": "rollup-jest",
+      "testEnvironment": "jsdom"
+    },
+    "scripts": {
+      "build": "rollup --config rollup.config.mjs",
+      "watch": "rollup --config rollup.config.mjs --watch",
+      "test": "jest"
+    },
+    "author": "richard cowin",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/evolv-ai/env-integrations.git"
+    },
+    "homepage": "https://github.com/evolv-ai/env-integrations/analytics",
+    "bugs": {
+      "url": "https://github.com/evolv-ai/env-integrations/issues"
+    },
+    "license": "ISC",
+    "devDependencies": {
+      "jest": "^29.7.0",
+      "rollup-jest": "^3.1.0",
+      "@rollup/plugin-terser": "^0.4.4"
+
+    }
+  }
+  
+  

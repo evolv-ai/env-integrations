@@ -320,13 +320,23 @@ utils.app = {
         <evolv-button @click=${utils.app.onClickProceed}>Proceed</evolv-button>
         <evolv-button @click=${utils.app.onClickNoThanks}>No thanks</evolv-button>
       </evolv-modal-footer>
-    <evolv-modal>`))
+    </evolv-modal>`))
 }
 
 $mu('#productArea', 'product-area').inject(render(html`
   <evolv-button @click=${utils.app.openModal}>Open offer</evolv-button>
 `), false).append()
 ```
+
+#### Properties
+
+| Name | Description | Default | Accepts |
+| :--- | :---------- | :------ | :------ |
+| `duration` | The duration in milliseconds of the transition animations | 400 | `<integer>` |
+| `focus-first` | The selector to which to assign initial focus. | `evolv-button, button` | `<selector>` |
+| `close-button-location` | Whether to display the default modal close button at the top or bottom. | `top` | `top`, `bottom` |
+| `width` | The width of the modal. | `35rem` | `<css-length>` |
+| `max-height` | The maximum height of the modal before it starts scrolling contents. | `70vh` | `<css-length>` |
 
 ----
 

@@ -279,6 +279,7 @@ window.evolv.vds.ButtonIcon
 Carousel while in production is still a WIP.
 
 - accessibility affordances should be added to navigation
+- keyboard navigation should be added
 - `gutter` should accept any `<css-length>` not just an `integer`
 - `layout` may be obsolete
 - `max-height` calculation correct? should accept css length

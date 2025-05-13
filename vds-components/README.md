@@ -33,7 +33,7 @@ Run `npm start` to host locally. To run in your browser inject the following int
     document.head.appendChild(script);
 })();
 ```
----
+----
 
 ## Base Component
 
@@ -55,19 +55,19 @@ The core component from which all other components inherit. This gives the follo
 | `black` | `#000000` |
 | `white` | `#ffffff` |
 | `red` | `#ee0000` |
-| `gray11` | `#1b1d1f` |
-| `gray20` | `#333333` |
-| `gray44` | `#6f7171` |
-| `gray65` | `#a7a7a7` |
-| `gray85` | `#d8dada` |
-| `gray95` | `#f6f6f6` |
+| `gray-11` | `#1b1d1f` |
+| `gray-20` | `#333333` |
+| `gray-44` | `#6f7171` |
+| `gray-65` | `#a7a7a7` |
+| `gray-85` | `#d8dada` |
+| `gray-95` | `#f6f6f6` |
 
 Example:
 
 ```html
 <evolv-title size="2xlarge" color="white">Buy more phones</evolv-title>
 ```
----
+----
 
 #### CSS Color
 
@@ -80,7 +80,7 @@ Example:
 <evolv-button-icon name="close" color="rgb(111, 11, 1)" size="large"></evolv-button-icon>
 ```
 
----
+----
 
 #### CSS Stylesheet
 
@@ -198,7 +198,7 @@ window.evolv.vds.Button
 | `width` | The width for rendering the button. | `auto` | `<number>` or `<css width>` |
 | `disabled` | Disables button. | `false` | `true`, `false` |
 
----
+----
 
 ### ButtonIcon
 
@@ -211,7 +211,7 @@ window.evolv.vds.Button
 <!-- Or use custom SVG by omitting the 'name' attribute -->
 <evolv-button-icon>
   <svg width="28" height="28" viewBox="0 0 28 28">
-    <!-- fill="currentColor" allows the SVG to inherit color the parent element -->
+    <!-- fill="currentColor" allows the SVG to inherit the color of the parent element -->
     <circle cx="14" cy="14" r="14" fill="currentColor" />
   </svg>
 </evolv-button-icon>
@@ -238,7 +238,57 @@ window.evolv.vds.ButtonIcon
 | `small` | `1.25rem` |
 | `large` | `1.75rem` |
 
----
+----
+
+### Carousel
+
+#### Tag
+
+```html
+<evolv-carousel>
+    <div class="tile"></div>
+    <div class="tile"></div>
+    <div class="tile"></div>
+    <div class="tile"></div>
+</evolv-carousel>
+```
+
+#### Properties
+
+| Name | Description | Default | Accepts |
+| :--- | :---------- | :------ | :------ |
+| `aspect-ratio` | The default aspect ratio of tiles. | `4/5` | `<fraction>`, `<decimal>` |
+| `data-track-ignore` | Whether to disable data tracking for button interactions. | `false` | `<boolean>` |
+| `disabled` | Whether to disable to the carousel, rendering contents normally. | `null` | `<boolean>` |
+| `gutter` | The distance in px between tiles | `24` | `<integer>` |
+| `id` | The id of the carousel, used for data-tracking and aria-tags | `evolv-carousel-<index>` | `<string>` |
+| `layout` | The number of tiles to display | `3` | `<integer>` |
+| `max-height` | The maximum height of the carousel | `<max-width> - 30` | `<integer>` |
+| `max-width` | The maxium width of the carousel | `1272` | `<integer>` |
+| `next-button-track` | Data track attribute for the next button | `next button | <id>` | `<string>` |
+| `pagination-display` | The rule for displaying pagination | `persistent` | ??? |
+| `peek` | ??? | 'standard' | ??? |
+| `prev-button-track` | Data track attribute for the prev button | `prev button | <id>` | `<string>` |
+| `scroll-track` | Data tracking for the pagination bar | `progress bar | <id>` | `<string>` |
+| `tile-height` | The height of the tile | `null` | ??? |
+| `tile-width` | The width of the tile | `null` | ??? |
+| `track-padding` | The padding of the carousel track | '24px 0' | `<css-lengths>` |
+
+#### Notes
+
+Carousel while in production is still a WIP.
+
+- accessibility affordances should be added to navigation
+- `gutter` should accept any `<css-length>` not just an `integer`
+- `layout` may be obsolete
+- `max-height` calculation correct? should accept css length
+- `max-width` should accept css length
+- `pagination-display` not added
+- `peek` not added
+- `tile-height` not added
+- `tile-width` not added
+
+----
 
 ### Icon
 
@@ -338,6 +388,10 @@ $mu('#productArea', 'product-area').inject(render(html`
 | `width` | The width of the modal. | `35rem` | `<css-length>` |
 | `max-height` | The maximum height of the modal before it starts scrolling contents. | `70vh` | `<css-length>` |
 
+#### Notes
+
+- Modal may need data-tracking added, at least to the default close button
+
 ----
 
 ### Scrollbar
@@ -406,7 +460,7 @@ window.evolv.vds.TextLink
 | `small` | `0.75rem` |
 | `large` | `1rem` |
 
----
+----
 
 ### Tooltip
 
@@ -466,24 +520,3 @@ The `primitive` attribute, if left blank, is assigned a default heading tag corr
 | `large` | `h2` |
 | `xlarge` | `h1` |
 | `2xlarge` | `h1` |
-
-----
-
-### Tooltip
-
-**Released in version 0.4.0**
-
-#### Tag
-
-```html
-<evolv-tooltip content-title="Lorem ipusum">Nulla facilis eos dolorem totam est explicabo fuga. Cum magnam laudantium et itaque rerum sit. Amet laudantium nesciunt consequuntur nam accusamus odit. Sequi rerum et optio et aspernatur quam. Dolores nobis quos suscipit. Aut fugiat ipsam praesentium aliquid ut minima exercitationem illum. Natus explicabo rerum fugit in. Ut voluptatem nemo et. Nobis rem ut repellendus consectetur velit. Consequatur est aperiam praesentium illo facilis. Unde voluptas cumque et aliquid neque autem vel nam. Sit rerum aspernatur minima. Aut sequi vitae et natus est voluptas necessitatibus.</evolv-tooltip>
-```
-
-#### Properties
-
-| Name | Description | Default | Accepts |
-| :--- | :---------- | :------ | :------ |
-| `size` | Renders the tooltip in the correpsponding size. Requires `type` to be `standAlone`. **Coming soon!** | `large` | `large`, `small` |
-| `content-max-height` | The maximum height of the tooltip content
-| `content-title` | A title to be displayed above the tooltip content | | `<string>` |
-| `type` | Whether the tooltip button is `inline`, inherited from the text size of the parent, or `standAlone`, determined by the `size` attribute | `inline` | `inline`, `standAlone` |

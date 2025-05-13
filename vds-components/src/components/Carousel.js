@@ -104,7 +104,7 @@ class Carousel extends Base {
       maxWidth: () => this.getAttribute('max-width') || 1272,
       nextButtonTrack: () =>
         this.getAttribute('next-button-track') ||
-        `next button| ${this.props.id()}`,
+        `next button | ${this.props.id()}`,
       paginationDisplay: () =>
         parseFloat(this.getAttribute('pagination-display')) || 'persistent',
       peek: () => this.getAttribute('peek') || 'standard',

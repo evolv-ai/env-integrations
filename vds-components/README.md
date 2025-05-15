@@ -260,18 +260,12 @@ window.evolv.vds.ButtonIcon
 | `aspect-ratio` | The default aspect ratio of tiles. | `4/5` | `<fraction>`, `<decimal>` |
 | `data-track-ignore` | Whether to disable data tracking for button interactions. | `false` | `<boolean>` |
 | `disabled` | Whether to disable to the carousel, rendering contents normally. | `null` | `<boolean>` |
-| `gutter` | The distance in px between tiles | `24` | `<integer>` |
+| `gutter` | The space between tiles | `24px` | `<css-length>` |
 | `id` | The id of the carousel, used for data-tracking and aria-tags | `evolv-carousel-<index>` | `<string>` |
-| `layout` | The number of tiles to display | `3` | `<integer>` |
-| `max-height` | The maximum height of the carousel | `<max-width> - 30` | `<integer>` |
-| `max-width` | The maxium width of the carousel | `1272` | `<integer>` |
+| `max-width` | The maximum width of the carousel | `null` | `<css-length>` |
 | `next-button-track` | Data track attribute for the next button | `next button | <id>` | `<string>` |
-| `pagination-display` | The rule for displaying pagination | `persistent` | ??? |
-| `peek` | ??? | 'standard' | ??? |
 | `prev-button-track` | Data track attribute for the prev button | `prev button | <id>` | `<string>` |
 | `scroll-track` | Data tracking for the pagination bar | `progress bar | <id>` | `<string>` |
-| `tile-height` | The height of the tile | `null` | ??? |
-| `tile-width` | The width of the tile | `null` | ??? |
 | `track-padding` | The padding of the carousel track | '24px 0' | `<css-lengths>` |
 
 #### Notes
@@ -280,14 +274,7 @@ Carousel while in production is still a WIP.
 
 - accessibility affordances should be added to navigation
 - keyboard navigation should be added
-- `gutter` should accept any `<css-length>` not just an `integer`
-- `layout` may be obsolete
-- `max-height` calculation correct? should accept css length
-- `max-width` should accept css length
-- `pagination-display` not added
-- `peek` not added
-- `tile-height` not added
-- `tile-width` not added
+- add `pagination-display` support for values `persistent`, `on-hover`, and `none` if needed.
 
 ----
 

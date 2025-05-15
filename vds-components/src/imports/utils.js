@@ -21,6 +21,6 @@ utils.functionOrSelector = (variable, container = document.body) => {
   }
 
   return container.querySelector(variable);
-}
+};
 
 export default utils;

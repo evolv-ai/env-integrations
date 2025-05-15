@@ -96,26 +96,21 @@ class Carousel extends Base {
         (this.hasAttribute('disabled') &&
           this.getAttribute('disabled') !== 'false') ||
         false,
-      gutter: () => this.getAttribute('gutter') || '24',
+      gutter: () => this.getAttribute('gutter') || '24px',
       id: () =>
         this.getAttribute('id') || `evolv-carousel-${this.carouselIndex}`,
-      layout: () => this.getAttribute('layout') || '3',
-      maxHeight: () => Math.round(parseInt(this.props.maxWidth()) - 60 / 2),
-      maxWidth: () => this.getAttribute('max-width') || 1272,
+      maxWidth: () => this.getAttribute('max-width') || 'null',
       nextButtonTrack: () =>
         this.getAttribute('next-button-track') ||
         `next button | ${this.props.id()}`,
-      paginationDisplay: () =>
-        parseFloat(this.getAttribute('pagination-display')) || 'persistent',
-      peek: () => this.getAttribute('peek') || 'standard',
+      // paginationDisplay: () =>
+      //   parseFloat(this.getAttribute('pagination-display')) || 'persistent',
       prevButtonTrack: () =>
         this.getAttribute('prev-button-track') ||
         `prev button | ${this.props.id()}`,
       scrollTrack: () =>
         this.getAttribute('scroll-track') ||
         `progress bar | ${this.props.id()}`,
-      tileHeight: () => this.getAttribute('tile-height') || null,
-      tileWidth: () => this.getAttribute('tile-width') || null,
       trackPadding: () => this.getAttribute('track-padding') || '24px 0',
     };
 
@@ -148,7 +143,7 @@ class Carousel extends Base {
         display: flex;
         flex-direction: column;
         align-items: center;
-        max-width: ${this.maxWidth}px;
+        ${this.maxWidth ? `max-width: ${this.maxWidth}` : ''};
         padding: 30px 0;
         gap: 32px;
       }
@@ -161,7 +156,7 @@ class Carousel extends Base {
 
       .track {
         display: flex;
-        gap: ${this.gutter}px;
+        gap: ${this.gutter};
         overflow-x: scroll;
         scroll-snap-type: x mandatory;
         padding: ${this.trackPadding};
@@ -385,6 +380,7 @@ class Carousel extends Base {
     this.onConnect = () => {
       new ResizeObserver(this.detectScroll).observe(this);
       this.tiles = [...this.querySelectorAll(':scope > *')];
+      this.decorateTiles();
     };
   }
 
@@ -417,6 +413,7 @@ class Carousel extends Base {
 
   contentChangedCallback = () => {
     this.tiles = [...this.querySelectorAll(':scope > *')];
+    this.decorateTiles();
     this.initNavObservers();
   };
 
@@ -455,6 +452,12 @@ class Carousel extends Base {
       this.parts.carousel.toggleAttribute('scroll', this.scroll);
     }
   });
+
+  decorateTiles = () => {
+    this.tiles.forEach((tile) => {
+      tile.tabIndex = 0;
+    });
+  };
 
   initNavObservers = () => {
     if (this.tiles.length === 0 && !(this.prevObserver && this.nextObserver)) {

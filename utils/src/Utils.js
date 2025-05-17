@@ -108,7 +108,7 @@ class Utils {
   };
 
   /**
-   * Logs an debug message to the console that can only be seen if the <code>evolv:logs</code> localStorage item is set
+   * Logs a debug message to the console that can only be seen if the <code>evolv:logs</code> localStorage item is set
    *    to <code>debug</code>.
    * @param {...(string|number)} args - The debug messages to log.
    */
@@ -301,10 +301,11 @@ class Utils {
      * @param {string} string The string to capitalize.
      * @returns {string} The string with the first letter capitalized.
      * @example
-     * string.capitalizeFirstLetter("hello"); // "Hello"
+     * string.capitalizeFirstLetter('hello'); // 'Hello'
+     * string.capitalizeFirstLetter('HELLO'); // 'Hello'
      */
     capitalizeFirstLetter: (string) =>
-      string.charAt(0).toUpperCase() + string.slice(1),
+      string.charAt(0).toUpperCase() + string.slice(1).toLowerCase(),
 
     /**
      * Checks if the given string is in camelCase format.
@@ -312,8 +313,8 @@ class Utils {
      * @param {string} string The string to check.
      * @returns {boolean} Returns `true` if the string is in camelCase, `false` otherwise.
      * @example
-     * string.isCamelCase("myVariable"); // true
-     * string.isCamelCase("my_variable"); // false
+     * string.isCamelCase('myVariable'); // true
+     * string.isCamelCase('my_variable'); // false
      */
     isCamelCase: (string) => /^[a-z]+([A-Z][a-z]*)$/.test(string),
 
@@ -324,8 +325,8 @@ class Utils {
      * @param {string} string The string to parse.
      * @returns {string[]} An array of words parsed from the string.
      * @example
-     * string.parse("myCamelCaseString"); // ["my", "Camel", "Case", "String"]
-     * string.parse("hello world!"); // ["hello", "world"]
+     * string.parse('myCamelCaseString'); // ['my', 'Camel', 'Case', 'String']
+     * string.parse('hello world!'); // ['hello', 'world']
      */
     parse: (string) => {
       if (this.string.isCamelCase(string)) {
@@ -333,7 +334,7 @@ class Utils {
       }
 
       return string
-        .replace(/[^\w]+/g, ' ')
+        .replace(/\W+/g, ' ')
         .trim()
         .split(' ');
     },
@@ -344,8 +345,8 @@ class Utils {
      * @param {string} string The string to convert.
      * @returns {string} The string converted to camelCase.
      * @example
-     * string.toCamelCase("hello world"); // "helloWorld"
-     * string.toCamelCase("this is a test"); // "thisIsATest"
+     * string.toCamelCase('hello world'); // 'helloWorld'
+     * string.toCamelCase('this is a test'); // 'thisIsATest'
      */
     toCamelCase: (string) =>
       this.string
@@ -363,8 +364,8 @@ class Utils {
      * @param {string} string The string to convert.
      * @returns {string} The string converted to kebab-case.
      * @example
-     * string.toKebabCase("hello world"); // "hello-world"
-     * string.toKebabCase("this is a test"); // "this-is-a-test"
+     * string.toKebabCase('hello world'); // 'hello-world'
+     * string.toKebabCase('this is a test'); // 'this-is-a-test'
      */
     toKebabCase: (string) =>
       this.string
@@ -416,8 +417,7 @@ class Utils {
 
   /**
    * Transforms `TemplateResult` into an `Node`. Attributes prefixed with `@` will be assigned as event listeners. Allows embedding of `Nodes`, other `TemplateResult` objects, and arrays of expressions.
-   * @param {string[]} strings
-   * @param  {...any} expressions
+   * @param {TemplateResult} templateResult
    * @returns {Node}
    * @example
    * // Creates a div containing two buttons with click handlers already assigned
@@ -440,32 +440,32 @@ class Utils {
    *
    * const tileContents = [
    *   {
-   *     title: "Buy this phone",
-   *     body: "It's better than your old phone.",
+   *     title: 'Buy this phone',
+   *     body: 'It's better than your old phone.',
    *     onClick: app.phoneAction
    *   },
    *   {
-   *     title: "Upgrade your plan",
-   *     body: "It's better than your old plan.",
+   *     title: 'Upgrade your plan',
+   *     body: 'It's better than your old plan.',
    *     onClick: app.planAction
    *   },
    *   {
-   *     title: "Get device protection",
-   *     body: "You know you're clumsy.",
+   *     title: 'Get device protection',
+   *     body: 'You know you're clumsy.',
    *     onClick: app.protectionAction
    *   }
    * ]
    *
-   * const tileTemplate = (content) => html`
+   * const tileTemplate = (content) => render(html`
    *   <div class="tile">
    *     <h2>${content.title}</h2>
    *     <div>${content.body}</div>
    *     <button @click=${content.onClick}>Continue</button>
    *   </div>
-   * `)
+   * `);
    *
    * // Maps the content into a new array of `TemplateResult` objects which get recursively rendered. The `false` flag is important because it instructs `inject` to not clone the element, preventing the destruction of event listeners.
-   * mutate('main').inject(render(html`
+   * mutate('main').inject(() => render(html`
    *   <div class="tile-group">
    *     ${tileContents.map(tileContent => tileTemplate(tileContent))}
    *   </div>
@@ -497,8 +497,7 @@ class Utils {
         ?.addEventListener('click', clickHandlers[key]);
     });
 
-    const array = Array.from(template.content.children);
-    return array;
+    return [...template.content.children];
   }
 
   /**
@@ -539,7 +538,7 @@ class Utils {
   /**
    * Selects elements from the DOM or creates new elements from an HTML string.
    * @param {string} selector The CSS selector, XPath expression, or HTML string
-   * @returns {HTMLElement[]} An array of result elements
+   * @returns {Element[]} An array of result elements
    */
   $$(selector) {
     switch (selector.charAt(0)) {
@@ -562,7 +561,7 @@ class Utils {
       case '<':
         return this.makeElements(selector);
       default:
-        return Array.from(document.querySelectorAll(selector));
+        return [...document.querySelectorAll(selector)];
     }
   }
 
@@ -570,6 +569,7 @@ class Utils {
    * Adds a class from an element only if a change needs to occur.
    * @param {HTMLElement} element The element
    * @param {string} className The class name
+   * @param {boolean} [silent=false] Suppress logs
    */
   addClass = (element, className, silent = false) => {
     if (element && !element.classList.contains(className)) {
@@ -584,6 +584,7 @@ class Utils {
    * Removes a class from an element only if a change needs to occur.
    * @param {HTMLElement} element The element
    * @param {string} className The class name
+   * @param {boolean} [silent=false] Suppress logs
    */
   removeClass = (element, className, silent = false) => {
     if (element && element.classList.contains(className)) {
@@ -817,6 +818,10 @@ class Utils {
     return new DOMRect(x, y, width, height);
   };
 
+  /**
+   * Adds a ResizeObserver to the body that updates the CSS custom property
+   * `--evolv-window-width` with the current width of the body in px.
+   */
   observeWindowWidth = () => {
     if (!this.windowWidthObserver) {
       this.windowWidthObserver = new ResizeObserver(() =>
@@ -826,10 +831,25 @@ class Utils {
           document.body,
         ),
       );
-    }
 
-    this.windowWidthObserver.observe(document.body);
+      this.windowWidthObserver.observe(document.body);
+    }
   };
+
+  /**
+   * Simulates a click on a specified DOM element without triggering Adobe tracking.
+   *
+   * @function
+   * @param {HTMLElement} element - The DOM element on which the stealth click is performed.
+   */
+  stealthClick = (element) => {
+    element.setAttribute('data-track-ignore', 'true');
+
+    setTimeout(() => {
+      element.click()
+      setTimeout(() => element.removeAttribute('data-track-ignore'), 0);
+    }, 0);
+  }
 }
 
 export default Utils;

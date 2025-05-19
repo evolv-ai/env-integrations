@@ -135,6 +135,7 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
     * [.updateProperty](#Utils+updateProperty)
     * [.isTouchDevice](#Utils+isTouchDevice) ⇒ <code>boolean</code>
     * [.getOffsetRect](#Utils+getOffsetRect) ⇒ <code>DOMRect</code>
+    * [.observeWindowWidth](#Utils+observeWindowWidth)
     * [.throttle(callback, limit)](#Utils+throttle) ⇒ <code>function</code>
     * [.waitFor(callback, timeout, interval)](#Utils+waitFor) ⇒ <code>Promise</code>
     * ~~[.slugify(string)](#Utils+slugify) ⇒ <code>string</code>~~
@@ -142,12 +143,13 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
     * [.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
     * [.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code>
     * [.$(selector)](#Utils+$) ⇒ <code>HTMLElement</code>
-    * [.$$(selector)](#Utils+$$) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
+    * [.$$(selector)](#Utils+$$) ⇒ <code>Array.&lt;Element&gt;</code>
     * [.isVisible(element)](#Utils+isVisible) ⇒ <code>boolean</code>
     * [.fail(details, [reason])](#Utils+fail)
     * [.supportsIntersectionObserver()](#Utils+supportsIntersectionObserver) ⇒ <code>boolean</code>
     * [.getAncestor(element, [level])](#Utils+getAncestor)
     * [.getPrecedingSiblings(element)](#Utils+getPrecedingSiblings) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
+    * [.stealthClick(element)](#Utils+stealthClick)
 
 <a name="new_Utils_new"></a>
 
@@ -190,7 +192,7 @@ Logs a message to the console that can only be seen if the <code>evolv:logs</cod
 <a name="Utils+debug"></a>
 
 ### utils.debug
-Logs an debug message to the console that can only be seen if the <code>evolv:logs</code> localStorage item is set
+Logs a debug message to the console that can only be seen if the <code>evolv:logs</code> localStorage item is set
    to <code>debug</code>.
 
 **Kind**: instance property of [<code>Utils</code>](#Utils)  
@@ -295,8 +297,7 @@ Transforms `TemplateResult` into an `Node`. Attributes prefixed with `@` will be
 
 | Param | Type |
 | --- | --- |
-| strings | <code>Array.&lt;string&gt;</code> | 
-| ...expressions | <code>any</code> | 
+| templateResult | <code>TemplateResult</code> | 
 
 **Example**  
 ```js
@@ -321,32 +322,32 @@ const {html, render} = utils;
 
 const tileContents = [
   {
-    title: "Buy this phone",
-    body: "It's better than your old phone.",
+    title: 'Buy this phone',
+    body: 'It's better than your old phone.',
     onClick: app.phoneAction
   },
   {
-    title: "Upgrade your plan",
-    body: "It's better than your old plan.",
+    title: 'Upgrade your plan',
+    body: 'It's better than your old plan.',
     onClick: app.planAction
   },
   {
-    title: "Get device protection",
-    body: "You know you're clumsy.",
+    title: 'Get device protection',
+    body: 'You know you're clumsy.',
     onClick: app.protectionAction
   }
 ]
 
-const tileTemplate = (content) => html`
+const tileTemplate = (content) => render(html`
   <div class="tile">
     <h2>${content.title}</h2>
     <div>${content.body}</div>
     <button @click=${content.onClick}>Continue</button>
   </div>
-`)
+`);
 
 // Maps the content into a new array of `TemplateResult` objects which get recursively rendered. The `false` flag is important because it instructs `inject` to not clone the element, preventing the destruction of event listeners.
-mutate('main').inject(render(html`
+mutate('main').inject(() => render(html`
   <div class="tile-group">
     ${tileContents.map(tileContent => tileTemplate(tileContent))}
   </div>
@@ -371,10 +372,11 @@ Adds a class from an element only if a change needs to occur.
 
 **Kind**: instance property of [<code>Utils</code>](#Utils)  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| element | <code>HTMLElement</code> | The element |
-| className | <code>string</code> | The class name |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| element | <code>HTMLElement</code> |  | The element |
+| className | <code>string</code> |  | The class name |
+| [silent] | <code>boolean</code> | <code>false</code> | Suppress logs |
 
 <a name="Utils+removeClass"></a>
 
@@ -383,10 +385,11 @@ Removes a class from an element only if a change needs to occur.
 
 **Kind**: instance property of [<code>Utils</code>](#Utils)  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| element | <code>HTMLElement</code> | The element |
-| className | <code>string</code> | The class name |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| element | <code>HTMLElement</code> |  | The element |
+| className | <code>string</code> |  | The class name |
+| [silent] | <code>boolean</code> | <code>false</code> | Suppress logs |
 
 <a name="Utils+updateText"></a>
 
@@ -480,6 +483,13 @@ This method calculates the element's position and size considering scrolling.
 | --- | --- | --- |
 | element | <code>Element</code> | The DOM element whose offset rectangle is to be calculated. |
 
+<a name="Utils+observeWindowWidth"></a>
+
+### utils.observeWindowWidth
+Adds a ResizeObserver to the body that updates the CSS custom property
+`--evolv-window-width` with the current width of the body in px.
+
+**Kind**: instance property of [<code>Utils</code>](#Utils)  
 <a name="Utils+throttle"></a>
 
 ### utils.throttle(callback, limit) ⇒ <code>function</code>
@@ -584,11 +594,11 @@ Selects an element from the DOM or creates new element from an HTML string.
 
 <a name="Utils+$$"></a>
 
-### utils.$$(selector) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
+### utils.$$(selector) ⇒ <code>Array.&lt;Element&gt;</code>
 Selects elements from the DOM or creates new elements from an HTML string.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
-**Returns**: <code>Array.&lt;HTMLElement&gt;</code> - An array of result elements  
+**Returns**: <code>Array.&lt;Element&gt;</code> - An array of result elements  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -672,6 +682,17 @@ mutate('order-summary-wrap').customMutation((state, orderSummaryWrap) => {
   utils.wrap(utils.getPrecedingSiblings(orderSummaryWrap), '<div class="evolv-psfec-cart-left"></div>');
 });
 ```
+<a name="Utils+stealthClick"></a>
+
+### utils.stealthClick(element)
+Simulates a click on a specified DOM element without triggering Adobe tracking.
+
+**Kind**: instance method of [<code>Utils</code>](#Utils)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| element | <code>HTMLElement</code> | The DOM element on which the stealth click is performed. |
+
 <a name="XPathMethods"></a>
 
 ## XPathMethods
@@ -824,7 +845,8 @@ Capitalizes the first letter of a string.
 
 **Example**  
 ```js
-string.capitalizeFirstLetter("hello"); // "Hello"
+string.capitalizeFirstLetter('hello'); // 'Hello'
+string.capitalizeFirstLetter('HELLO'); // 'Hello'
 ```
 <a name="isCamelCase"></a>
 
@@ -840,8 +862,8 @@ Checks if the given string is in camelCase format.
 
 **Example**  
 ```js
-string.isCamelCase("myVariable"); // true
-string.isCamelCase("my_variable"); // false
+string.isCamelCase('myVariable'); // true
+string.isCamelCase('my_variable'); // false
 ```
 <a name="parse"></a>
 
@@ -858,8 +880,8 @@ at uppercase letter boundaries. If not, it treats spaces or non-word characters 
 
 **Example**  
 ```js
-string.parse("myCamelCaseString"); // ["my", "Camel", "Case", "String"]
-string.parse("hello world!"); // ["hello", "world"]
+string.parse('myCamelCaseString'); // ['my', 'Camel', 'Case', 'String']
+string.parse('hello world!'); // ['hello', 'world']
 ```
 <a name="toCamelCase"></a>
 
@@ -875,8 +897,8 @@ Converts a string to camelCase.
 
 **Example**  
 ```js
-string.toCamelCase("hello world"); // "helloWorld"
-string.toCamelCase("this is a test"); // "thisIsATest"
+string.toCamelCase('hello world'); // 'helloWorld'
+string.toCamelCase('this is a test'); // 'thisIsATest'
 ```
 <a name="toKebabCase"></a>
 
@@ -892,8 +914,8 @@ Converts a string to kebab-case.
 
 **Example**  
 ```js
-string.toKebabCase("hello world"); // "hello-world"
-string.toKebabCase("this is a test"); // "this-is-a-test"
+string.toKebabCase('hello world'); // 'hello-world'
+string.toKebabCase('this is a test'); // 'this-is-a-test'
 ```
 <a name="init"></a>
 

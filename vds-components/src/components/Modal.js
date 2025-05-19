@@ -3,7 +3,20 @@ import vds from '../imports/vds';
 import Base from './Base';
 
 class Modal extends Base {
-  static observedAttributes = [...this.observedAttributes];
+  static observedAttributes = [
+    'close-button-location',
+    'disable-track',
+    'duration',
+    'focus-first',
+    'id',
+    'max-height',
+    'title-id',
+    'track-close',
+    'track-name',
+    'track-open',
+    'width',
+    ...this.observedAttributes,
+  ];
 
   modalIndex = null;
   hasScrollbar = false;
@@ -16,13 +29,23 @@ class Modal extends Base {
       activeElement: document.activeElement,
       breakpoint: () =>
         this.getAttribute('breakpoint') || vds.breakpoint || '768px',
+      closeButtonLocation: () =>
+        this.getAttribute('close-button-location') || 'top',
+      disableTrack: () =>
+        this.getAttribute('disable-track') === 'true' || false,
       duration: () => this.getAttribute('duration') || 400,
       focusFirst: () =>
         this.getAttribute('focus-first') || 'evolv-button, button',
-      closeButtonLocation: () =>
-        this.getAttribute('close-button-location') || 'top',
+      id: () => this.getAttribute('id') || `evolv-modal-${vds.modalIndex}`,
       modalOpenClass: 'evolv-modal-open',
       titleId: () => `evolv-modal-${vds.modalIndex}-title`,
+      trackName: () => this.getAttribute('track-name') || this.props.id(),
+      trackOpen: () =>
+        this.getAttribute('track-open') ||
+        `modal open : ${this.props.trackName()}`,
+      trackClose: () =>
+        this.getAttribute('track-close') ||
+        `modal close : ${this.props.trackName()}`,
       width: () => this.getAttribute('width') || '35rem',
       maxHeight: () => this.getAttribute('max-height') || '70vh',
     };
@@ -173,6 +196,13 @@ class Modal extends Base {
       this.parts.focusTrapStart.addEventListener('focus', this.trapFocus);
       this.parts.focusTrapEnd.addEventListener('focus', this.trapFocus);
 
+      if (!this.disableTrack) {
+        this.parts.closeButton?.addEventListener(
+          'click',
+          this.emitCloseTracking,
+        );
+      }
+
       if (vds.isScrollable(this.parts.modalContent)) {
         this.isScrollable = true;
         this.addEventListener('keydown', this.onKeydown);
@@ -197,11 +227,23 @@ class Modal extends Base {
     utils.updateProperty(
       'window-height',
       `${window.innerHeight}px`,
-      this.parts.modal
+      this.parts.modal,
     );
   };
 
   open = () => {
+    if (!this.disableTrack) {
+      window.coreData ??= [];
+      window.coreData.push({
+        task: 'emit',
+        event: 'openView',
+        params: {
+          selector: this.id,
+          name: this.trackOpen,
+        },
+      });
+    }
+
     this.toggleAttribute('open', true);
     vds.disableBodyScroll();
   };
@@ -211,6 +253,17 @@ class Modal extends Base {
     setTimeout(() => this.remove(), this.duration);
     this.activeElement.focus();
     vds.enableBodyScroll();
+  };
+
+  emitCloseTracking = () => {
+    window.coreData ??= [];
+    window.coreData.push({
+      task: 'emit',
+      event: 'linkClick',
+      params: {
+        name: this.trackClose,
+      },
+    });
   };
 
   onBackdropClick = ({ target }) => {

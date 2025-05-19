@@ -383,9 +383,14 @@ $mu('#productArea', 'product-area').inject(render(html`
 
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
+| `close-button-location` | Whether to display the default modal close button at the top or bottom. | `top` | `top`, `bottom` |
+| `disable-track` | Disables Adobe tracking on open and default close button. | `false` | `<boolean>` |
 | `duration` | The duration in milliseconds of the transition animations | 400 | `<integer>` |
 | `focus-first` | The selector to which to assign initial focus. | `evolv-button, button` | `<selector>` |
-| `close-button-location` | Whether to display the default modal close button at the top or bottom. | `top` | `top`, `bottom` |
+| `id` | The unique id of the modal, used by Adobe tracking | `evolv-modal-<modal-index>` | `<string>` |
+| `track-close` | The Adobe track name emitted when the default close button is clicked | `modal close : <track-name>` | `<string>` |
+| `track-name` | The track name to be used be used by open and close events | `<id>` | `<string>` |
+| `track-open` | The unique Adobe tracking event name emitted when the modal opens | `modal open : <track-name>` | `<string>` |
 | `width` | The width of the modal. | `35rem` | `<css-length>` |
 | `max-height` | The maximum height of the modal before it starts scrolling contents. | `70vh` | `<css-length>` |
 

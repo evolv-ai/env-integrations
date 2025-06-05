@@ -59,12 +59,12 @@ function injectVariantName(script, id, name){
         script = `${c.slice(0,insertPosition)}${c.slice(endPosition+endRegion.length)}`        
     }
     return `
-      ${script.slice(0,insertPosition)}
-      ${startRegion}
-        client.addDisplayName?.('variants', '${id}', '${name}');
-      ${endRegion}
-      ${script.slice(insertPosition)}
-    `;
+${script.slice(0,insertPosition)}
+${startRegion}
+client.addDisplayName?.('variants', '${id}', '${name}');
+${endRegion}
+${script.slice(insertPosition)}
+`;
 }
 
 function loadYaml(yamlPath){

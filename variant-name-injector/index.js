@@ -58,11 +58,10 @@ function injectVariantName(script, id, name){
         let endPosition = script.indexOf(endRegion, insertPosition);
         script = `${c.slice(0,insertPosition)}${c.slice(endPosition+endRegion.length)}`        
     }
-    return `
-${script.slice(0,insertPosition)}
-${startRegion}
+    return `${script.slice(0,insertPosition)}${startRegion}
 client.addDisplayName?.('variants', '${id}', '${name}');
 ${endRegion}
+
 ${script.slice(insertPosition)}
 `;
 }

@@ -1,6 +1,7 @@
 # variant-name-injector
 
-Processes an Evolv experiment yml file to inject varaint name information into the experiment.
+Processes an Evolv experiment yml file to inject varaint name information into the experiment. 
+Note: This is a temporary solution until the Evolv product makes this information available in the runtime.
 
 ## Usage
 You can run this via npx (suggested) via the following command:

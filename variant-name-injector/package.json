@@ -1,7 +1,7 @@
 {
     "name": "@evolv-delivery/variant-name-injector",
     "description": "Used as pre-processor to inject variant names into an Evolv ymlfile",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "repository": {
         "type": "git",
         "url": "https://github.com/evolv-ai/env-integrations/variant-name-injector"

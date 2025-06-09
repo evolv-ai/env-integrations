@@ -1,6 +1,6 @@
 {
     "name": "@evolv-delivery/active_variants",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "description": "Provides access to variant names for active projects",
     "main": "dist/index.js",
     "files": [

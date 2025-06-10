@@ -40,18 +40,13 @@ class Base extends HTMLElement {
         }
       }
 
-      :host-context([surface='dark']) {
-        --color-primary: white;
-        --color-secondary: black;
-      }
-
       :host {
         --font-family-etx: Verizon-NHG-eTX, Helvetica, Arial, sans-serif;
         --font-family-eds: Verizon-NHG-eDS, Helvetica, Arial, sans-serif;
-        ${Object.keys(vds.colorTokens)
+        ${Object.keys(vds.color.palette)
           .map(
-            (colorToken) =>
-              mixin`--color-${colorToken}: ${vds.colorTokens[colorToken]};`,
+            (colorSwatch) =>
+              mixin`--color-${colorSwatch}: ${vds.color.palette[colorSwatch]};`,
           )
           .join('')}
         --color-overlay: rgba(0, 0, 0, 0.8);
@@ -65,6 +60,11 @@ class Base extends HTMLElement {
         --border-gray: 0.0625rem solid var(--color-gray-85);
         color: inherit;
         outline: none !important;
+      }
+
+      :host-context([surface='dark']) {
+          --color-primary: white;
+          --color-secondary: black;
       }
 
       :host,
@@ -83,11 +83,11 @@ class Base extends HTMLElement {
         color: ${vds.handleNamedColor(this.color)};
       }
 
-      ${Object.keys(vds.colorTokens)
+      ${Object.keys(vds.color.palette)
         .map(
-          (colorToken) => css`
-            :host([color='${colorToken}']) {
-              color: var(--color-${colorToken});
+          (colorSwatch) => css`
+            :host([color='${colorSwatch}']) {
+              color: var(--color-${colorSwatch});
             }
           `,
         )

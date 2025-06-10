@@ -6,19 +6,87 @@ const { vds } = window.evolv;
 vds.accordionIndex = 0;
 vds.accordions = [];
 vds.carouselIndex = 0;
+vds.textInputIndex = 0;
 vds.tooltipIndex = 0;
 vds.modalIndex = 0;
 vds.breakpoint = null;
 vds.windowWidthObserver = null;
 
-vds.colorTokens = {
+vds.color = {};
+
+vds.color.palette = {
+  red: '#ee0000',
+  black: '#000000',
+  white: '#ffffff',
   'gray-11': '#1b1d1f',
   'gray-20': '#333333',
   'gray-44': '#6f7171',
   'gray-65': '#a7a7a7',
   'gray-85': '#d8dada',
   'gray-95': '#f6f6f6',
-  red: '#ee0000',
+  'orange-17': '#561701',
+  'orange-41': '#b95319',
+  'orange-58': '#ff8027',
+  'orange-94': '#ffece0',
+  'yellow-15': '#4b3f04',
+  'yellow-53': '#fed60e',
+  'yellow-94': '#fff9de',
+  'blue-15': '#002c4d',
+  'blue-38': '#0077b4',
+  'blue-46': '#0089ec',
+  'blue-94': '#e3f2fd',
+  'green-10': '#003514',
+  'green-26': '#008331',
+  'green-36': '#00b845',
+  'green-91': '#dcf5e6',
+};
+
+vds.color.background = {
+  'primary-light': vds.color.palette['white'],
+  'primary-dark': vds.color.palette['black'],
+  'secondary-light': vds.color.palette['gray-95'],
+  'secondary-dark': vds.color.palette['gray-11'],
+  'brandhighlight-light': vds.color.palette['red'],
+  'brandhighlight-dark': vds.color.palette['red'],
+}
+
+vds.color.elements = {
+  'primary-light': vds.color.palette['black'],
+  'primary-dark': vds.color.palette['white'],
+  'secondary-light': vds.color.palette['gray-44'],
+  'secondary-dark': vds.color.palette['gray-65'],
+  'low-contrast-light': vds.color.palette['gray-85'],
+  'low-contrast-dark': vds.color.palette['gray-20'],
+}
+
+vds.color.feedback = {
+  'error-light': vds.color.palette['orange-41'],
+  'error-background-light': vds.color.palette['orange-94'],
+  'error-dark': vds.color.palette['orange-58'],
+  'error-background-dark': vds.color.palette['orange-17'],
+  'warning-light': vds.color.palette['yellow-53'],
+  'warning-background-light': vds.color.palette['yellow-94'],
+  'warning-dark': vds.color.palette['yellow-53'],
+  'warning-background-dark': vds.color.palette['yellow-15'],
+  'information-light': vds.color.palette['blue-38'],
+  'information-background-light': vds.color.palette['blue-94'],
+  'information-dark': vds.color.palette['blue-46'],
+  'information-background-dark': vds.color.palette['blue-15'],
+  'success-light': vds.color.palette['green-36'],
+  'success-background-light': vds.color.palette['green-91'],
+  'success-dark': vds.color.palette['green-26'],
+  'success-background-dark': vds.color.palette['green-10'],
+};
+
+vds.color.formControls = {
+  'background-light': vds.color.palette['white'],
+  'background-dark': vds.color.palette['black'],
+  'border-light': vds.color.palette['gray-44'],
+  'border-dark': vds.color.palette['gray-65'],
+  'border-hover-light': vds.color.palette['black'],
+  'border-hover-dark': vds.color.palette['white'],
+  'border-readonly-light': vds.color.palette['gray-85'],
+  'border-readonly-dark': vds.color.palette['gray-20'],
 };
 
 vds.handleNamedColor = (color) => {
@@ -26,7 +94,9 @@ vds.handleNamedColor = (color) => {
     return null;
   }
 
-  return Object.keys(vds.colorTokens).some((colorToken) => colorToken === color)
+  return Object.keys(vds.color.palette).some(
+    (colorSwatch) => colorSwatch === color,
+  )
     ? `var(--color-${color})`
     : color;
 };
@@ -78,7 +148,7 @@ vds.style.document = () => {
   return css`
     ${Object.keys(utilityClasses)
       .map((property) =>
-        vds.getUtilityClass(property, utilityClasses[property])
+        vds.getUtilityClass(property, utilityClasses[property]),
       )
       .join('')}
 
@@ -120,10 +190,12 @@ vds.isScrollable = (element, orientation = 'vertical') => {
     return false;
   }
   const { offsetHeight, offsetWidth, scrollHeight, scrollWidth } = element;
-  const offsetLength = orientation === 'horizontal' ? offsetWidth : offsetHeight;
-  const scrollLength = orientation === 'horizontal' ? scrollWidth : scrollHeight;
+  const offsetLength =
+    orientation === 'horizontal' ? offsetWidth : offsetHeight;
+  const scrollLength =
+    orientation === 'horizontal' ? scrollWidth : scrollHeight;
   return scrollLength > offsetLength;
-}
+};
 
 vds.keyScrolling = (event, element) => {
   const { keyCode } = vds;
@@ -166,7 +238,7 @@ vds.disableBodyScroll = () => {
     utils.updateProperty(
       '--evolv-scroll-top',
       `-${Math.round(window.scrollY)}px`,
-      document.body
+      document.body,
     );
     body.classList.add(className);
   }

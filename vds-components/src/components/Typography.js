@@ -1,9 +1,13 @@
-import vds from '../imports/vds.js'
+import vds from '../imports/vds.js';
 import Base from './Base.js';
 
 // Typography is a parent class for Body, Title, and potentially others
 class Typography extends Base {
-  static observedAttributes = [...this.observedAttributes, 'primitive'];
+  static observedAttributes = [
+    ...this.observedAttributes,
+    'line-height',
+    'primitive',
+  ];
 
   constructor() {
     super();
@@ -12,6 +16,7 @@ class Typography extends Base {
       breakpoint: () =>
         this.getAttribute('breakpoint') || vds.breakpoint || '768px',
       display: () => (this._props.primitive() === 'span' ? 'inline' : 'block'),
+      lineHeight: () => this.getAttribute('line-height') || null,
       primitive: () => this.getAttribute('primitive') || 'p',
     };
 
@@ -86,6 +91,13 @@ class Typography extends Base {
         font-weight: 700;
       }
 
+      ${this.lineHeight &&
+      mixin`
+        :host([line-height]) .title {
+          line-height: ${this.lineHeight};
+        }
+      `}
+
       @media screen and (min-width: ${this.breakpoint}) {
         .title {
           font-size: 1.25rem;
@@ -123,6 +135,13 @@ class Typography extends Base {
           font-weight: 700;
           letter-spacing: normal;
         }
+
+        ${this.lineHeight &&
+        mixin`
+          :host([line-height]) .title {
+            line-height: ${this.lineHeight};
+          }
+        `}
       }
     `;
   }

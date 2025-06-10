@@ -15,6 +15,7 @@ import ModalBody from '../components/ModalBody.js';
 import ModalFooter from '../components/ModalFooter.js';
 import ModalTitle from '../components/ModalTitle.js';
 import Scrollbar from '../components/Scrollbar.js';
+import TextInput from '../components/TextInput.js';
 import TextLink from '../components/TextLink.js';
 import TileContainer from '../components/TileContainer.js';
 import Tooltip from '../components/Tooltip.js';
@@ -38,6 +39,7 @@ const components = {
   'evolv-modal-footer': ModalFooter,
   'evolv-modal-title': ModalTitle,
   'evolv-scrollbar': Scrollbar,
+  'evolv-text-input': TextInput,
   'evolv-text-link': TextLink,
   'evolv-tile-container': TileContainer,
   'evolv-tooltip': Tooltip,
@@ -58,7 +60,7 @@ document.head.append(
     <style id="${styleId}">
       ${vds.style.document()}
     </style>
-  `)
+  `),
 );
 
 utils.observeWindowWidth();

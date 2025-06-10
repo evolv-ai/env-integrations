@@ -203,16 +203,23 @@ class Utils {
   waitFor(callback, timeout = 5000, interval = 25) {
     return new Promise((resolve, reject) => {
       let poll;
+      let result;
       const timer = setTimeout(() => {
         clearInterval(poll);
-        reject();
+        reject(result);
       }, timeout);
       poll = setInterval(() => {
-        const result = callback();
-        if (result) {
+        try {
+          result = callback();
+          if (result) {
+            clearInterval(poll);
+            clearTimeout(timer);
+            resolve(result);
+          }
+        } catch (e) {
           clearInterval(poll);
-          clearTimeout(timer);
-          resolve(result);
+          this.warn('waitFor: error in callback\n', e);
+          reject(result, e);
         }
       }, interval);
     });
@@ -485,7 +492,7 @@ class Utils {
    * ** Deprecated: to be replaced by [render](#Utils+render)
    * @param {string} HTMLString The HTML string
    * @param {Object} clickHandlers An object where the keys are CSS selectors and the values are click handlers
-   * @returns {HTMLElement[]} The array of elements
+   * @returns {Element[]} The array of elements
    */
   makeElements(HTMLString, clickHandlers = {}) {
     const template = document.createElement('template');
@@ -569,7 +576,7 @@ class Utils {
    * Adds a class from an element only if a change needs to occur.
    * @param {HTMLElement} element The element
    * @param {string} className The class name
-   * @param {boolean} [silent=false] Suppress logs
+   * @param {boolean} [silent=false] Whether to disable logging
    */
   addClass = (element, className, silent = false) => {
     if (element && !element.classList.contains(className)) {
@@ -584,7 +591,7 @@ class Utils {
    * Removes a class from an element only if a change needs to occur.
    * @param {HTMLElement} element The element
    * @param {string} className The class name
-   * @param {boolean} [silent=false] Suppress logs
+   * @param {boolean} [silent=false] Whether to disable logging
    */
   removeClass = (element, className, silent = false) => {
     if (element && element.classList.contains(className)) {

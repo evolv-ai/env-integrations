@@ -857,6 +857,16 @@ class Utils {
       setTimeout(() => element.removeAttribute('data-track-ignore'), 0);
     }, 0);
   }
+
+  /**
+   * Reverts any persistent actions. Currently this only applies to namespace(),
+   * removing the body classes.
+   *
+   * @function
+   */
+  revert = () => {
+    this.toRevert.forEach((action) => action());
+  }
 }
 
 export default Utils;

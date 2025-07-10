@@ -140,7 +140,7 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
     * [.waitFor(callback, timeout, interval)](#Utils+waitFor) ⇒ <code>Promise</code>
     * ~~[.slugify(string)](#Utils+slugify) ⇒ <code>string</code>~~
     * [.setContext(key, value)](#Utils+setContext)
-    * [.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
+    * [.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;Element&gt;</code>
     * [.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code>
     * [.$(selector)](#Utils+$) ⇒ <code>HTMLElement</code>
     * [.$$(selector)](#Utils+$$) ⇒ <code>Array.&lt;Element&gt;</code>
@@ -150,6 +150,7 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
     * [.getAncestor(element, [level])](#Utils+getAncestor)
     * [.getPrecedingSiblings(element)](#Utils+getPrecedingSiblings) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
     * [.stealthClick(element)](#Utils+stealthClick)
+    * [.revert()](#Utils+revert)
 
 <a name="new_Utils_new"></a>
 
@@ -376,7 +377,7 @@ Adds a class from an element only if a change needs to occur.
 | --- | --- | --- | --- |
 | element | <code>HTMLElement</code> |  | The element |
 | className | <code>string</code> |  | The class name |
-| [silent] | <code>boolean</code> | <code>false</code> | Suppress logs |
+| [silent] | <code>boolean</code> | <code>false</code> | Whether to disable logging |
 
 <a name="Utils+removeClass"></a>
 
@@ -389,7 +390,7 @@ Removes a class from an element only if a change needs to occur.
 | --- | --- | --- | --- |
 | element | <code>HTMLElement</code> |  | The element |
 | className | <code>string</code> |  | The class name |
-| [silent] | <code>boolean</code> | <code>false</code> | Suppress logs |
+| [silent] | <code>boolean</code> | <code>false</code> | Whether to disable logging |
 
 <a name="Utils+updateText"></a>
 
@@ -555,12 +556,12 @@ utils.setContext('vz.cartDeviceEditModal', {
 ```
 <a name="Utils+makeElements"></a>
 
-### utils.makeElements(HTMLString, clickHandlers) ⇒ <code>Array.&lt;HTMLElement&gt;</code>
+### utils.makeElements(HTMLString, clickHandlers) ⇒ <code>Array.&lt;Element&gt;</code>
 Creates an array of elements from an HTML string and adds click handlers to the elements.
 ** Deprecated: to be replaced by [render](#Utils+render)
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
-**Returns**: <code>Array.&lt;HTMLElement&gt;</code> - The array of elements  
+**Returns**: <code>Array.&lt;Element&gt;</code> - The array of elements  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -693,6 +694,13 @@ Simulates a click on a specified DOM element without triggering Adobe tracking.
 | --- | --- | --- |
 | element | <code>HTMLElement</code> | The DOM element on which the stealth click is performed. |
 
+<a name="Utils+revert"></a>
+
+### utils.revert()
+Reverts any persistent actions. Currently this only applies to namespace(),
+removing the body classes.
+
+**Kind**: instance method of [<code>Utils</code>](#Utils)  
 <a name="XPathMethods"></a>
 
 ## XPathMethods

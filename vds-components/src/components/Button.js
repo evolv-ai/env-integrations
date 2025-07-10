@@ -6,7 +6,9 @@ class Button extends Base {
     ...this.observedAttributes,
     'background-color',
     'disabled',
+    'text-color',
     'text-content',
+    'use',
     'width',
   ];
 

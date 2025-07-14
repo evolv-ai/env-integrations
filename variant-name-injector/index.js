@@ -56,7 +56,7 @@ function injectVariantName(script, id, name){
     if (script.includes(startRegion)){
         insertPosition = script.indexOf(startRegion);
         let endPosition = script.indexOf(endRegion, insertPosition);
-        script = `${c.slice(0,insertPosition)}${c.slice(endPosition+endRegion.length)}`        
+        script = `${script.slice(0,insertPosition)}${script.slice(endPosition+endRegion.length)}`;
     }
     return `${script.slice(0,insertPosition)}${startRegion}
 client.addDisplayName?.('variants', '${id}', '${name}');

@@ -119,7 +119,7 @@ function extractActiveExperimentVariants(experiment, activeVariants, variantDisp
 
   function findConfirmedAllocation(eid) {
     const experiments = window.evolv.context.get('experiments');
-    const allocation = experiments.allocations.find(a=> a.eid === eid);
-    const confirmation = experiments.confirmations.find(c=>c.cid === allocation.cid);
+    const allocation = experiments.allocations?.find(a=> a.eid === eid);
+    const confirmation = experiments.confirmations?.find(c=>c.cid === allocation.cid);
     return confirmation && allocation;
   }

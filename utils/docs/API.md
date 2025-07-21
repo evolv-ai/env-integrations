@@ -140,9 +140,9 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
     * [.waitFor(callback, timeout, interval)](#Utils+waitFor) ⇒ <code>Promise</code>
     * ~~[.slugify(string)](#Utils+slugify) ⇒ <code>string</code>~~
     * [.setContext(key, value)](#Utils+setContext)
-    * [.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;Element&gt;</code>
-    * [.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code>
-    * [.$(selector)](#Utils+$) ⇒ <code>HTMLElement</code>
+    * ~~[.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;Element&gt;</code>~~
+    * ~~[.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code>~~
+    * [.$(selector)](#Utils+$) ⇒ <code>Element</code>
     * [.$$(selector)](#Utils+$$) ⇒ <code>Array.&lt;Element&gt;</code>
     * [.isVisible(element)](#Utils+isVisible) ⇒ <code>boolean</code>
     * [.fail(details, [reason])](#Utils+fail)
@@ -375,7 +375,7 @@ Adds a class from an element only if a change needs to occur.
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| element | <code>HTMLElement</code> |  | The element |
+| element | <code>Element</code> |  | The element |
 | className | <code>string</code> |  | The class name |
 | [silent] | <code>boolean</code> | <code>false</code> | Whether to disable logging |
 
@@ -388,7 +388,7 @@ Removes a class from an element only if a change needs to occur.
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| element | <code>HTMLElement</code> |  | The element |
+| element | <code>Element</code> |  | The element |
 | className | <code>string</code> |  | The class name |
 | [silent] | <code>boolean</code> | <code>false</code> | Whether to disable logging |
 
@@ -401,7 +401,7 @@ Updates an element's innerText only if a change needs to occur.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| element | <code>HTMLElement</code> | The element |
+| element | <code>Element</code> | The element |
 | text | <code>string</code> | The new text for the element |
 
 <a name="Utils+wrap"></a>
@@ -556,9 +556,10 @@ utils.setContext('vz.cartDeviceEditModal', {
 ```
 <a name="Utils+makeElements"></a>
 
-### utils.makeElements(HTMLString, clickHandlers) ⇒ <code>Array.&lt;Element&gt;</code>
+### ~~utils.makeElements(HTMLString, clickHandlers) ⇒ <code>Array.&lt;Element&gt;</code>~~
+***Deprecated***
+
 Creates an array of elements from an HTML string and adds click handlers to the elements.
-** Deprecated: to be replaced by [render](#Utils+render)
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
 **Returns**: <code>Array.&lt;Element&gt;</code> - The array of elements  
@@ -570,7 +571,9 @@ Creates an array of elements from an HTML string and adds click handlers to the 
 
 <a name="Utils+makeElement"></a>
 
-### utils.makeElement(HTMLString, clickHandlers) ⇒ <code>HTMLElement</code>
+### ~~utils.makeElement(HTMLString, clickHandlers) ⇒ <code>HTMLElement</code>~~
+***Deprecated***
+
 Creates an element from an HTML string and adds click handlers to the element.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
@@ -583,28 +586,71 @@ Creates an element from an HTML string and adds click handlers to the element.
 
 <a name="Utils+$"></a>
 
-### utils.$(selector) ⇒ <code>HTMLElement</code>
-Selects an element from the DOM or creates new element from an HTML string.
+### utils.$(selector) ⇒ <code>Element</code>
+Selects an element from the DOM.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
-**Returns**: <code>HTMLElement</code> - A single element  
+**Returns**: <code>Element</code> - A single element  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| selector | <code>string</code> | The CSS selector, XPath expression, or HTML string |
+| selector | <code>string</code> | The CSS selector or XPath expression |
 
+**Example**  
+Select an element with CSS
+```js
+const button = $('#button');
+```
+**Example**  
+Select an element with XPath
+```js
+const button = $('//*[@id="button"]');
+```
+**Example**  
+Select an element within another element using CSS
+```js
+const container = $('#container');
+const button = $('#button', container);
+```
+**Example**  
+Select an element within another element using XPath
+```js
+const container = $('//*[@id="container"]');
+const button = $('//*[@id="button"]', container);
 <a name="Utils+$$"></a>
 
 ### utils.$$(selector) ⇒ <code>Array.&lt;Element&gt;</code>
-Selects elements from the DOM or creates new elements from an HTML string.
+Selects elements from the DOM.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
 **Returns**: <code>Array.&lt;Element&gt;</code> - An array of result elements  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| selector | <code>string</code> | The CSS selector, XPath expression, or HTML string |
+| selector | <code>string</code> | The CSS selector, XPath expression |
 
+**Example**  
+Select all elements with CSS
+```js
+const listItems = $$('ul#list > li');
+```
+**Example**  
+Select all elements with XPath
+```js
+const listItems = $$('//ul[@id="list"]/li');
+```
+**Example**  
+Select all elements within another element using CSS
+```js
+const container = $('#container');
+const listItems = $$('ul#list > li', container);
+```
+**Example**  
+Select all elements within another element using XPath
+```js
+const container = $('//*[@id="container"]');
+const listItems = $$('//ul[@id="list"]/li', container);
+```
 <a name="Utils+isVisible"></a>
 
 ### utils.isVisible(element) ⇒ <code>boolean</code>
@@ -931,10 +977,10 @@ Converts a string to kebab-case.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| string | <code>string</code> | The string to convert. |
+| string | <code>string</code> | The string to convert. String can be delimited by any non-word character or be camelCase. |
 
 **Example**  
 ```js
 string.toKebabCase('hello world'); // 'hello-world'
-string.toKebabCase('this is a test'); // 'this-is-a-test'
+string.toKebabCase('thisIsATest'); // 'this-is-a-test'
 ```

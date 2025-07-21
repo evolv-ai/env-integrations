@@ -22,11 +22,15 @@ function getLogPrefix(id, opacity) {
 }
 
 class Utils {
-  #config;
-
   #logPrefixNormal;
 
   #logPrefixDebug;
+
+  #described;
+
+  config;
+
+  isNewConfig = false;
 
   /**
    * An array of callbacks to be executed on context exit. Used by [.namespace](#Utils+namespace)
@@ -48,7 +52,7 @@ class Utils {
    * @param {Object} config A configuration object that defines the project. Used by <code>describe()</code>
    */
   constructor(id, config) {
-    this.#config = config;
+    this.config = config;
 
     this.logLevel =
       localStorage
@@ -91,9 +95,11 @@ class Utils {
       });
     }
 
+    this.#described = new Set();
+    this.isNewConfig = this.config && !this.config.contexts && this.config.id;
     this.windowWidthObserver = null;
     this.namespace = initNamespace(this);
-    this.xpath = new XPathMethods(this.#config);
+    this.xpath = new XPathMethods(this.config);
   }
 
   /**
@@ -136,12 +142,36 @@ class Utils {
    * @param {string} variant - The variant id.
    */
   describe = (context, variable, variant) => {
-    if (!this.#config) {
+    if (!this.config) {
       this.warn(
         'Describe requires Evolv Utils to be initialized with a config object',
       );
       return;
     }
+
+    // Config object with no contexts
+    if (this.isNewConfig) {
+      const newVariable = context;
+      const newVariant = variable;
+
+      if (!(newVariable || newVariant)) {
+        this.log(`init context: ${this.config.name}`);
+        return;
+      }
+
+      const type = ['variable', 'variant'];
+      [newVariable, newVariant].reduce((acc, cur, index) => {
+        if (cur) {
+          const next = acc[`${type[index]}s`].find((v) => v.id === cur);
+          this.log(`init ${type[index]}:`, next.name);
+          return next;
+        }
+        return acc;
+      }, this.config);
+      return;
+    }
+
+    // Config object with contexts
     const type = ['context', 'variable', 'variant'];
     let typeIndex;
     const item = [context, variable, variant].reduce((acc, cur, index) => {
@@ -151,7 +181,7 @@ class Utils {
         return next;
       }
       return acc;
-    }, this.#config);
+    }, this.config);
     this.log(`init ${type[typeIndex]}:`, item.display_name);
   };
 
@@ -365,7 +395,7 @@ class Utils {
     /**
      * Converts a string to kebab-case.
      *
-     * @param {string} string The string to convert.
+     * @param {string} string The string to convert. String can be delimited by any non-word character or be camelCase.
      * @returns {string} The string converted to kebab-case.
      * @example
      * string.toKebabCase('helloWorld'); // 'hello-world'
@@ -486,7 +516,7 @@ class Utils {
 
   /**
    * Creates an array of elements from an HTML string and adds click handlers to the elements.
-   * ** Deprecated: to be replaced by [render](#Utils+render)
+   * @deprecated Use [render](#Utils+render) instead
    * @param {string} HTMLString The HTML string
    * @param {Object} clickHandlers An object where the keys are CSS selectors and the values are click handlers
    * @returns {Element[]} The array of elements
@@ -506,6 +536,7 @@ class Utils {
 
   /**
    * Creates an element from an HTML string and adds click handlers to the element.
+   * @deprecated Use [render](#Utils+render) instead
    * @param {string} HTMLString The HTML string
    * @param {Object} clickHandlers An object where the keys are CSS selectors and the values are click handlers
    * @returns {HTMLElement} A single element
@@ -515,42 +546,95 @@ class Utils {
   }
 
   /**
-   * Selects an element from the DOM or creates new element from an HTML string.
-   * @param {string} selector The CSS selector, XPath expression, or HTML string
-   * @returns {HTMLElement} A single element
+   * Selects an element from the DOM.
+   * @param {string} selector The CSS selector or XPath expression
+   * @returns {Element} A single element
+   *
+   * @example
+   * Select an element with CSS
+   * ```js
+   * const button = $('#button');
+   * ```
+   *
+   * @example
+   * Select an element with XPath
+   * ```js
+   * const button = $('//*[@id="button"]');
+   * ```
+   *
+   * @example
+   * Select an element within another element using CSS
+   * ```js
+   * const container = $('#container');
+   * const button = $('#button', container);
+   * ```
+   *
+   * @example
+   * Select an element within another element using XPath
+   * ```js
+   * const container = $('//*[@id="container"]');
+   * const button = $('//*[@id="button"]', container);
    */
-  $(selector) {
-    switch (selector.charAt(0)) {
-      case '/':
-      case '(': {
+  $(selector, context = document) {
+    try {
+      return context.querySelector(selector);
+    } catch {
+      try {
         return document.evaluate(
           selector,
-          document,
+          context,
           null,
           XPathResult.FIRST_ORDERED_NODE_TYPE,
           null,
         ).singleNodeValue;
-      }
-      case '<':
-        return this.makeElement(selector);
-      default: {
-        return document.querySelector(selector);
+      } catch (error) {
+        throw new Error(
+          `Selector '${selector}' must be a valid CSS or XPath selector`,
+          { cause: error },
+        );
       }
     }
   }
 
   /**
-   * Selects elements from the DOM or creates new elements from an HTML string.
-   * @param {string} selector The CSS selector, XPath expression, or HTML string
+   * Selects elements from the DOM.
+   * @param {string} selector The CSS selector, XPath expression
    * @returns {Element[]} An array of result elements
+   *
+   * @example
+   * Select all elements with CSS
+   * ```js
+   * const listItems = $$('ul#list > li');
+   * ```
+   *
+   * @example
+   * Select all elements with XPath
+   * ```js
+   * const listItems = $$('//ul[@id="list"]/li');
+   * ```
+   *
+   * @example
+   * Select all elements within another element using CSS
+   * ```js
+   * const container = $('#container');
+   * const listItems = $$('ul#list > li', container);
+   * ```
+   *
+   * @example
+   * Select all elements within another element using XPath
+   * ```js
+   * const container = $('//*[@id="container"]');
+   * const listItems = $$('//ul[@id="list"]/li', container);
+   * ```
    */
-  $$(selector) {
-    switch (selector.charAt(0)) {
-      case '/':
-      case '(': {
+  $$(selector, context = document) {
+    try {
+      return [...context.querySelectorAll(selector)];
+    } catch {
+      try {
         const result = document.evaluate(
           selector,
-          document,
+          context,
           null,
           XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
           null,
@@ -561,17 +645,18 @@ class Utils {
           array[i] = result.snapshotItem(i);
         }
         return array;
+      } catch (error) {
+        throw new Error(
+          `Selector '${selector}' must be a valid CSS or XPath selector`,
+          { cause: error },
+        );
       }
-      case '<':
-        return this.makeElements(selector);
-      default:
-        return [...document.querySelectorAll(selector)];
     }
   }
 
   /**
    * Adds a class from an element only if a change needs to occur.
-   * @param {HTMLElement} element The element
+   * @param {Element} element The element
    * @param {string} className The class name
    * @param {boolean} [silent=false] Whether to disable logging
    */
@@ -586,7 +671,7 @@ class Utils {
 
   /**
    * Removes a class from an element only if a change needs to occur.
-   * @param {HTMLElement} element The element
+   * @param {Element} element The element
    * @param {string} className The class name
    * @param {boolean} [silent=false] Whether to disable logging
    */
@@ -601,7 +686,7 @@ class Utils {
 
   /**
    * Updates an element's innerText only if a change needs to occur.
-   * @param {HTMLElement} element The element
+   * @param {Element} element The element
    * @param {string} text The new text for the element
    */
   updateText = (element, text) => {
@@ -853,8 +938,8 @@ class Utils {
   };
 
   /**
-   * Reverts any persistent actions. Currently this only applies to namespace(),
-   * removing the body classes.
+   * Reverts any persistent actions. This only applies to namespace(),
+   * removing the body classes, and any custom reversion callbacks added to `toRevert`.
    *
    * @function
    */

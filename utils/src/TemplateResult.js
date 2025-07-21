@@ -1,3 +1,5 @@
+import { UID } from './global.js';
+
 export default class TemplateResult {
   #strings = [];
 
@@ -7,10 +9,6 @@ export default class TemplateResult {
     this.#strings = strings;
     this.#expressions = expressions;
     this.expressionMap = new Map();
-  }
-
-  static #getExpressionKey() {
-    return `EXP-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
   }
 
   #getTaggedHTML = (
@@ -27,7 +25,7 @@ export default class TemplateResult {
       if (typeof expression === 'undefined' || expression === null) {
         html += string;
       } else if (eventString) {
-        const expressionKey = TemplateResult.#getExpressionKey();
+        const expressionKey = UID();
         html += `${eventString[1]} ${expressionKey}`;
         this.expressionMap.set(expressionKey, {
           type: 'listener',
@@ -37,7 +35,7 @@ export default class TemplateResult {
         html += string;
         html += this.#getTaggedHTML([[''], [...expression.renderAll()]]);
       } else if (expression instanceof Node) {
-        const expressionKey = TemplateResult.#getExpressionKey();
+        const expressionKey = UID();
         html += `${string}<template ${expressionKey}></template>`;
         this.expressionMap.set(expressionKey, {
           type: 'element',
@@ -45,9 +43,9 @@ export default class TemplateResult {
         });
       } else if (Array.isArray(expression)) {
         html += string;
-        expression.forEach((property) => {
-          html += this.#getTaggedHTML([[''], [property]]);
-        });
+        for (let i = 0; i < expression.length; i += 1) {
+          html += this.#getTaggedHTML([[''], [expression[i]]]);
+        }
       } else {
         html += `${string}${expression}`;
       }
@@ -61,8 +59,7 @@ export default class TemplateResult {
     const template = document.createElement('template');
     template.innerHTML = taggedHTML;
 
-    // eslint-disable-next-line
-    for (const [expressionKey, { type, expression }] of this.expressionMap) {
+    this.expressionMap.forEach(({ type, expression }, expressionKey) => {
       switch (type) {
         case 'listener': {
           const element = template.content.querySelector(`[${expressionKey}]`);
@@ -78,7 +75,7 @@ export default class TemplateResult {
         default:
           break;
       }
-    }
+    });
 
     return template.content.childNodes;
   };

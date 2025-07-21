@@ -4,8 +4,9 @@
  */
 export default function initNamespace(utils) {
   const { body } = document;
-  const { addClass, removeClass, toRevert } = utils;
+  const { addClass, removeClass, toRevert, isNewConfig, config, log } = utils;
 
+  const namespacePrefix = config?.namespace_prefix || 'evolv';
   const namespaceClasses = new Set();
   let bodyClassObserver;
   let bodyClassObserving = false;
@@ -20,7 +21,11 @@ export default function initNamespace(utils) {
   function revertBodyClasses() {
     bodyClassObserving = false;
     bodyClassObserver.disconnect();
-    namespaceClasses.forEach((className) => removeClass(body, className));
+    namespaceClasses.forEach((className) => {
+      log(`namespace: revert '${className}'`);
+      removeClass(body, className, true);
+      namespaceClasses.delete(className);
+    });
   }
 
   function initBodyClassObserver() {
@@ -34,9 +39,28 @@ export default function initNamespace(utils) {
   }
 
   function namespace(...args) {
-    const className = ['evolv', ...args].join('-');
-    addClass(body, className);
-    namespaceClasses.add(className);
+    const prefix = isNewConfig
+      ? `${namespacePrefix}-${config.id}`
+      : namespacePrefix;
+
+    function handleClass(className) {
+      if (namespaceClasses.has(className)) {
+        return;
+      }
+
+      log(`namespace: add '${className}'`);
+      addClass(body, className, true);
+      namespaceClasses.add(className);
+    }
+
+    handleClass(prefix);
+
+    args.reduce((acc, cur) => {
+      const className = [acc, cur].join('-');
+      handleClass(className);
+      return className;
+    }, prefix);
+
     if (!bodyClassObserver && !bodyClassObserving) {
       initBodyClassObserver();
     }

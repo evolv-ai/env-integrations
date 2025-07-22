@@ -982,6 +982,6 @@ Converts a string to kebab-case.
 
 **Example**  
 ```js
-string.toKebabCase('hello world'); // 'hello-world'
-string.toKebabCase('thisIsATest'); // 'this-is-a-test'
+string.toKebabCase('helloWorld'); // 'hello-world'
+string.toKebabCase('this is a test'); // 'this-is-a-test'
 ```

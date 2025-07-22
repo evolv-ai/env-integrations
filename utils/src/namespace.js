@@ -4,8 +4,9 @@
  */
 export default function initNamespace(utils) {
   const { body } = document;
-  const { addClass, removeClass, toRevert } = utils;
+  const { addClass, removeClass, toRevert, isNewConfig, config, debug } = utils;
 
+  const namespacePrefix = config?.namespace_prefix || 'evolv';
   const namespaceClasses = new Set();
   let bodyClassObserver;
   let bodyClassObserving = false;
@@ -14,13 +15,21 @@ export default function initNamespace(utils) {
     if (!bodyClassObserving) {
       return;
     }
-    namespaceClasses.forEach((className) => addClass(body, className));
+
+    namespaceClasses.forEach((className) => {
+      debug(`namespace: replace body class '${className}'`);
+      addClass(body, className, true);
+    });
   }
 
   function revertBodyClasses() {
     bodyClassObserving = false;
     bodyClassObserver.disconnect();
-    namespaceClasses.forEach((className) => removeClass(body, className));
+    namespaceClasses.forEach((className) => {
+      debug(`namespace: revert body class '${className}'`);
+      removeClass(body, className, true);
+      namespaceClasses.delete(className);
+    });
   }
 
   function initBodyClassObserver() {
@@ -34,9 +43,26 @@ export default function initNamespace(utils) {
   }
 
   function namespace(...args) {
-    const className = ['evolv', ...args].join('-');
-    addClass(body, className);
-    namespaceClasses.add(className);
+    function handleClass(className) {
+      if (namespaceClasses.has(className)) {
+        return;
+      }
+
+      debug(`namespace: add body class'${className}'`);
+      addClass(body, className, true);
+      namespaceClasses.add(className);
+    }
+
+    if (isNewConfig) {
+      [config.id, ...args].reduce((acc, cur) => {
+        const className = [acc, cur].join('-');
+        handleClass(className);
+        return className;
+      }, namespacePrefix);
+    } else {
+      handleClass([namespacePrefix, ...args].join('-'));
+    }
+
     if (!bodyClassObserver && !bodyClassObserving) {
       initBodyClassObserver();
     }

@@ -1,5 +1,6 @@
 export default class TemplateResult {
   #strings = [];
+
   #expressions = [];
 
   constructor(strings, expressions) {
@@ -8,8 +9,9 @@ export default class TemplateResult {
     this.expressionMap = new Map();
   }
 
-  #getExpressionKey = () =>
-    `EXP-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+  static #getExpressionKey() {
+    return `EXP-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+  }
 
   #getTaggedHTML = (
     [strings, expressions] = [this.#strings, this.#expressions],
@@ -25,7 +27,7 @@ export default class TemplateResult {
       if (typeof expression === 'undefined' || expression === null) {
         html += string;
       } else if (eventString) {
-        const expressionKey = this.#getExpressionKey();
+        const expressionKey = TemplateResult.#getExpressionKey();
         html += `${eventString[1]} ${expressionKey}`;
         this.expressionMap.set(expressionKey, {
           type: 'listener',
@@ -33,9 +35,9 @@ export default class TemplateResult {
         });
       } else if (expression instanceof TemplateResult) {
         html += string;
-        html += this.#getTaggedHTML([[''], [expression]]);
+        html += this.#getTaggedHTML([[''], [...expression.renderAll()]]);
       } else if (expression instanceof Node) {
-        const expressionKey = this.#getExpressionKey();
+        const expressionKey = TemplateResult.#getExpressionKey();
         html += `${string}<template ${expressionKey}></template>`;
         this.expressionMap.set(expressionKey, {
           type: 'element',
@@ -43,9 +45,9 @@ export default class TemplateResult {
         });
       } else if (Array.isArray(expression)) {
         html += string;
-        expression.forEach(
-          (property) => (html += this.#getTaggedHTML([[''], [property]])),
-        );
+        expression.forEach((property) => {
+          html += this.#getTaggedHTML([[''], [property]]);
+        });
       } else {
         html += `${string}${expression}`;
       }
@@ -59,6 +61,7 @@ export default class TemplateResult {
     const template = document.createElement('template');
     template.innerHTML = taggedHTML;
 
+    // eslint-disable-next-line
     for (const [expressionKey, { type, expression }] of this.expressionMap) {
       switch (type) {
         case 'listener': {
@@ -80,7 +83,5 @@ export default class TemplateResult {
     return template.content.childNodes;
   };
 
-  render = () => {
-    return this.renderAll()[0] || null;
-  };
+  render = () => this.renderAll()[0] || null;
 }

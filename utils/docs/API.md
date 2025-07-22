@@ -15,6 +15,9 @@ related to mutation keys and context prefixes.</p>
 ## Functions
 
 <dl>
+<dt><a href="#init">init(id, [config])</a> ⇒ <code><a href="#Utils">Utils</a></code></dt>
+<dd><p>Creates a new Utils sandbox at the location <code>window.evolv.utils.&lt;id&gt;</code>. A sandbox with the same id will persist between contexts if the page has not reloaded.</p>
+</dd>
 <dt><a href="#capitalizeFirstLetter">capitalizeFirstLetter(string)</a> ⇒ <code>string</code></dt>
 <dd><p>Capitalizes the first letter of a string.</p>
 </dd>
@@ -30,9 +33,6 @@ at uppercase letter boundaries. If not, it treats spaces or non-word characters 
 </dd>
 <dt><a href="#toKebabCase">toKebabCase(string)</a> ⇒ <code>string</code></dt>
 <dd><p>Converts a string to kebab-case.</p>
-</dd>
-<dt><a href="#init">init(id, [config])</a> ⇒ <code><a href="#Utils">Utils</a></code></dt>
-<dd><p>Creates a new Utils sandbox at the location <code>window.evolv.utils.&lt;id&gt;</code>. A sandbox with the same id will persist between contexts if the page has not reloaded.</p>
 </dd>
 </dl>
 
@@ -839,6 +839,19 @@ const selectors = {
 console.log(selectors['user-profile']);
 // Output: //div[@id="container"]//*[contains(concat(" ", @class, " "), " mutate-abc-user ")] | //div[@id="container"]//*[contains(concat(" ", @class, " "), " mutate-abc-profile ")]
 ```
+<a name="init"></a>
+
+## init(id, [config]) ⇒ [<code>Utils</code>](#Utils)
+Creates a new Utils sandbox at the location `window.evolv.utils.<id>`. A sandbox with the same id will persist between contexts if the page has not reloaded.
+
+**Kind**: global function  
+**Returns**: [<code>Utils</code>](#Utils) - A reference to the newly created Utils instance  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| id | <code>String</code> | A unique key for identifying the utils sandbox |
+| [config] | <code>Object</code> | An object containing the project definition |
+
 <a name="capitalizeFirstLetter"></a>
 
 ## capitalizeFirstLetter(string) ⇒ <code>string</code>
@@ -925,16 +938,3 @@ Converts a string to kebab-case.
 string.toKebabCase('hello world'); // 'hello-world'
 string.toKebabCase('this is a test'); // 'this-is-a-test'
 ```
-<a name="init"></a>
-
-## init(id, [config]) ⇒ [<code>Utils</code>](#Utils)
-Creates a new Utils sandbox at the location `window.evolv.utils.<id>`. A sandbox with the same id will persist between contexts if the page has not reloaded.
-
-**Kind**: global function  
-**Returns**: [<code>Utils</code>](#Utils) - A reference to the newly created Utils instance  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| id | <code>String</code> | A unique key for identifying the utils sandbox |
-| [config] | <code>Object</code> | An object containing the project definition |
-

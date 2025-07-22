@@ -340,10 +340,7 @@ class Utils {
         return string.match(/[A-Z]?[a-z]+/g);
       }
 
-      return string
-        .replace(/\W+/g, ' ')
-        .trim()
-        .split(' ');
+      return string.replace(/\W+/g, ' ').trim().split(' ');
     },
 
     /**
@@ -371,7 +368,7 @@ class Utils {
      * @param {string} string The string to convert.
      * @returns {string} The string converted to kebab-case.
      * @example
-     * string.toKebabCase('hello world'); // 'hello-world'
+     * string.toKebabCase('helloWorld'); // 'hello-world'
      * string.toKebabCase('this is a test'); // 'this-is-a-test'
      */
     toKebabCase: (string) =>
@@ -851,12 +848,9 @@ class Utils {
    */
   stealthClick = (element) => {
     element.setAttribute('data-track-ignore', 'true');
-
-    setTimeout(() => {
-      element.click()
-      setTimeout(() => element.removeAttribute('data-track-ignore'), 0);
-    }, 0);
-  }
+    element.click();
+    setTimeout(() => element.removeAttribute('data-track-ignore'), 0);
+  };
 
   /**
    * Reverts any persistent actions. Currently this only applies to namespace(),
@@ -866,7 +860,7 @@ class Utils {
    */
   revert = () => {
     this.toRevert.forEach((action) => action());
-  }
+  };
 }
 
 export default Utils;

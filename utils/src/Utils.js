@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-plusplus */
-import { version } from '../package.json';
+import { VERSION } from './global.js';
 import CookieMethods from './CookieMethods.js';
 import initNamespace from './namespace.js';
 import TemplateResult from './TemplateResult.js';
@@ -63,7 +63,7 @@ class Utils {
     this.#logPrefixNormal = getLogPrefix(id, 1);
     this.#logPrefixDebug = getLogPrefix(id, 0.5);
 
-    this.version = version;
+    this.version = VERSION;
     this.contextKey = config?.context_key || config?.contexts?.[0]?.id || null;
 
     this.setContext = this.setContext.bind(this);
@@ -334,15 +334,14 @@ class Utils {
   string = {
     /**
      * Capitalizes the first letter of a string.
-     *
+     * @deprecated Use `string.toSentenceCase()` instead
      * @param {string} string The string to capitalize.
      * @returns {string} The string with the first letter capitalized.
      * @example
      * string.capitalizeFirstLetter('hello'); // 'Hello'
-     * string.capitalizeFirstLetter('HELLO'); // 'Hello'
      */
     capitalizeFirstLetter: (string) =>
-      string.charAt(0).toUpperCase() + string.slice(1).toLowerCase(),
+      string.charAt(0).toUpperCase() + string.slice(1),
 
     /**
      * Checks if the given string is in camelCase format.
@@ -372,6 +371,21 @@ class Utils {
 
       return string.replace(/\W+/g, ' ').trim().split(' ');
     },
+
+    /**
+     * Converts a string to sentence case.
+     * @param {string} string The string to convert.
+     * @returns {string} The string converted to sentence case.
+     * @example
+     * string.toSentenceCase('hello world'); // 'Hello world'
+     */
+    toSentenceCase: (string) =>
+      string.replace(/(?:^|\.\s*)([a-z])/g, (match, letter, offset) => {
+        if (offset === 0) {
+          return letter.toUpperCase();
+        }
+        return match.slice(0, -1) + letter.toUpperCase();
+      }),
 
     /**
      * Converts a string to camelCase.

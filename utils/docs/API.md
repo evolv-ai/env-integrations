@@ -18,7 +18,7 @@ related to mutation keys and context prefixes.</p>
 <dt><a href="#init">init(id, [config])</a> ⇒ <code><a href="#Utils">Utils</a></code></dt>
 <dd><p>Creates a new Utils sandbox at the location <code>window.evolv.utils.&lt;id&gt;</code>. A sandbox with the same id will persist between contexts if the page has not reloaded.</p>
 </dd>
-<dt><a href="#capitalizeFirstLetter">capitalizeFirstLetter(string)</a> ⇒ <code>string</code></dt>
+<dt><del><a href="#capitalizeFirstLetter">capitalizeFirstLetter(string)</a> ⇒ <code>string</code></del></dt>
 <dd><p>Capitalizes the first letter of a string.</p>
 </dd>
 <dt><a href="#isCamelCase">isCamelCase(string)</a> ⇒ <code>boolean</code></dt>
@@ -27,6 +27,9 @@ related to mutation keys and context prefixes.</p>
 <dt><a href="#parse">parse(string)</a> ⇒ <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Parses a string into an array of words. If the string is in camelCase, it splits the string
 at uppercase letter boundaries. If not, it treats spaces or non-word characters as delimiters.</p>
+</dd>
+<dt><a href="#toSentenceCase">toSentenceCase(string)</a> ⇒ <code>string</code></dt>
+<dd><p>Converts a string to sentence case.</p>
 </dd>
 <dt><a href="#toCamelCase">toCamelCase(string)</a> ⇒ <code>string</code></dt>
 <dd><p>Converts a string to camelCase.</p>
@@ -901,7 +904,9 @@ Creates a new Utils sandbox at the location `window.evolv.utils.<id>`. A sandbox
 
 <a name="capitalizeFirstLetter"></a>
 
-## capitalizeFirstLetter(string) ⇒ <code>string</code>
+## ~~capitalizeFirstLetter(string) ⇒ <code>string</code>~~
+***Deprecated***
+
 Capitalizes the first letter of a string.
 
 **Kind**: global function  
@@ -914,7 +919,6 @@ Capitalizes the first letter of a string.
 **Example**  
 ```js
 string.capitalizeFirstLetter('hello'); // 'Hello'
-string.capitalizeFirstLetter('HELLO'); // 'Hello'
 ```
 <a name="isCamelCase"></a>
 
@@ -950,6 +954,22 @@ at uppercase letter boundaries. If not, it treats spaces or non-word characters 
 ```js
 string.parse('myCamelCaseString'); // ['my', 'Camel', 'Case', 'String']
 string.parse('hello world!'); // ['hello', 'world']
+```
+<a name="toSentenceCase"></a>
+
+## toSentenceCase(string) ⇒ <code>string</code>
+Converts a string to sentence case.
+
+**Kind**: global function  
+**Returns**: <code>string</code> - The string converted to sentence case.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| string | <code>string</code> | The string to convert. |
+
+**Example**  
+```js
+string.toSentenceCase('hello world'); // 'Hello world'
 ```
 <a name="toCamelCase"></a>
 

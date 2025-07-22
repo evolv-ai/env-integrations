@@ -549,6 +549,7 @@ class Utils {
    * Selects an element from the DOM.
    * @param {string} selector The CSS selector or XPath expression
    * @returns {Element} A single element
+   * @note XPath selectors must be prefixed with `.` to be relative to the context element
    *
    * @example
    * Select an element with CSS
@@ -573,7 +574,7 @@ class Utils {
    * Select an element within another element using XPath
    * ```js
    * const container = $('//*[@id="container"]');
-   * const button = $('//*[@id="button"]', container);
+   * const button = $('.//*[@id="button"]', container);
    */
   $(selector, context = document) {
     try {
@@ -602,29 +603,29 @@ class Utils {
    * @returns {Element[]} An array of result elements
    *
    * @example
-   * Select all elements with CSS
+   * Select all matching elements with CSS
    * ```js
    * const listItems = $$('ul#list > li');
    * ```
    *
    * @example
-   * Select all elements with XPath
+   * Select all matching elements with XPath
    * ```js
    * const listItems = $$('//ul[@id="list"]/li');
    * ```
    *
    * @example
-   * Select all elements within another element using CSS
+   * Select all matching elements within another element using CSS
    * ```js
    * const container = $('#container');
    * const listItems = $$('ul#list > li', container);
    * ```
    *
    * @example
-   * Select all elements within another element using XPath
+   * Select all matching elements within another element using XPath
    * ```js
    * const container = $('//*[@id="container"]');
-   * const listItems = $$('//ul[@id="list"]/li', container);
+   * const listItems = $$('.//ul[@id="list"]/li', container);
    * ```
    */
   $$(selector, context = document) {

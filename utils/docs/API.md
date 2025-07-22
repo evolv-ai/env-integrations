@@ -591,6 +591,7 @@ Selects an element from the DOM.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
 **Returns**: <code>Element</code> - A single element  
+**Note**: XPath selectors must be prefixed with `.` to be relative to the context element  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -616,7 +617,7 @@ const button = $('#button', container);
 Select an element within another element using XPath
 ```js
 const container = $('//*[@id="container"]');
-const button = $('//*[@id="button"]', container);
+const button = $('.//*[@id="button"]', container);
 <a name="Utils+$$"></a>
 
 ### utils.$$(selector) ⇒ <code>Array.&lt;Element&gt;</code>
@@ -630,26 +631,26 @@ Selects elements from the DOM.
 | selector | <code>string</code> | The CSS selector, XPath expression |
 
 **Example**  
-Select all elements with CSS
+Select all matching elements with CSS
 ```js
 const listItems = $$('ul#list > li');
 ```
 **Example**  
-Select all elements with XPath
+Select all matching elements with XPath
 ```js
 const listItems = $$('//ul[@id="list"]/li');
 ```
 **Example**  
-Select all elements within another element using CSS
+Select all matching elements within another element using CSS
 ```js
 const container = $('#container');
 const listItems = $$('ul#list > li', container);
 ```
 **Example**  
-Select all elements within another element using XPath
+Select all matching elements within another element using XPath
 ```js
 const container = $('//*[@id="container"]');
-const listItems = $$('//ul[@id="list"]/li', container);
+const listItems = $$('.//ul[@id="list"]/li', container);
 ```
 <a name="Utils+isVisible"></a>
 
@@ -743,8 +744,8 @@ Simulates a click on a specified DOM element without triggering Adobe tracking.
 <a name="Utils+revert"></a>
 
 ### utils.revert()
-Reverts any persistent actions. Currently this only applies to namespace(),
-removing the body classes.
+Reverts any persistent actions. This only applies to namespace(),
+removing the body classes, and any custom reversion callbacks added to `toRevert`.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
 <a name="XPathMethods"></a>

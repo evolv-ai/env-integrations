@@ -1,4 +1,7 @@
-/* eslint-disable import/prefer-default-export */
+import { version } from '../package.json';
+
+export const VERSION = version;
+
 /***
  * Generates a unique id
  */

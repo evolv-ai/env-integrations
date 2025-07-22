@@ -1,4 +1,5 @@
 import Utils from './Utils.js';
+import { VERSION } from './global.js';
 
 /**
  * Creates a new Utils sandbox at the location `window.evolv.utils.<id>`. A sandbox with the same id will persist between contexts if the page has not reloaded.
@@ -24,6 +25,7 @@ function processConfig() {
   window.evolv ??= {};
   window.evolv.utils ??= init();
   window.evolv.utils.init ??= init;
+  window.evolv.utils.debug(`init evolv-utils version ${VERSION}`);
   document.documentElement.dispatchEvent(new CustomEvent('evolvutilsinit'));
 }
 

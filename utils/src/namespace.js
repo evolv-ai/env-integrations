@@ -4,7 +4,7 @@
  */
 export default function initNamespace(utils) {
   const { body } = document;
-  const { addClass, removeClass, toRevert, isNewConfig, config, log } = utils;
+  const { addClass, removeClass, toRevert, isNewConfig, config, debug } = utils;
 
   const namespacePrefix = config?.namespace_prefix || 'evolv';
   const namespaceClasses = new Set();
@@ -15,14 +15,18 @@ export default function initNamespace(utils) {
     if (!bodyClassObserving) {
       return;
     }
-    namespaceClasses.forEach((className) => addClass(body, className));
+
+    namespaceClasses.forEach((className) => {
+      debug(`namespace: replace body class '${className}'`);
+      addClass(body, className, true);
+    });
   }
 
   function revertBodyClasses() {
     bodyClassObserving = false;
     bodyClassObserver.disconnect();
     namespaceClasses.forEach((className) => {
-      log(`namespace: revert '${className}'`);
+      debug(`namespace: revert body class '${className}'`);
       removeClass(body, className, true);
       namespaceClasses.delete(className);
     });
@@ -39,27 +43,25 @@ export default function initNamespace(utils) {
   }
 
   function namespace(...args) {
-    const prefix = isNewConfig
-      ? `${namespacePrefix}-${config.id}`
-      : namespacePrefix;
-
     function handleClass(className) {
       if (namespaceClasses.has(className)) {
         return;
       }
 
-      log(`namespace: add '${className}'`);
+      debug(`namespace: add body class'${className}'`);
       addClass(body, className, true);
       namespaceClasses.add(className);
     }
 
-    handleClass(prefix);
-
-    args.reduce((acc, cur) => {
-      const className = [acc, cur].join('-');
-      handleClass(className);
-      return className;
-    }, prefix);
+    if (isNewConfig) {
+      [config.id, ...args].reduce((acc, cur) => {
+        const className = [acc, cur].join('-');
+        handleClass(className);
+        return className;
+      }, namespacePrefix);
+    } else {
+      handleClass([namespacePrefix, ...args].join('-'));
+    }
 
     if (!bodyClassObserver && !bodyClassObserving) {
       initBodyClassObserver();

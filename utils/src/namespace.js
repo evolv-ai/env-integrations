@@ -17,8 +17,10 @@ export default function initNamespace(utils) {
     }
 
     namespaceClasses.forEach((className) => {
-      debug(`namespace: replace body class '${className}'`);
-      addClass(body, className, true);
+      if (!body.classList.contains(className)) {
+        debug(`namespace: replace body class '${className}'`);
+        body.classList.add(className);
+      }
     });
   }
 
@@ -48,7 +50,7 @@ export default function initNamespace(utils) {
         return;
       }
 
-      debug(`namespace: add body class'${className}'`);
+      debug(`namespace: add body class '${className}'`);
       addClass(body, className, true);
       namespaceClasses.add(className);
     }

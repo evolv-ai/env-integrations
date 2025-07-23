@@ -11,6 +11,8 @@ export default class TemplateResult {
     this.expressionMap = new Map();
   }
 
+  static #getExpressionKey = () => `EXP-${UID()}`;
+
   #getTaggedHTML = (
     [strings, expressions] = [this.#strings, this.#expressions],
   ) => {
@@ -25,7 +27,7 @@ export default class TemplateResult {
       if (typeof expression === 'undefined' || expression === null) {
         html += string;
       } else if (eventString) {
-        const expressionKey = UID();
+        const expressionKey = TemplateResult.#getExpressionKey();
         html += `${eventString[1]} ${expressionKey}`;
         this.expressionMap.set(expressionKey, {
           type: 'listener',
@@ -35,7 +37,7 @@ export default class TemplateResult {
         html += string;
         html += this.#getTaggedHTML([[''], [...expression.renderAll()]]);
       } else if (expression instanceof Node) {
-        const expressionKey = UID();
+        const expressionKey = TemplateResult.#getExpressionKey();
         html += `${string}<template ${expressionKey}></template>`;
         this.expressionMap.set(expressionKey, {
           type: 'element',

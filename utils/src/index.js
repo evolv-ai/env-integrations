@@ -8,14 +8,18 @@ import { VERSION } from './global.js';
  * @returns {Utils} A reference to the newly created Utils instance
  */
 function init(id, config) {
-  const utilsOld = id ? window.evolv.utils?.[id] : window.evolv.utils;
+  // Backwards compatibility
+  const utilsId = typeof id === 'object' ? id.id : id;
+  const utilsConfig = typeof id === 'object' ? id : config;
+
+  const utilsOld = utilsId ? window.evolv.utils?.[utilsId] : window.evolv.utils;
   if (utilsOld) {
     return utilsOld;
   }
 
-  const utilsNew = new Utils(id, config);
-  if (id) {
-    window.evolv.utils[id] = utilsNew;
+  const utilsNew = new Utils(utilsId, utilsConfig);
+  if (utilsId) {
+    window.evolv.utils[utilsId] = utilsNew;
   }
 
   return utilsNew;

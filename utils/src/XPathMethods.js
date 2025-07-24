@@ -28,6 +28,7 @@ class XPathMethods {
       config?.xpath_prefix ||
       config?.context_key ||
       config?.contexts?.[0]?.id ||
+      config?.id ||
       '';
   }
 

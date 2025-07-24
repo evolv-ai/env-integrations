@@ -140,9 +140,9 @@ class Utils {
   };
 
   /**
-   * Logs the description of the project config specified variable and or variant to the console.
-   * @param {string} variable - The variable id.
-   * @param {string} variant - The variant id.
+   * Logs the description of the project config and the specified variable and/or variant to the console.
+   * @param {string} [variable] - The variable id.
+   * @param {string} [variant] - The variant id.
    *
    * @example
    * ```js
@@ -1054,8 +1054,8 @@ class Utils {
   };
 
   /**
-   * Reverts any persistent actions. This only applies to namespace(),
-   * removing the body classes, and any custom reversion callbacks added to `toRevert`.
+   * Reverts any persistent actions. This will remove any body classes applied by `namespace()`,
+   * reset `describe()` and run any custom reversion callbacks added to `toRevert`.
    *
    * @function
    *

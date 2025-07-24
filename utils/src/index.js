@@ -8,7 +8,7 @@ import { VERSION } from './global.js';
  * @returns {Utils} A reference to the newly created Utils instance
  */
 function init(id, config) {
-  // Backwards compatibility
+  // Backward compatibility
   const utilsId = typeof id === 'object' ? id.id : id;
   const utilsConfig = typeof id === 'object' ? id : config;
 

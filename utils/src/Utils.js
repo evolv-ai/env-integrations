@@ -663,7 +663,7 @@ class Utils {
   /**
    * Selects an element from the DOM.
    * @param {string} selector The CSS selector or XPath expression
-   * @param {Element} context The context for querying
+   * @param {Document|Element} [context=document] The context for querying
    * @returns {Element} A single element
    * @note XPath selectors must be prefixed with `.` to be relative to the context element
    *
@@ -722,7 +722,7 @@ class Utils {
   /**
    * Selects elements from the DOM.
    * @param {string} selector The CSS selector, XPath expression
-   * @param {Element} context The context for querying
+   * @param {Document|Element} [context=document] The context for querying
    * @returns {Element[]} An array of result elements
    *
    * @example

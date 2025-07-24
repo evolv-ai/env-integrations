@@ -148,8 +148,8 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
     * [.setContext(key, value)](#Utils+setContext)
     * ~~[.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;Element&gt;</code>~~
     * ~~[.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code>~~
-    * [.$(selector, context)](#Utils+$) ⇒ <code>Element</code>
-    * [.$$(selector, context)](#Utils+$$) ⇒ <code>Array.&lt;Element&gt;</code>
+    * [.$(selector, [context])](#Utils+$) ⇒ <code>Element</code>
+    * [.$$(selector, [context])](#Utils+$$) ⇒ <code>Array.&lt;Element&gt;</code>
     * [.isVisible(element)](#Utils+isVisible) ⇒ <code>boolean</code>
     * [.fail(details, [reason])](#Utils+fail)
     * [.supportsIntersectionObserver()](#Utils+supportsIntersectionObserver) ⇒ <code>boolean</code>
@@ -670,17 +670,17 @@ Creates an element from an HTML string and adds click handlers to the element.
 
 <a name="Utils+$"></a>
 
-### utils.$(selector, context) ⇒ <code>Element</code>
+### utils.$(selector, [context]) ⇒ <code>Element</code>
 Selects an element from the DOM.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
 **Returns**: <code>Element</code> - A single element  
 **Note**: XPath selectors must be prefixed with `.` to be relative to the context element  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| selector | <code>string</code> | The CSS selector or XPath expression |
-| context | <code>Element</code> | The context for querying |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| selector | <code>string</code> |  | The CSS selector or XPath expression |
+| [context] | <code>Document</code> \| <code>Element</code> | <code>document</code> | The context for querying |
 
 **Example**  
 Select an element with CSS
@@ -706,16 +706,16 @@ const button = $('.//*[@id="button"]', container);
 ```
 <a name="Utils+$$"></a>
 
-### utils.$$(selector, context) ⇒ <code>Array.&lt;Element&gt;</code>
+### utils.$$(selector, [context]) ⇒ <code>Array.&lt;Element&gt;</code>
 Selects elements from the DOM.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
 **Returns**: <code>Array.&lt;Element&gt;</code> - An array of result elements  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| selector | <code>string</code> | The CSS selector, XPath expression |
-| context | <code>Element</code> | The context for querying |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| selector | <code>string</code> |  | The CSS selector, XPath expression |
+| [context] | <code>Document</code> \| <code>Element</code> | <code>document</code> | The context for querying |
 
 **Example**  
 Select all matching elements with CSS

@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-plusplus */
-import { VERSION } from './global.js';
+import { VERSION, deriveSelector } from './global.js';
 import CookieMethods from './CookieMethods.js';
 import initNamespace from './namespace.js';
 import TemplateResult from './TemplateResult.js';
@@ -696,8 +696,11 @@ class Utils {
       return context.querySelector(selector);
     } catch {
       try {
+        // Even with a context defined XPath requires a starting '.' for relative queries
+        const xpathSelector =
+          selector.charAt(0) === '.' ? selector : `.${selector}`;
         return document.evaluate(
-          selector,
+          xpathSelector,
           context,
           null,
           XPathResult.FIRST_ORDERED_NODE_TYPE,
@@ -705,7 +708,9 @@ class Utils {
         ).singleNodeValue;
       } catch (error) {
         throw new Error(
-          `Selector '${selector}' must be a valid CSS or XPath selector`,
+          `Evolv: $$: Must be a valid CSS or XPath query. Selector: '${selector}', context: '${deriveSelector(
+            context === document ? document.documentElement : context,
+          )}'`,
           { cause: error },
         );
       }
@@ -748,8 +753,10 @@ class Utils {
       return [...context.querySelectorAll(selector)];
     } catch {
       try {
+        const xpathSelector =
+          selector.charAt(0) === '.' ? selector : `.${selector}`;
         const result = document.evaluate(
-          selector,
+          xpathSelector,
           context,
           null,
           XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
@@ -763,7 +770,9 @@ class Utils {
         return array;
       } catch (error) {
         throw new Error(
-          `Selector '${selector}' must be a valid CSS or XPath selector`,
+          `Evolv: $: Must be a valid CSS or XPath query. Selector: '${selector}', context: '${deriveSelector(
+            context === document ? document.documentElement : context,
+          )}'`,
           { cause: error },
         );
       }

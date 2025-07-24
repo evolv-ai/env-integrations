@@ -173,7 +173,7 @@ An array of callbacks to be executed on context exit. Used by [.namespace](#Util
 and can also be used for custom tear-down/clean-up functions if you have problems with
 elements persisting after SPA navigation changes. Reversion triggers when the current active
 key transitions to inactive, so in the Web Editor it won't fire in Edit mode. It also requires
-the `config` object to contain the context key as it matches in the YML. If `config.contexts[0].id`
+the `config` object to contain the context key as it matches in the YML. If `config.id`
 is not the same as the context key in the YML you can add the following to the top level of
 `config`:
 ```js
@@ -220,14 +220,14 @@ Logs a warning to the console that can only be seen if the <code>evolv:logs</cod
 <a name="Utils+describe"></a>
 
 ### utils.describe
-Logs the description of the project config specified variable and or variant to the console.
+Logs the description of the project config and the specified variable and/or variant to the console.
 
 **Kind**: instance property of [<code>Utils</code>](#Utils)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| variable | <code>string</code> | The variable id. |
-| variant | <code>string</code> | The variant id. |
+| [variable] | <code>string</code> | The variable id. |
+| [variant] | <code>string</code> | The variant id. |
 
 **Example**  
 ```js
@@ -825,8 +825,8 @@ Simulates a click on a specified DOM element without triggering Adobe tracking.
 <a name="Utils+revert"></a>
 
 ### utils.revert()
-Reverts any persistent actions. This only applies to namespace(),
-removing the body classes, and any custom reversion callbacks added to `toRevert`.
+Reverts any persistent actions. This will remove any body classes applied by `namespace()`,
+reset `describe()` and run any custom reversion callbacks added to `toRevert`.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
 **Example**  

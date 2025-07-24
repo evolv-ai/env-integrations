@@ -15,6 +15,9 @@ related to mutation keys and context prefixes.</p>
 ## Functions
 
 <dl>
+<dt><a href="#deriveSelector">deriveSelector(element)</a> ⇒ <code>string</code></dt>
+<dd><p>Creates a selector string from an element, friendlier for logging and error messages</p>
+</dd>
 <dt><a href="#init">init(id, [config])</a> ⇒ <code><a href="#Utils">Utils</a></code></dt>
 <dd><p>Creates a new Utils sandbox at the location <code>window.evolv.utils.&lt;id&gt;</code>. A sandbox with the same id will persist between contexts if the page has not reloaded.</p>
 </dd>
@@ -970,6 +973,22 @@ const selectors = {
 }
 console.log(selectors['user-profile']);
 // Output: //div[@id="container"]//*[contains(concat(" ", @class, " "), " mutate-abc-user ")] | //div[@id="container"]//*[contains(concat(" ", @class, " "), " mutate-abc-profile ")]
+```
+<a name="deriveSelector"></a>
+
+## deriveSelector(element) ⇒ <code>string</code>
+Creates a selector string from an element, friendlier for logging and error messages
+
+**Kind**: global function  
+
+| Param | Type |
+| --- | --- |
+| element | <code>Element</code> | 
+
+**Example**  
+```js
+const element = document.querySelector('main#main.container.mobile-view');
+console.log(deriveSelector(element)); // "main#main.container.mobile-view";
 ```
 <a name="init"></a>
 

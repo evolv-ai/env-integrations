@@ -23,7 +23,7 @@ export function deriveSelector(element) {
   const tag = element.tagName.toLowerCase();
   const id = element.id ? `#${element.id}` : '';
   const classes = element.className
-    ? `.${element.className.trim().split(/\s+/).join('.')}`
+    ? `.${element.className.trim().replaceAll(/\s+/g, '.')}`
     : '';
 
   return `${tag}${id}${classes}`;

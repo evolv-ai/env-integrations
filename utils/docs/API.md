@@ -220,16 +220,94 @@ Logs a warning to the console that can only be seen if the <code>evolv:logs</cod
 <a name="Utils+describe"></a>
 
 ### utils.describe
-Logs the description of a context, variable, or variant from <code>evolv-config.json</code> to the console.
+Logs the description of the project config specified variable and or variant to the console.
 
 **Kind**: instance property of [<code>Utils</code>](#Utils)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| context | <code>string</code> | The context id. |
 | variable | <code>string</code> | The variable id. |
 | variant | <code>string</code> | The variant id. |
 
+**Example**  
+```js
+const config = {
+  id: 'eup-pdp-myplan-redesign',
+  version: '1.0.0',
+  name: 'EUP PDP myPlan Redesign',
+  platform: 'D/T/M/A',
+  audience: 'Customer',
+  kpi: 'EUP-OC.page-load',
+  url: /https:\/\/www\.verizon\.com\/smartphones\/[\w-+]+\//,
+  variables: [
+    {
+      id: 'c1',
+      name: '1 - Subheader',
+      variants: [
+        {
+          id: 'v0',
+          name: '1.0 - Control'
+        },
+        {
+          id: 'v1',
+          name: '1.1 - Static'
+        },
+        {
+          id: 'v2',
+          name: '1.2 - Dynamic'
+        }
+      ]
+    },
+    {
+      id: 'c2',
+      name: '2 - Vertical plans',
+      variants: [
+        {
+          id: 'v0',
+          name: '2.0 - Control'
+        },
+        {
+          id: 'v1',
+          name: '2.1 - Bulleted list'
+        }
+      ]
+    },
+    {
+      id: 'c3',
+      name: '3 - Promo offer',
+      variants: [
+        {
+          id: 'v0',
+          name: '3.0 - Control'
+        },
+        {
+          id: 'v1',
+          name: '3.1 - Deemphasize savings'
+        }
+      ]
+    }
+  ]
+}
+
+const utils = window.evolv.utils.init(config);
+const { describe } = utils;
+```
+
+Console:
+```
+[evolv-eup-pdp-myplan-redesign] version: 1.0.0
+[evolv-eup-pdp-myplan-redesign] name: EUP PDP myPlan Redesign
+[evolv-eup-pdp-myplan-redesign] platform: D/T/M/A
+[evolv-eup-pdp-myplan-redesign] audience: Customer
+[evolv-eup-pdp-myplan-redesign] kpi: EUP-OC.page-load
+[evolv-eup-pdp-myplan-redesign] url: /https:\/\/www\.verizon\.com\/smartphones\/[\w-+]+\//
+[evolv-eup-pdp-myplan-redesign] init variable: 1 - Subheader
+[evolv-eup-pdp-myplan-redesign] init variant: 1.2 - Dynamic
+[evolv-eup-pdp-myplan-redesign] init variable: 2 - Vertical plans
+[evolv-eup-pdp-myplan-redesign] init variant: 2.1 - Bulleted list
+[evolv-eup-pdp-myplan-redesign] init variable: 3 - Promo offer
+[evolv-eup-pdp-myplan-redesign] init variant: 3.0 - Control
+```
 <a name="Utils+debounce"></a>
 
 ### utils.debounce ⇒ <code>function</code>
@@ -751,6 +829,10 @@ Reverts any persistent actions. This only applies to namespace(),
 removing the body classes, and any custom reversion callbacks added to `toRevert`.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
+**Example**  
+```js
+utils.revert();
+```
 <a name="XPathMethods"></a>
 
 ## XPathMethods

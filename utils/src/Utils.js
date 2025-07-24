@@ -30,21 +30,21 @@ class Utils {
 
   config;
 
-  isNewConfig = false;
+  isNewConfig;
 
   /**
    * An array of callbacks to be executed on context exit. Used by [.namespace](#Utils+namespace)
    * and can also be used for custom tear-down/clean-up functions if you have problems with
    * elements persisting after SPA navigation changes. Reversion triggers when the current active
    * key transitions to inactive, so in the Web Editor it won't fire in Edit mode. It also requires
-   * the `config` object to contain the context key as it matches in the YML. If `config.contexts[0].id`
+   * the `config` object to contain the context key as it matches in the YML. If `config.id`
    * is not the same as the context key in the YML you can add the following to the top level of
    * `config`:
    * ```js
    *  context_key: this.key,
    * ```
    */
-  toRevert = [];
+  toRevert;
 
   /**
    * The utils object containing all helper functions
@@ -64,7 +64,8 @@ class Utils {
     this.#logPrefixDebug = getLogPrefix(id, 0.5);
 
     this.version = VERSION;
-    this.contextKey = config?.context_key || config?.contexts?.[0]?.id || null;
+    this.contextKey =
+      config?.context_key || config?.contexts?.[0]?.id || config?.id || null;
 
     this.setContext = this.setContext.bind(this);
     this.fail = this.fail.bind(this);
@@ -75,27 +76,30 @@ class Utils {
         this.contextKey = `web.${this.contextKey}`;
       }
 
-      window.evolv.client.getActiveKeys(this.contextKey).then(({ current }) => {
-        if (!current.length) {
-          return;
-        }
-
-        this.log(`key watcher: init key watching for '${this.contextKey}'`);
-
-        window.evolv.client.getActiveKeys(this.contextKey).listen((keys) => {
-          // Determine if user is exiting the context
-          if (keys.previous.length && !keys.current.length) {
-            this.log(`key watcher: exit context '${this.contextKey}'`);
-            let index = this.toRevert.length;
-            while (index--) {
-              this.toRevert[index]();
-            }
+      window.evolv.client
+        ?.getActiveKeys(this.contextKey)
+        .then(({ current }) => {
+          if (!current.length) {
+            return;
           }
+
+          this.log(`key watcher: init key watching for '${this.contextKey}'`);
+
+          window.evolv.client.getActiveKeys(this.contextKey).listen((keys) => {
+            // Determine if user is exiting the context
+            if (keys.previous.length && !keys.current.length) {
+              this.log(`key watcher: exit context '${this.contextKey}'`);
+              let index = this.toRevert.length;
+              while (index--) {
+                this.toRevert[index]();
+              }
+            }
+          });
         });
-      });
     }
 
-    this.#described = new Set();
+    this.toRevert = [];
+    this.#described = [];
     this.isNewConfig = this.config && !this.config.contexts && this.config.id;
     this.windowWidthObserver = null;
     this.namespace = initNamespace(this);
@@ -136,12 +140,102 @@ class Utils {
   };
 
   /**
-   * Logs the description of a context, variable, or variant from <code>evolv-config.json</code> to the console.
-   * @param {string} context - The context id.
-   * @param {string} variable - The variable id.
-   * @param {string} variant - The variant id.
+   * Logs the description of the project config and the specified variable and/or variant to the console.
+   * @param {string} [variable] - The variable id.
+   * @param {string} [variant] - The variant id.
+   *
+   * @example
+   * ```js
+   * const config = {
+   *   id: 'eup-pdp-myplan-redesign',
+   *   version: '1.0.0',
+   *   name: 'EUP PDP myPlan Redesign',
+   *   platform: 'D/T/M/A',
+   *   audience: 'Customer',
+   *   kpi: 'EUP-OC.page-load',
+   *   url: /https:\/\/www\.verizon\.com\/smartphones\/[\w-+]+\//,
+   *   variables: [
+   *     {
+   *       id: 'c1',
+   *       name: '1 - Subheader',
+   *       variants: [
+   *         {
+   *           id: 'v0',
+   *           name: '1.0 - Control'
+   *         },
+   *         {
+   *           id: 'v1',
+   *           name: '1.1 - Static'
+   *         },
+   *         {
+   *           id: 'v2',
+   *           name: '1.2 - Dynamic'
+   *         }
+   *       ]
+   *     },
+   *     {
+   *       id: 'c2',
+   *       name: '2 - Vertical plans',
+   *       variants: [
+   *         {
+   *           id: 'v0',
+   *           name: '2.0 - Control'
+   *         },
+   *         {
+   *           id: 'v1',
+   *           name: '2.1 - Bulleted list'
+   *         }
+   *       ]
+   *     },
+   *     {
+   *       id: 'c3',
+   *       name: '3 - Promo offer',
+   *       variants: [
+   *         {
+   *           id: 'v0',
+   *           name: '3.0 - Control'
+   *         },
+   *         {
+   *           id: 'v1',
+   *           name: '3.1 - Deemphasize savings'
+   *         }
+   *       ]
+   *     }
+   *   ]
+   * }
+   *
+   * const utils = window.evolv.utils.init(config);
+   * const { describe } = utils;
+   * ```
+   *
+   * Console:
+   * ```
+   * [evolv-eup-pdp-myplan-redesign] version: 1.0.0
+   * [evolv-eup-pdp-myplan-redesign] name: EUP PDP myPlan Redesign
+   * [evolv-eup-pdp-myplan-redesign] platform: D/T/M/A
+   * [evolv-eup-pdp-myplan-redesign] audience: Customer
+   * [evolv-eup-pdp-myplan-redesign] kpi: EUP-OC.page-load
+   * [evolv-eup-pdp-myplan-redesign] url: /https:\/\/www\.verizon\.com\/smartphones\/[\w-+]+\//
+   * [evolv-eup-pdp-myplan-redesign] init variable: 1 - Subheader
+   * [evolv-eup-pdp-myplan-redesign] init variant: 1.2 - Dynamic
+   * [evolv-eup-pdp-myplan-redesign] init variable: 2 - Vertical plans
+   * [evolv-eup-pdp-myplan-redesign] init variant: 2.1 - Bulleted list
+   * [evolv-eup-pdp-myplan-redesign] init variable: 3 - Promo offer
+   * [evolv-eup-pdp-myplan-redesign] init variant: 3.0 - Control
+   * ```
    */
   describe = (context, variable, variant) => {
+    const handleEntry = (key, value, keyTemplate = (k) => `${k}:`) => {
+      if (
+        !this.#described.some(
+          ([entryKey, entryValue]) => entryKey === key && entryValue === value,
+        )
+      ) {
+        this.#described.push([key, value]);
+        this.log(keyTemplate(key), value);
+      }
+    };
+
     if (!this.config) {
       this.warn(
         'Describe requires Evolv Utils to be initialized with a config object',
@@ -149,21 +243,28 @@ class Utils {
       return;
     }
 
+    if (!this.#described.length) {
+      this.toRevert.push(() => {
+        this.#described = [];
+      });
+    }
+
     // Config object with no contexts
     if (this.isNewConfig) {
       const newVariable = context;
       const newVariant = variable;
+      const { id, variables, ...configKeys } = this.config;
 
-      if (!(newVariable || newVariant)) {
-        this.log(`init context: ${this.config.name}`);
-        return;
-      }
+      Object.keys(configKeys).forEach((key) => {
+        const value = this.config[key];
+        handleEntry(key, value);
+      });
 
       const type = ['variable', 'variant'];
       [newVariable, newVariant].reduce((acc, cur, index) => {
         if (cur) {
           const next = acc[`${type[index]}s`].find((v) => v.id === cur);
-          this.log(`init ${type[index]}:`, next.name);
+          handleEntry(type[index], next.name, (k) => `init ${k}:`);
           return next;
         }
         return acc;
@@ -953,13 +1054,19 @@ class Utils {
   };
 
   /**
-   * Reverts any persistent actions. This only applies to namespace(),
-   * removing the body classes, and any custom reversion callbacks added to `toRevert`.
+   * Reverts any persistent actions. This will remove any body classes applied by `namespace()`,
+   * reset `describe()` and run any custom reversion callbacks added to `toRevert`.
    *
    * @function
+   *
+   * @example
+   * utils.revert();
    */
   revert = () => {
-    this.toRevert.forEach((action) => action());
+    let i = this.toRevert.length;
+    while (i--) {
+      this.toRevert.pop()();
+    }
   };
 }
 

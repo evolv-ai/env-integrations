@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-plusplus */
-import { VERSION } from './global.js';
+import { VERSION, deriveSelector } from './global.js';
 import CookieMethods from './CookieMethods.js';
 import initNamespace from './namespace.js';
 import TemplateResult from './TemplateResult.js';
@@ -663,6 +663,7 @@ class Utils {
   /**
    * Selects an element from the DOM.
    * @param {string} selector The CSS selector or XPath expression
+   * @param {Document|Element} [context=document] The context for querying
    * @returns {Element} A single element
    * @note XPath selectors must be prefixed with `.` to be relative to the context element
    *
@@ -690,14 +691,18 @@ class Utils {
    * ```js
    * const container = $('//*[@id="container"]');
    * const button = $('.//*[@id="button"]', container);
+   * ```
    */
   $(selector, context = document) {
     try {
       return context.querySelector(selector);
     } catch {
       try {
+        // Even with a context defined XPath requires a starting '.' for relative queries
+        const xpathSelector =
+          selector.charAt(0) === '.' ? selector : `.${selector}`;
         return document.evaluate(
-          selector,
+          xpathSelector,
           context,
           null,
           XPathResult.FIRST_ORDERED_NODE_TYPE,
@@ -705,7 +710,9 @@ class Utils {
         ).singleNodeValue;
       } catch (error) {
         throw new Error(
-          `Selector '${selector}' must be a valid CSS or XPath selector`,
+          `Evolv: $$: Must be a valid CSS or XPath query. Selector: '${selector}', context: '${deriveSelector(
+            context === document ? document.documentElement : context,
+          )}'`,
           { cause: error },
         );
       }
@@ -715,6 +722,7 @@ class Utils {
   /**
    * Selects elements from the DOM.
    * @param {string} selector The CSS selector, XPath expression
+   * @param {Document|Element} [context=document] The context for querying
    * @returns {Element[]} An array of result elements
    *
    * @example
@@ -748,8 +756,10 @@ class Utils {
       return [...context.querySelectorAll(selector)];
     } catch {
       try {
+        const xpathSelector =
+          selector.charAt(0) === '.' ? selector : `.${selector}`;
         const result = document.evaluate(
-          selector,
+          xpathSelector,
           context,
           null,
           XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
@@ -763,7 +773,9 @@ class Utils {
         return array;
       } catch (error) {
         throw new Error(
-          `Selector '${selector}' must be a valid CSS or XPath selector`,
+          `Evolv: $: Must be a valid CSS or XPath query. Selector: '${selector}', context: '${deriveSelector(
+            context === document ? document.documentElement : context,
+          )}'`,
           { cause: error },
         );
       }

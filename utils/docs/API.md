@@ -15,6 +15,9 @@ related to mutation keys and context prefixes.</p>
 ## Functions
 
 <dl>
+<dt><a href="#deriveSelector">deriveSelector(element)</a> ⇒ <code>string</code></dt>
+<dd><p>Creates a selector string from an element, friendlier for logging and error messages</p>
+</dd>
 <dt><a href="#init">init(id, [config])</a> ⇒ <code><a href="#Utils">Utils</a></code></dt>
 <dd><p>Creates a new Utils sandbox at the location <code>window.evolv.utils.&lt;id&gt;</code>. A sandbox with the same id will persist between contexts if the page has not reloaded.</p>
 </dd>
@@ -145,8 +148,8 @@ document.cookie; // 'throttle=%7CEnableTest1%7CEnableTest2'
     * [.setContext(key, value)](#Utils+setContext)
     * ~~[.makeElements(HTMLString, clickHandlers)](#Utils+makeElements) ⇒ <code>Array.&lt;Element&gt;</code>~~
     * ~~[.makeElement(HTMLString, clickHandlers)](#Utils+makeElement) ⇒ <code>HTMLElement</code>~~
-    * [.$(selector)](#Utils+$) ⇒ <code>Element</code>
-    * [.$$(selector)](#Utils+$$) ⇒ <code>Array.&lt;Element&gt;</code>
+    * [.$(selector, [context])](#Utils+$) ⇒ <code>Element</code>
+    * [.$$(selector, [context])](#Utils+$$) ⇒ <code>Array.&lt;Element&gt;</code>
     * [.isVisible(element)](#Utils+isVisible) ⇒ <code>boolean</code>
     * [.fail(details, [reason])](#Utils+fail)
     * [.supportsIntersectionObserver()](#Utils+supportsIntersectionObserver) ⇒ <code>boolean</code>
@@ -173,7 +176,7 @@ An array of callbacks to be executed on context exit. Used by [.namespace](#Util
 and can also be used for custom tear-down/clean-up functions if you have problems with
 elements persisting after SPA navigation changes. Reversion triggers when the current active
 key transitions to inactive, so in the Web Editor it won't fire in Edit mode. It also requires
-the `config` object to contain the context key as it matches in the YML. If `config.contexts[0].id`
+the `config` object to contain the context key as it matches in the YML. If `config.id`
 is not the same as the context key in the YML you can add the following to the top level of
 `config`:
 ```js
@@ -220,14 +223,14 @@ Logs a warning to the console that can only be seen if the <code>evolv:logs</cod
 <a name="Utils+describe"></a>
 
 ### utils.describe
-Logs the description of the project config specified variable and or variant to the console.
+Logs the description of the project config and the specified variable and/or variant to the console.
 
 **Kind**: instance property of [<code>Utils</code>](#Utils)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| variable | <code>string</code> | The variable id. |
-| variant | <code>string</code> | The variant id. |
+| [variable] | <code>string</code> | The variable id. |
+| [variant] | <code>string</code> | The variant id. |
 
 **Example**  
 ```js
@@ -667,16 +670,17 @@ Creates an element from an HTML string and adds click handlers to the element.
 
 <a name="Utils+$"></a>
 
-### utils.$(selector) ⇒ <code>Element</code>
+### utils.$(selector, [context]) ⇒ <code>Element</code>
 Selects an element from the DOM.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
 **Returns**: <code>Element</code> - A single element  
 **Note**: XPath selectors must be prefixed with `.` to be relative to the context element  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| selector | <code>string</code> | The CSS selector or XPath expression |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| selector | <code>string</code> |  | The CSS selector or XPath expression |
+| [context] | <code>Document</code> \| <code>Element</code> | <code>document</code> | The context for querying |
 
 **Example**  
 Select an element with CSS
@@ -699,17 +703,19 @@ Select an element within another element using XPath
 ```js
 const container = $('//*[@id="container"]');
 const button = $('.//*[@id="button"]', container);
+```
 <a name="Utils+$$"></a>
 
-### utils.$$(selector) ⇒ <code>Array.&lt;Element&gt;</code>
+### utils.$$(selector, [context]) ⇒ <code>Array.&lt;Element&gt;</code>
 Selects elements from the DOM.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
 **Returns**: <code>Array.&lt;Element&gt;</code> - An array of result elements  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| selector | <code>string</code> | The CSS selector, XPath expression |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| selector | <code>string</code> |  | The CSS selector, XPath expression |
+| [context] | <code>Document</code> \| <code>Element</code> | <code>document</code> | The context for querying |
 
 **Example**  
 Select all matching elements with CSS
@@ -825,8 +831,8 @@ Simulates a click on a specified DOM element without triggering Adobe tracking.
 <a name="Utils+revert"></a>
 
 ### utils.revert()
-Reverts any persistent actions. This only applies to namespace(),
-removing the body classes, and any custom reversion callbacks added to `toRevert`.
+Reverts any persistent actions. This will remove any body classes applied by `namespace()`,
+reset `describe()` and run any custom reversion callbacks added to `toRevert`.
 
 **Kind**: instance method of [<code>Utils</code>](#Utils)  
 **Example**  
@@ -970,6 +976,22 @@ const selectors = {
 }
 console.log(selectors['user-profile']);
 // Output: //div[@id="container"]//*[contains(concat(" ", @class, " "), " mutate-abc-user ")] | //div[@id="container"]//*[contains(concat(" ", @class, " "), " mutate-abc-profile ")]
+```
+<a name="deriveSelector"></a>
+
+## deriveSelector(element) ⇒ <code>string</code>
+Creates a selector string from an element, friendlier for logging and error messages
+
+**Kind**: global function  
+
+| Param | Type |
+| --- | --- |
+| element | <code>Element</code> | 
+
+**Example**  
+```js
+const element = document.querySelector('main#main.container.mobile-view');
+console.log(deriveSelector(element)); // "main#main.container.mobile-view";
 ```
 <a name="init"></a>
 

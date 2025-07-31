@@ -238,7 +238,7 @@ class Utils {
 
     if (!this.config) {
       this.warn(
-        'Describe requires Evolv Utils to be initialized with a config object',
+        'describe: requires Evolv Utils to be initialized with a config object',
       );
       return;
     }
@@ -260,15 +260,21 @@ class Utils {
         handleEntry(key, value);
       });
 
-      const type = ['variable', 'variant'];
-      [newVariable, newVariant].reduce((acc, cur, index) => {
-        if (cur) {
-          const next = acc[`${type[index]}s`].find((v) => v.id === cur);
-          handleEntry(type[index], next.name, (k) => `init ${k}:`);
-          return next;
-        }
-        return acc;
-      }, this.config);
+      try {
+        const type = ['variable', 'variant'];
+        [newVariable, newVariant].reduce((acc, cur, index) => {
+          if (cur) {
+            const next = acc[`${type[index]}s`].find((v) => v.id === cur);
+            handleEntry(type[index], next.name, (k) => `init ${k}:`);
+            return next;
+          }
+          return acc;
+        }, this.config);
+      } catch {
+        this.warn(
+          `describe: config entry for '${this.config.id}', '${context}', '${variable}' not found`,
+        );
+      }
       return;
     }
 

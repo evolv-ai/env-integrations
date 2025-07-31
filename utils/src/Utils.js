@@ -272,7 +272,9 @@ class Utils {
         }, this.config);
       } catch {
         this.warn(
-          `describe: config entry for '${this.config.id}', '${context}', '${variable}' not found`,
+          `describe: config entry for '${context}'${
+            variable ? `, '${variable}'` : ''
+          } not found`,
         );
       }
       return;

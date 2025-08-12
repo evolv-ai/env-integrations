@@ -103,9 +103,9 @@ class Utils {
       const exclusionValue = `${config.exclusion_group}:${config.id || config.contexts[0].id}`;
 
       if (exclusionGroups.some(entry =>
-        (entry !== exclusionValue) && new RegExp(`^${config.exclusion_group}:`).test(entry)
+        (entry !== exclusionValue) && entry.startsWith(`${config.exclusion_group}:`)
       )) {
-        this.fail(`Evolv: Test improperly excluded. Exclusion value: '${exclusionValue}', exclusion groups: ${exclusionGroups.join('|')}`, 'improper-exclusion');
+        this.fail(`Evolv: Test improperly excluded, add context targeting criteria in Manager. Exclusion value: '${exclusionValue}', exclusion groups: ${exclusionGroups.join('|')}`, 'improper-exclusion');
       }
 
       if (!exclusionGroups.includes(exclusionValue)) {

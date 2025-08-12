@@ -6,7 +6,6 @@ class Button extends Base {
     ...this.observedAttributes,
     'background-color',
     'disabled',
-    'size',
     'text-color',
     'text-content',
     'use',
@@ -23,7 +22,6 @@ class Button extends Base {
       disabled: () =>
         this.getAttribute('disabled') === '' ||
         this.getAttribute('disabled') === 'true',
-      size: () => this.getAttribute('size') || 'small',
       textColor: () => {
         const attribute = this.getAttribute('text-color');
         const use = this._props.use();

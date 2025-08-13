@@ -74,6 +74,7 @@ class Button extends Base {
         -webkit-tap-highlight-color: transparent;
         white-space: nowrap;
         font-weight: 700;
+        letter-spacing: normal;
         background-color: var(--color-button);
         border: 0.0625rem solid var(--color-button);
         color: var(--color-text);
@@ -147,9 +148,10 @@ class Button extends Base {
       }
 
       :host([size='small']) .button {
-        ${vds.style.text.body.small()}
-        font-weight: 700;
-        border-radius: 2rem;
+        font-family: var(--font-family-etx);
+        font-size: 0.75rem;
+        line-height: 1rem;
+        border-radius: var(--border-radius-small);
         min-width: revert;
       }
 
@@ -158,7 +160,7 @@ class Button extends Base {
       }
 
       :host([size='small']) .button:focus-visible::before {
-        border-radius: 2rem;
+        border-radius: var(--border-radius-small);
       }
 
       :host([use='secondary']) .button {
@@ -177,6 +179,33 @@ class Button extends Base {
         background-color: transparent;
         color: var(--color-gray-85);
       }
+
+      ${this.breakpoint
+        ? css`
+            @media screen and (min-width: ${this.breakpoint}) {
+              :host[size='small'] {
+                border-radius: var(--border-radius-large);
+              }
+
+              :host([size='small']) .button {
+                font-family: var(--font-family-eds);
+                font-size: 1rem;
+                line-height: 1.25rem;
+                min-width: 4.75rem;
+                border-radius: var(--border-radius-large);
+                background-color: var(--color-button);
+              }
+
+              :host([size='small']) .button:focus-visible::before {
+                border-radius: var(--border-radius-large);
+              }
+
+              :host([size='small']) .text {
+                padding: calc(-1px + 0.75rem) 1.5rem;
+              }
+            }
+          `
+        : ''}
     `;
 
     this.template = () => html`

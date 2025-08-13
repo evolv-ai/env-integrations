@@ -179,6 +179,7 @@ Example:
 
 ```html
 <evolv-button use="secondary" width="50%">Click here</evolv-button>
+<evolv-button size="small" breakpoint="768px">Continue</evolv-button>
 ```
 
 #### Class
@@ -192,12 +193,16 @@ window.evolv.vds.Button
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
 | `display` | Changes the display property of the button. | `flex` | `flex`, `block`, `inline-block` |
-| `size` | Renders the button in the correpsponding size. | `large` | `large`, `small` |
+| `size` | Renders the button in the corresponding size. | `large` | `large`, `small` |
 | `text-color` | The color the text inside the button. If left blank sets automatically based on `use` and `surface` | `null` | [`<color-code>`](#color-codes), [`<css-color>`](#css-color) |
 | `use` | Whether the button face matches the `color` attribute (`primary`) or is transparent (`secondary`) button. | `primary` | `primary`, `secondary` |
 | `width` | The width for rendering the button. | `auto` | `<number>` or `<css width>` |
 | `disabled` | Disables button. | `false` | `true`, `false` |
 
+#### Notes
+
+Buttons do accept the `breakpoint` attribute but it only works in conjunction with `size="small"`. Above the breakpoint
+the size will increase to `large`.
 ----
 
 ### ButtonIcon
@@ -522,7 +527,10 @@ The `primitive` attribute, if left blank, is assigned a default heading tag corr
 
 | Name | Description | Default | Accepts |
 | :--- | :---------- | :------ | :------ |
-| `size` | Renders the tooltip in the correpsponding size. Requires `type` to be `standAlone`. **Coming soon!** | `large` | `large`, `small` |
-| `content-max-height` | The maximum height of the tooltip content 
+| `content-max-height` | The maximum height of the tooltip content | `12.75rem` | `<css-height>` |
 | `content-title` | A title to be displayed above the tooltip content | | `<string>` |
+| `detect-touch-device` | Whether the modal mode of the tooltip appears based on touch-screen detection (`true`) or a breakpoint (`false`) | `true` | `<boolean>` |
+| `hover-delay` | The duration in milliseconds the cursor must hover over the tooltip before the content appears | `400` | `<number>` |
+| `modal-duration` | The duration in milliseconds of the modal fade-in and fade-out animations | `400` | `<number>` |
+| `size` | Renders the tooltip in the correpsponding size. Requires `type` to be `standAlone`. **Coming soon!** | `large` | `large`, `small` |
 | `type` | Whether the tooltip button is `inline`, inherited from the text size of the parent, or `standAlone`, determined by the `size` attribute | `inline` | `inline`, `standAlone` |

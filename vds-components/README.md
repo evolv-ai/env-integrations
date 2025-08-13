@@ -532,5 +532,5 @@ The `primitive` attribute, if left blank, is assigned a default heading tag corr
 | `detect-touch-device` | Whether the modal mode of the tooltip appears based on touch-screen detection (`true`) or a breakpoint (`false`) | `true` | `<boolean>` |
 | `hover-delay` | The duration in milliseconds the cursor must hover over the tooltip before the content appears | `400` | `<number>` |
 | `modal-duration` | The duration in milliseconds of the modal fade-in and fade-out animations | `400` | `<number>` |
-| `size` | Renders the tooltip in the correpsponding size. Requires `type` to be `standAlone`. **Coming soon!** | `large` | `large`, `small` |
+| `size` | Renders the tooltip in the correpsponding size. Requires `type` to be `standAlone`. | `large` | `large`, `small` |
 | `type` | Whether the tooltip button is `inline`, inherited from the text size of the parent, or `standAlone`, determined by the `size` attribute | `inline` | `inline`, `standAlone` |

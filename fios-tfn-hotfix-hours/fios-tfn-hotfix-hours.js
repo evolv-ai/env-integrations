@@ -2,7 +2,7 @@
 // M-F 8am - 7pm ET
 // Sat 8am - 5pm ET
 
-const version = '1.0.1';
+const version = '1.0.2';
 function init () {
   const id = 'fios-tfn-hotfix-hours'
   const utils = window.evolv.utils.init(id);

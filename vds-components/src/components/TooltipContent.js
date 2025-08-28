@@ -260,7 +260,7 @@ class TooltipContent extends Base {
     if (!content) {
       return;
     }
-    const bodyTop = utils.getOffsetRect(document.body).top;
+    // const bodyTop = utils.getOffsetRect(document.body).top;
     const buttonRect = utils.getOffsetRect(this.tooltip.parts.button);
     const buttonCenterX = buttonRect.left + buttonRect.width / 2;
     const borderRadius = utils.cssSizeToValue(this.borderRadius);
@@ -276,7 +276,7 @@ class TooltipContent extends Base {
       windowWidth < breakpoint
         ? utils.cssSizeToValue(this.windowPaddingMobile)
         : utils.cssSizeToValue(this.windowPaddingDeskTab);
-    const topBound = bodyTop + buttonRect.top - gap - height - windowPadding;
+    const topBound = buttonRect.top - gap - height - windowPadding;
     const leftBound = left - windowPadding;
     const rightBound = right + windowPadding;
     const maxOffset = (width - caretWidth) / 2 - borderRadius;
@@ -296,7 +296,7 @@ class TooltipContent extends Base {
     );
     utils.updateProperty(
       '--button-top',
-      `${Math.round(buttonRect.top - bodyTop)}px`,
+      `${Math.round(buttonRect.top)}px`,
       this,
     );
     utils.updateProperty(

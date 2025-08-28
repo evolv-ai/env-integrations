@@ -1050,10 +1050,10 @@ class Utils {
     const box = element.getBoundingClientRect();
     const { width, height } = box;
     const { documentElement, body } = document;
-    const scrollTop = documentElement.scrollTop ?? body.scrollTop;
-    const scrollLeft = documentElement.scrollLeft ?? body.scrollLeft;
-    const clientTop = documentElement.clientTop ?? body.clientTop;
-    const clientLeft = documentElement.clientLeft ?? body.clientLeft;
+    const scrollTop = (documentElement.scrollTop ?? 0) + body.scrollTop;
+    const scrollLeft = (documentElement.scrollLeft ?? 0) + body.scrollLeft;
+    const clientTop = (documentElement.clientTop ?? 0) + body.clientTop;
+    const clientLeft = (documentElement.clientLeft ?? 0) + body.clientLeft;
     const x = Math.round(box.left + scrollLeft - clientLeft);
     const y = Math.round(box.top + scrollTop - clientTop);
 

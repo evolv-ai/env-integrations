@@ -260,7 +260,6 @@ class TooltipContent extends Base {
     if (!content) {
       return;
     }
-    // const bodyTop = utils.getOffsetRect(document.body).top;
     const buttonRect = utils.getOffsetRect(this.tooltip.parts.button);
     const buttonCenterX = buttonRect.left + buttonRect.width / 2;
     const borderRadius = utils.cssSizeToValue(this.borderRadius);

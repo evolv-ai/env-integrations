@@ -43,7 +43,7 @@ export function getActiveExperimentData(eid){
         },
         subscribe(fnc){
             const updateIfChanged = ()=> requestAnimationFrame(()=> {
-                getExperiment(eid).then(data=>{
+                getExperimentWithNames(eid).then(data=>{
                     const cachedData = Cached_ExperiemntData[eid];
                     if ((cachedData?.activeVariants?.length || 0) !== (data?.activeVariants?.length || 0)){
                         Cached_ExperiemntData[eid] = {...data, activeVariants:[...(data?.activeVariants || [])]};

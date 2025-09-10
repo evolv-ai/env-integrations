@@ -15,7 +15,7 @@ const PROJECT_EVENTS = {
 };
 
 
-const Cached_ExperiemntData = {};
+const Cached_ExperimentData = {};
 
 export function getActiveExperimentData(eid){
     return {
@@ -26,9 +26,9 @@ export function getActiveExperimentData(eid){
                 if (!confirmation) return;
 
                 getExperimentWithNames(eid).then(data=>{
-                    const cachedData = Cached_ExperiemntData[eid];
+                    const cachedData = Cached_ExperimentData[eid];
                     if (!cachedData || (cachedData?.activeVariants?.length || 0) !== (data?.activeVariants?.length || 0)){
-                        Cached_ExperiemntData[eid] = {...data, activeVariants:[...(data?.activeVariants || [])]};
+                        Cached_ExperimentData[eid] = {...data, activeVariants:[...(data?.activeVariants || [])]};
                         fnc({...confirmation, ...data});
                     }
                 })
@@ -44,9 +44,9 @@ export function getActiveExperimentData(eid){
         subscribe(fnc){
             const updateIfChanged = ()=> requestAnimationFrame(()=> {
                 getExperimentWithNames(eid).then(data=>{
-                    const cachedData = Cached_ExperiemntData[eid];
+                    const cachedData = Cached_ExperimentData[eid];
                     if ((cachedData?.activeVariants?.length || 0) !== (data?.activeVariants?.length || 0)){
-                        Cached_ExperiemntData[eid] = {...data, activeVariants:[...(data?.activeVariants || [])]};
+                        Cached_ExperimentData[eid] = {...data, activeVariants:[...(data?.activeVariants || [])]};
                         fnc(data);
                     }
                 })

@@ -1,3 +1,4 @@
+import { version } from '../package.json';
 
 const evolv = window.evolv;
 
@@ -16,6 +17,9 @@ const PROJECT_EVENTS = {
 
 
 const Cached_ExperimentData = {};
+
+const isDebug = localStorage.getItem('evolv:logs');
+isDebug && console.log(`[evolv-active_variants] init active_variants version ${version}`);
 
 export function getActiveExperimentData(eid){
     return {
@@ -37,7 +41,7 @@ export function getActiveExperimentData(eid){
             if (eventName === PROJECT_EVENTS.CHANGED){
                 CONTEXT_EVENTS.forEach(e=> evolv.client.on(e, updateIfChanged));
             } else { //PROJECT_EVENTS.INITIALIZED
-                updateIfChanged();     
+                updateIfChanged();
             }
             return this;
         },
@@ -52,7 +56,7 @@ export function getActiveExperimentData(eid){
                 })
             })
             CONTEXT_EVENTS.forEach(e=> evolv.client.on(e, updateIfChanged));
-            updateIfChanged();     
+            updateIfChanged();
         }
     }
 }
@@ -99,14 +103,14 @@ function isActive(variantId, activeVariants){
 function extractActiveExperimentVariants(experiment, activeVariants, variantDisplayNames){
     let contexts = experiment.web;
     if (!contexts) return [];
-    
+
     // console.info('extractActiveExperimentVariants', experiment, activeVariants, variantDisplayNames)
 
     return Object.keys(variantDisplayNames)
       .filter(vId=>
         contextMatches(vId, contexts)
       )
-      .filter(vId=> 
+      .filter(vId=>
         isActive(vId, activeVariants)
       )
       .map(vId=>({
@@ -119,7 +123,17 @@ function extractActiveExperimentVariants(experiment, activeVariants, variantDisp
 
   function findConfirmedAllocation(eid) {
     const experiments = window.evolv.context.get('experiments');
+    isDebug && console.log(`[evolv-active_variants] experiments:`, experiments);
+    if (!experiments || !experiments.allocations || !experiments.confirmations) {
+      return null;
+    }
+
     const allocation = experiments.allocations.find(a=> a.eid === eid);
+    if (!allocation) {
+      return null;
+    }
+
     const confirmation = experiments.confirmations.find(c=>c.cid === allocation.cid);
+
     return confirmation && allocation;
   }

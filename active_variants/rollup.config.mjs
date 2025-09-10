@@ -1,4 +1,5 @@
 import terser from "@rollup/plugin-terser";
+import json from '@rollup/plugin-json';
 
 export default {
   input: "src/index.js", // Entry point
@@ -8,6 +9,7 @@ export default {
     sourcemap: false
   },
   plugins: [
-    terser() // Minifies the output
+    terser(),
+    json()
   ]
 };

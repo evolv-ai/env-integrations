@@ -102,6 +102,7 @@ class Base extends HTMLElement {
         border: none;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
+        padding: 0;
       }
 
       .text-body-small {

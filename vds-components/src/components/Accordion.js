@@ -6,8 +6,8 @@ class Accordion extends Base {
     ...this.observedAttributes,
     'id',
     'disable-track',
-    'track-name',
     'duration',
+    'handle-size',
     'open-first',
     'padding',
     'padding-tablet',
@@ -15,6 +15,7 @@ class Accordion extends Base {
     'title-size',
     'title-bold',
     'title-primitive',
+    'track-name',
   ];
 
   accordionItems = [];
@@ -32,6 +33,7 @@ class Accordion extends Base {
         this.getAttribute('breakpoint') || vds.breakpoint || '768px',
       disableTrack: () => this.getAttribute('disable-track') === 'true',
       duration: () => parseFloat(this.getAttribute('duration')) || 330,
+      iconSize: () => this.getAttribute('icon-size') || 'small',
       id: () => this.getAttribute('id') || `accordion-${this.accordionIndex}`,
       openFirst: () => this.getAttribute('open-first') === 'true',
       padding: () => this.getAttribute('padding') || '1.5rem',

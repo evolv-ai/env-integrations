@@ -1,10 +1,25 @@
 import Base from './Base.js';
 
 class ButtonIcon extends Base {
-  static observedAttributes = [...this.observedAttributes, 'name', 'size'];
+  static observedAttributes = [
+    ...this.observedAttributes,
+    'name',
+    'size',
+    'size-tablet',
+  ];
 
   constructor() {
     super();
+
+    const buttonSizes = {
+      small: '2rem',
+      large: '2.75rem',
+    };
+
+    const buttonPadding = {
+      small: '0.375rem',
+      large: '0.625rem',
+    };
 
     const iconSizes = {
       small: 'medium',
@@ -12,24 +27,38 @@ class ButtonIcon extends Base {
     };
 
     this.props = {
+      iconSize: () =>
+        ['small', 'large'].some((size) => size === this.props.size())
+          ? iconSizes[this.props.size()]
+          : this.props.size(),
       name: () => this.getAttribute('name') || null,
       size: () => this.getAttribute('size') || 'small',
-      iconSize: () => iconSizes[this.props.size()],
+      sizeTablet: () => this.getAttribute('size-tablet') || 'large',
     };
 
     this.styles = () => css`
       .button-icon {
+        --button-size: ${Object.keys(buttonSizes).some(
+          (size) => size === this.size,
+        )
+          ? `${buttonSizes[this.size]}`
+          : this.size};
+        --padding: ${Object.keys(buttonPadding).some(
+          (size) => size === this.size,
+        )
+          ? `${buttonPadding[this.size]}`
+          : `calc(${this.size}/3)`};
         position: relative;
         display: flex;
         justify-content: center;
         align-items: center;
         touch-action: manipulation;
         cursor: pointer;
-        width: 2rem;
-        height: 2rem;
+        padding: var(--padding);
         border-radius: 50%;
         background-color: transparent;
-        transition: box-shadow 0.1s ease-out 0s,
+        transition:
+          box-shadow 0.1s ease-out 0s,
           background-color 0.1s ease-out 0s;
       }
 
@@ -48,7 +77,7 @@ class ButtonIcon extends Base {
         outline-offset: var(--outline-offset-focus);
       }
 
-      :host([size='large']) button {
+      :host([size='large']) .button-icon {
         width: 2.75rem;
         height: 2.75rem;
       }
@@ -57,7 +86,7 @@ class ButtonIcon extends Base {
         pointer-events: none;
         cursor: default;
       }
-        
+
       :host([disabled]) .button-icon {
         background-color: transparent;
         color: var(--color-gray-85);
@@ -67,8 +96,12 @@ class ButtonIcon extends Base {
         ? css`
             @media screen and (min-width: ${this.breakpoint}) {
               .button-icon {
-                width: 2.75rem;
-                height: 2.75rem;
+                width: ${this.sizeTablet === 'large'
+                  ? '2.75rem'
+                  : this.sizeTablet};
+                height: ${this.sizeTablet === 'large'
+                  ? '2.75rem'
+                  : this.sizeTablet};
               }
             }
           `

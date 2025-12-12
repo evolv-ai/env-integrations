@@ -6,6 +6,7 @@ class AccordionHeader extends Base {
     ...this.observedAttributes,
     'duration',
     'handle-align',
+    'handle-size',
     'padding',
     'padding-tablet',
     'title-bold',
@@ -16,11 +17,25 @@ class AccordionHeader extends Base {
   constructor() {
     super();
 
-    const buttonIconSizes = {
+    const handleSizes = {
       small: 'small',
       medium: 'large',
       large: 'large',
     };
+
+    const handleWidths = {
+      small: '1.25rem',
+      large: '1.5rem',
+    };
+
+    const handlePadding = {
+      small: '0.375rem',
+      large: '0.625rem',
+    };
+
+    function isHandleSizeNamed(handleSize) {
+      return Object.keys(handleWidths).some((width) => width === handleSize);
+    }
 
     this.accordion = this.closest('evolv-accordion');
     this.accordionItem = this.closest('evolv-accordion-item');
@@ -32,13 +47,29 @@ class AccordionHeader extends Base {
         this.getAttribute('breakpoint') ||
         this.accordion?.breakpoint ||
         '768px',
-      buttonIconSize: () => buttonIconSizes[this.props.titleSize()] || 'small',
       duration: () =>
         this.getAttribute('duration') || this.accordion?.duration || 330,
+      gap: () =>
+        this.accordion?.getAttribute('header-gap') ??
+        this.getAttribute('gap') ??
+        '1rem',
+      gapTablet: () =>
+        this.getAttribute('gap-tablet') ??
+        this.accordion?.getAttribute('header-gap-tablet') ??
+        '1.25rem',
       handleAlign: () =>
         this.getAttribute('handle-align') ||
         this.accordion?.getAttribute('handle-align') ||
         'left',
+      handleSize: () =>
+        this.getAttribute('handle-size') ||
+        this.accordion?.getAttribute('handle-size') ||
+        handleSizes[this.props.titleSize()] ||
+        'small',
+      handleSizeTablet: () =>
+        this.getAttribute('handle-size-tablet') ||
+        this.accordion?.getAttribute('handle-size-tablet') ||
+        'large',
       id: () =>
         this.idOriginal ||
         this.accordion?.accordionHeaderId(this.props.accordionItemIndex()),
@@ -50,7 +81,8 @@ class AccordionHeader extends Base {
         '2rem',
       titleSize: () => this.accordion?.getAttribute('title-size') || null,
       titleBold: () => this.accordion?.getAttribute('title-bold') || null,
-      titlePrimitive: () => this.accordion?.getAttribute('title-primitive') || null,
+      titlePrimitive: () =>
+        this.accordion?.getAttribute('title-primitive') || null,
     };
 
     this.styles = () => css`
@@ -63,12 +95,21 @@ class AccordionHeader extends Base {
       }
 
       .header-button {
+        ${isHandleSizeNamed(this.handleSize)
+          ? css`
+              --handle-width: ${handleWidths[this.handleSize]};
+              --handle-padding: ${handlePadding[this.handleSize]};
+            `
+          : css`
+              --handle-width: ${this.handleSize};
+              --handle-padding: calc(var(--handle-width) / 3);
+            `}
+        --gap: ${this.gap};
         width: 100%;
         display: flex;
         overflow: visible;
         text-align: left;
         align-items: center;
-        gap: 1rem;
         padding: ${this.padding} 0;
       }
 
@@ -81,17 +122,17 @@ class AccordionHeader extends Base {
         outline-offset: -1px;
       }
 
-      .button-icon-wrap {
-        position: relative;
-        display: inline-block;
-        width: 2rem;
-        margin-right: auto;
-        flex-shrink: 0;
+      .text-wrap {
+        display: flex;
+        align-items: baseline;
       }
 
-      .handle-align-right .button-icon-wrap {
-        margin-right: 0;
-        margin-left: auto;
+      .button-icon-wrap {
+        width: calc(var(--handle-width) + 2 * var(--handle-padding));
+        position: relative;
+        display: inline-block;
+        margin-right: auto;
+        flex-shrink: 0;
       }
 
       evolv-button-icon {
@@ -104,18 +145,38 @@ class AccordionHeader extends Base {
         transform: translateY(-50%) rotate(180deg);
       }
 
+      .left-slot-wrap {
+        margin-left: var(--gap);
+      }
+
       ::slotted([slot='right']) {
         text-align: right;
         justify-self: flex-end;
       }
 
+      .handle-align-right .left-slot-wrap {
+        margin-left: auto;
+      }
+
+      .handle-align-right .button-icon-wrap {
+        margin-left: calc(var(--gap) - var(--handle-padding));
+        margin-right: 0;
+      }
+
       @media screen and (min-width: ${this.breakpoint}) {
         .header-button {
+          --gap: ${this.gapTablet};
           padding: ${this.paddingTablet} 0;
         }
 
         .button-icon-wrap {
-          width: 2.5rem;
+          ${isHandleSizeNamed(this.handleSizeTablet)
+            ? css`
+                --handle-width: ${handleWidths[this.handleSizeTablet]};
+              `
+            : css`
+                --handle-width: ${this.handleSizeTablet};
+              `}
         }
       }
     `;
@@ -127,15 +188,18 @@ class AccordionHeader extends Base {
           ${this.titlePrimitive ? `primitive="${this.titlePrimitive}"` : ''}
           ${this.titleSize ? `size="${this.titleSize}"` : ''}
           breakpoint="${this.breakpoint}"
-        ><slot></slot></evolv-title>
-        <div class="button-icon-wrap">
-          <evolv-button-icon 
-            ${this.buttonIconSize ? `size="${this.buttonIconSize}"` : ''}
+        >
+          <slot></slot>
+        </evolv-title>
+        <span class="left-slot-wrap"><slot name="left"></slot></span>
+        <span class="button-icon-wrap">
+          <evolv-button-icon
+            ${this.handleSize ? `size="${this.handleSize}"` : ''}
             name="down-caret"
             tabindex="-1"
             breakpoint="${this.breakpoint}"
           ></evolv-icon>
-        </div>
+        </span>
         <slot name="right"></slot>
       </button>
     `;
@@ -149,7 +213,7 @@ class AccordionHeader extends Base {
         this.setAttribute('accordion-item-index', this.accordionItemIndex);
         this.setAttribute(
           'aria-controls',
-          this.accordion.accordionDetailsId(this.accordionItemIndex)
+          this.accordion.accordionDetailsId(this.accordionItemIndex),
         );
       }
     };
